@@ -1,6 +1,7 @@
 create table lists (
-  id text PRIMARY KEY,
+  id SERIAL PRIMARY KEY,
+  uid text not null,
   title text not null,
-  created_at timestamp default now()
+  created_at timestamp not null default now()
 );
 

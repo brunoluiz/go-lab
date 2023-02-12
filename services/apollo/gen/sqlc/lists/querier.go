@@ -9,7 +9,8 @@ import (
 )
 
 type Querier interface {
-	ByID(ctx context.Context, id string) (List, error)
+	ByUID(ctx context.Context, uid string) (List, error)
+	Create(ctx context.Context, arg CreateParams) (List, error)
 }
 
 var _ Querier = (*Queries)(nil)

@@ -4,10 +4,13 @@
 
 package lists
 
-import ()
+import (
+	"time"
+)
 
 type List struct {
-	ID        string
-	Title     string
-	CreatedAt interface{}
+	ID        int32     `json:"-"`
+	UID       string    `json:"uid"`
+	Title     string    `json:"title"`
+	CreatedAt time.Time `json:"created_at"`
 }

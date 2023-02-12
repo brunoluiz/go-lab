@@ -9,14 +9,44 @@ import (
 	"context"
 )
 
-const byID = `-- name: ByID :one
-SELECT id, title, created_at FROM lists
-WHERE id = $1 LIMIT 1
+const byUID = `-- name: ByUID :one
+SELECT id, uid, title, created_at FROM lists
+WHERE uid = $1 LIMIT 1
 `
 
-func (q *Queries) ByID(ctx context.Context, id string) (List, error) {
-	row := q.db.QueryRowContext(ctx, byID, id)
+func (q *Queries) ByUID(ctx context.Context, uid string) (List, error) {
+	row := q.db.QueryRowContext(ctx, byUID, uid)
 	var i List
-	err := row.Scan(&i.ID, &i.Title, &i.CreatedAt)
+	err := row.Scan(
+		&i.ID,
+		&i.UID,
+		&i.Title,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const create = `-- name: Create :one
+INSERT INTO lists (
+  uid,
+  title
+) VALUES ($1, $2)
+RETURNING id, uid, title, created_at
+`
+
+type CreateParams struct {
+	UID   string `json:"uid"`
+	Title string `json:"title"`
+}
+
+func (q *Queries) Create(ctx context.Context, arg CreateParams) (List, error) {
+	row := q.db.QueryRowContext(ctx, create, arg.UID, arg.Title)
+	var i List
+	err := row.Scan(
+		&i.ID,
+		&i.UID,
+		&i.Title,
+		&i.CreatedAt,
+	)
 	return i, err
 }

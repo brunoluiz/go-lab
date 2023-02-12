@@ -10,6 +10,7 @@ import (
 	"github.com/brunoluiz/go-lab/services/apollo/internal/db"
 	"github.com/brunoluiz/go-lab/services/apollo/internal/handler"
 	"github.com/davecgh/go-spew/spew"
+	_ "github.com/joho/godotenv/autoload"
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -25,7 +26,7 @@ func main() {
 	var c config
 	err := envconfig.Process("apollo_api", &c)
 	if err != nil {
-		logger.Error("something went wrong", err)
+		logger.Error("problem reading envconfig", err)
 		return
 	}
 
@@ -34,7 +35,7 @@ func main() {
 		postgres.WithLiveCheck(),
 	)
 	if err != nil {
-		logger.Error("something went wrong", err)
+		logger.Error("problem setting up postgres", err)
 		return
 	}
 
