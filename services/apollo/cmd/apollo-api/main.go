@@ -2,33 +2,53 @@ package main
 
 import (
 	"fmt"
-	"log"
 
+	"github.com/brunoluiz/go-lab/core/app"
+	"github.com/brunoluiz/go-lab/core/storage/postgres"
+	"github.com/brunoluiz/go-lab/core/xlog"
+	"github.com/brunoluiz/go-lab/services/apollo/gen/sqlc/lists"
+	"github.com/brunoluiz/go-lab/services/apollo/internal/db"
 	"github.com/brunoluiz/go-lab/services/apollo/internal/handler"
-	"github.com/brunoluiz/go-lab/services/apollo/internal/repo"
-	"github.com/gin-gonic/gin"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/kelseyhightower/envconfig"
 )
 
 type config struct {
-	HTTP struct {
-		Address string `envconfig:"address" default:"127.0.0.1"`
-		Port    string `envconfig:"port" default:"8080"`
-	}
+	app.CommonConfig
+	HTTP app.HTTPConfig
+	DB   postgres.EnvConfig
 }
 
 func main() {
-	r := gin.Default()
+	logger := xlog.New()
+
 	var c config
 	err := envconfig.Process("apollo_api", &c)
 	if err != nil {
-		log.Fatal(err.Error())
+		logger.Error("something went wrong", err)
+		return
 	}
 
+	db, err := postgres.New(c.DB.DSN,
+		postgres.WithMigration(db.MigrationsFS),
+		postgres.WithLiveCheck(),
+	)
+	if err != nil {
+		logger.Error("something went wrong", err)
+		return
+	}
+
+	spew.Dump(c)
+
+	r := app.NewGin()
+	listRepo := lists.New(db)
+
 	handler.Register(r,
-		handler.List(repo.List()),
+		handler.List(listRepo),
 		handler.Task(),
 	)
 
-	r.Run(fmt.Sprintf("%s:%s", c.HTTP.Address, c.HTTP.Port))
+	logger.Info(fmt.Sprintf("listening at %s\n", c.HTTP.GetAddress()))
+
+	r.Run(c.HTTP.GetAddress())
 }

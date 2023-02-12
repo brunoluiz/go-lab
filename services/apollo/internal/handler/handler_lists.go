@@ -5,19 +5,15 @@ import (
 	"net/http"
 
 	"github.com/brunoluiz/go-lab/core/app"
-	"github.com/brunoluiz/go-lab/services/apollo"
+	"github.com/brunoluiz/go-lab/services/apollo/gen/sqlc/lists"
 	"github.com/gin-gonic/gin"
 )
 
-type ListRepository interface {
-	ByID(context.Context, string) (*apollo.List, error)
-}
-
 type list struct {
-	repo ListRepository
+	repo lists.Querier
 }
 
-func List(repo ListRepository) *list {
+func List(repo lists.Querier) *list {
 	return &list{repo: repo}
 }
 
@@ -26,7 +22,7 @@ func (l *list) Register(r *gin.RouterGroup) {
 }
 
 type getListResponse struct {
-	Lists []*apollo.List `json:"lists"`
+	Lists []lists.List `json:"lists"`
 }
 
 func (l *list) get(c *gin.Context) {
@@ -42,7 +38,7 @@ func (l *list) get(c *gin.Context) {
 	c.JSON(http.StatusOK, app.Envelope{
 		Status: "ok",
 		Data: getListResponse{
-			Lists: []*apollo.List{data},
+			Lists: []lists.List{data},
 		},
 	})
 }
