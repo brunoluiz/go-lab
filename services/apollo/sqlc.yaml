@@ -1,0 +1,19 @@
+version: "2"
+overrides:
+  go:
+    rename:
+      uid: "UID"
+    overrides:
+      - column: lists.id
+        go_struct_tag: 'json:"-"'
+
+sql:
+  - engine: "postgresql"
+    queries: "./internal/db/queries/lists.sql"
+    schema: "./internal/db/migrations"
+    gen:
+      go:
+        package: "lists"
+        out: "./gen/sqlc/lists"
+        emit_interface: true
+        emit_json_tags: true
