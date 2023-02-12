@@ -59,12 +59,6 @@ paths:
       description: Delete a list
       operationId: deleteList
       parameters:
-        - name: api_key
-          in: header
-          description: ''
-          required: false
-          schema:
-            type: string
         - name: list_id
           in: path
           description: List id to delete
