@@ -9,7 +9,6 @@ import (
 	"github.com/brunoluiz/go-lab/services/apollo/gen/sqlc/lists"
 	"github.com/brunoluiz/go-lab/services/apollo/internal/db"
 	"github.com/brunoluiz/go-lab/services/apollo/internal/handler"
-	"github.com/davecgh/go-spew/spew"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -39,17 +38,9 @@ func main() {
 		return
 	}
 
-	spew.Dump(c)
-
 	r := app.NewGin()
-	listRepo := lists.New(db)
+	handler.Register(r, lists.New(db))
 
-	handler.Register(r,
-		handler.List(listRepo),
-		handler.Task(),
-	)
-
-	logger.Info(fmt.Sprintf("listening at %s\n", c.HTTP.GetAddress()))
-
+	logger.Info(fmt.Sprintf("listening at %s", c.HTTP.GetAddress()))
 	r.Run(c.HTTP.GetAddress())
 }
