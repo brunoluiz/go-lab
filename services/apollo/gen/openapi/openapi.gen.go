@@ -21,33 +21,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Error defines model for Error.
-type Error struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
-// List defines model for List.
-type List struct {
+// AddListJSONBody defines parameters for AddList.
+type AddListJSONBody struct {
 	Tasks *[]string `json:"tasks,omitempty"`
 	Title string    `json:"title"`
 	Uid   *string   `json:"uid,omitempty"`
 }
 
-// AddList defines model for AddList.
-type AddList = List
-
-// BadRequest defines model for BadRequest.
-type BadRequest = Error
-
-// GetListById defines model for GetListById.
-type GetListById = List
-
-// NotFound defines model for NotFound.
-type NotFound = Error
-
-// UpdateList defines model for UpdateList.
-type UpdateList = List
+// UpdateListJSONBody defines parameters for UpdateList.
+type UpdateListJSONBody struct {
+	Tasks *[]string `json:"tasks,omitempty"`
+	Title string    `json:"title"`
+	Uid   *string   `json:"uid,omitempty"`
+}
 
 // DeleteListParams defines parameters for DeleteList.
 type DeleteListParams struct {
@@ -55,10 +41,10 @@ type DeleteListParams struct {
 }
 
 // AddListJSONRequestBody defines body for AddList for application/json ContentType.
-type AddListJSONRequestBody = List
+type AddListJSONRequestBody AddListJSONBody
 
 // UpdateListJSONRequestBody defines body for UpdateList for application/json ContentType.
-type UpdateListJSONRequestBody = List
+type UpdateListJSONRequestBody UpdateListJSONBody
 
 // RequestEditorFn  is the function signature for the RequestEditor callback function
 type RequestEditorFn func(ctx context.Context, req *http.Request) error
@@ -444,8 +430,15 @@ type ClientWithResponsesInterface interface {
 type AddListResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *List
-	JSON400      *Error
+	JSON200      *struct {
+		Tasks *[]string `json:"tasks,omitempty"`
+		Title string    `json:"title"`
+		Uid   *string   `json:"uid,omitempty"`
+	}
+	JSON400 *struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -467,9 +460,19 @@ func (r AddListResponse) StatusCode() int {
 type UpdateListResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *List
-	JSON400      *Error
-	JSON404      *Error
+	JSON200      *struct {
+		Tasks *[]string `json:"tasks,omitempty"`
+		Title string    `json:"title"`
+		Uid   *string   `json:"uid,omitempty"`
+	}
+	JSON400 *struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	}
+	JSON404 *struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -491,7 +494,10 @@ func (r UpdateListResponse) StatusCode() int {
 type DeleteListResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON404      *Error
+	JSON404      *struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -513,9 +519,19 @@ func (r DeleteListResponse) StatusCode() int {
 type GetListByIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *List
-	JSON400      *Error
-	JSON404      *Error
+	JSON200      *struct {
+		Tasks *[]string `json:"tasks,omitempty"`
+		Title string    `json:"title"`
+		Uid   *string   `json:"uid,omitempty"`
+	}
+	JSON400 *struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	}
+	JSON404 *struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	}
 }
 
 // Status returns HTTPResponse.Status
@@ -601,14 +617,21 @@ func ParseAddListResponse(rsp *http.Response) (*AddListResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest List
+		var dest struct {
+			Tasks *[]string `json:"tasks,omitempty"`
+			Title string    `json:"title"`
+			Uid   *string   `json:"uid,omitempty"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -634,21 +657,31 @@ func ParseUpdateListResponse(rsp *http.Response) (*UpdateListResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest List
+		var dest struct {
+			Tasks *[]string `json:"tasks,omitempty"`
+			Title string    `json:"title"`
+			Uid   *string   `json:"uid,omitempty"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -674,7 +707,10 @@ func ParseDeleteListResponse(rsp *http.Response) (*DeleteListResponse, error) {
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -700,21 +736,31 @@ func ParseGetListByIdResponse(rsp *http.Response) (*GetListByIdResponse, error) 
 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest List
+		var dest struct {
+			Tasks *[]string `json:"tasks,omitempty"`
+			Title string    `json:"title"`
+			Uid   *string   `json:"uid,omitempty"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest Error
+		var dest struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
 		response.JSON400 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest Error
+		var dest struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
@@ -876,16 +922,6 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 	return router
 }
 
-type AddListJSONResponse List
-
-type BadRequestJSONResponse Error
-
-type GetListByIdJSONResponse List
-
-type NotFoundJSONResponse Error
-
-type UpdateListJSONResponse List
-
 type AddListRequestObject struct {
 	Body *AddListJSONRequestBody
 }
@@ -894,7 +930,11 @@ type AddListResponseObject interface {
 	VisitAddListResponse(w http.ResponseWriter) error
 }
 
-type AddList200JSONResponse struct{ AddListJSONResponse }
+type AddList200JSONResponse struct {
+	Tasks *[]string `json:"tasks,omitempty"`
+	Title string    `json:"title"`
+	Uid   *string   `json:"uid,omitempty"`
+}
 
 func (response AddList200JSONResponse) VisitAddListResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -903,7 +943,10 @@ func (response AddList200JSONResponse) VisitAddListResponse(w http.ResponseWrite
 	return json.NewEncoder(w).Encode(response)
 }
 
-type AddList400JSONResponse struct{ BadRequestJSONResponse }
+type AddList400JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response AddList400JSONResponse) VisitAddListResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -920,7 +963,11 @@ type UpdateListResponseObject interface {
 	VisitUpdateListResponse(w http.ResponseWriter) error
 }
 
-type UpdateList200JSONResponse struct{ UpdateListJSONResponse }
+type UpdateList200JSONResponse struct {
+	Tasks *[]string `json:"tasks,omitempty"`
+	Title string    `json:"title"`
+	Uid   *string   `json:"uid,omitempty"`
+}
 
 func (response UpdateList200JSONResponse) VisitUpdateListResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -929,7 +976,10 @@ func (response UpdateList200JSONResponse) VisitUpdateListResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response)
 }
 
-type UpdateList400JSONResponse struct{ BadRequestJSONResponse }
+type UpdateList400JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response UpdateList400JSONResponse) VisitUpdateListResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -938,7 +988,10 @@ func (response UpdateList400JSONResponse) VisitUpdateListResponse(w http.Respons
 	return json.NewEncoder(w).Encode(response)
 }
 
-type UpdateList404JSONResponse struct{ NotFoundJSONResponse }
+type UpdateList404JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response UpdateList404JSONResponse) VisitUpdateListResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -956,7 +1009,10 @@ type DeleteListResponseObject interface {
 	VisitDeleteListResponse(w http.ResponseWriter) error
 }
 
-type DeleteList404JSONResponse struct{ NotFoundJSONResponse }
+type DeleteList404JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response DeleteList404JSONResponse) VisitDeleteListResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -973,7 +1029,11 @@ type GetListByIdResponseObject interface {
 	VisitGetListByIdResponse(w http.ResponseWriter) error
 }
 
-type GetListById200JSONResponse struct{ GetListByIdJSONResponse }
+type GetListById200JSONResponse struct {
+	Tasks *[]string `json:"tasks,omitempty"`
+	Title string    `json:"title"`
+	Uid   *string   `json:"uid,omitempty"`
+}
 
 func (response GetListById200JSONResponse) VisitGetListByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -982,7 +1042,10 @@ func (response GetListById200JSONResponse) VisitGetListByIdResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetListById400JSONResponse struct{ BadRequestJSONResponse }
+type GetListById400JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response GetListById400JSONResponse) VisitGetListByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -991,7 +1054,10 @@ func (response GetListById400JSONResponse) VisitGetListByIdResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetListById404JSONResponse struct{ NotFoundJSONResponse }
+type GetListById404JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response GetListById404JSONResponse) VisitGetListByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -1149,19 +1215,18 @@ func (sh *strictHandler) GetListById(ctx *gin.Context, listId string) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"/7pRyJcMDwAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

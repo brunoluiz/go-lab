@@ -23,17 +23,13 @@ func (h *Handler) AddList(ctx context.Context, req openapi.AddListRequestObject)
 	})
 	if err != nil {
 		return openapi.AddList400JSONResponse{
-			BadRequestJSONResponse: openapi.BadRequestJSONResponse{
-				Message: err.Error(),
-			},
+			Message: err.Error(),
 		}, nil
 	}
 
 	return openapi.AddList200JSONResponse{
-		AddListJSONResponse: openapi.AddListJSONResponse{
-			Title: out.Title,
-			Uid:   &out.UID,
-		},
+		Title: out.Title,
+		Uid:   &out.UID,
 	}, nil
 }
 
@@ -49,17 +45,13 @@ func (h *Handler) GetListById(ctx context.Context, req openapi.GetListByIdReques
 	out, err := h.repo.ByUID(ctx, req.ListId)
 	if err != nil {
 		return openapi.GetListById404JSONResponse{
-			NotFoundJSONResponse: openapi.NotFoundJSONResponse{
-				Message: err.Error(),
-			},
+			Message: err.Error(),
 		}, nil
 	}
 
 	return openapi.GetListById200JSONResponse{
-		GetListByIdJSONResponse: openapi.GetListByIdJSONResponse{
-			Uid:   &out.UID,
-			Title: out.Title,
-		},
+		Uid:   &out.UID,
+		Title: out.Title,
 	}, nil
 }
 
