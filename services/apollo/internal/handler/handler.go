@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/brunoluiz/go-lab/services/apollo/gen/openapi"
-	"github.com/brunoluiz/go-lab/services/apollo/gen/sqlc/lists"
+	"github.com/brunoluiz/go-lab/services/apollo/internal/repo"
 	"github.com/davecgh/go-spew/spew"
 	middleware "github.com/deepmap/oapi-codegen/pkg/gin-middleware"
 	"github.com/gin-gonic/gin"
@@ -14,13 +14,13 @@ import (
 type Handler struct {
 	openapi.StrictServerInterface
 
-	repo lists.Querier
+	repo repo.Querier
 }
 
 func (h *Handler) AddList(ctx context.Context, req openapi.AddListRequestObject) (openapi.AddListResponseObject, error) {
-	out, err := h.repo.SaveList(ctx, lists.SaveListParams{
-		UID:   ksuid.New().String(),
-		Title: req.Body.Title,
+	out, err := h.repo.SaveList(ctx, repo.SaveListParams{
+		UniqID: ksuid.New().String(),
+		Title:  req.Body.Title,
 	})
 	if err != nil {
 		return openapi.AddList400JSONResponse{
@@ -30,16 +30,16 @@ func (h *Handler) AddList(ctx context.Context, req openapi.AddListRequestObject)
 
 	return openapi.AddList201JSONResponse{
 		Title:     out.Title,
-		Uid:       out.UID,
+		UniqId:    out.UniqID,
 		CreatedAt: out.CreatedAt,
 		UpdatedAt: out.UpdatedAt,
 	}, nil
 }
 
 func (h *Handler) UpdateList(ctx context.Context, req openapi.UpdateListRequestObject) (openapi.UpdateListResponseObject, error) {
-	out, err := h.repo.SaveList(ctx, lists.SaveListParams{
-		UID:   req.ListId,
-		Title: req.Body.Title,
+	out, err := h.repo.SaveList(ctx, repo.SaveListParams{
+		UniqID: req.ListId,
+		Title:  req.Body.Title,
 	})
 	if err != nil {
 		return openapi.UpdateList400JSONResponse{
@@ -48,9 +48,9 @@ func (h *Handler) UpdateList(ctx context.Context, req openapi.UpdateListRequestO
 	}
 	spew.Dump(req)
 
-	return openapi.UpdateList204JSONResponse{
+	return openapi.UpdateList200JSONResponse{
 		Title:     out.Title,
-		Uid:       out.UID,
+		UniqId:    out.UniqID,
 		CreatedAt: out.CreatedAt,
 		UpdatedAt: out.UpdatedAt,
 	}, nil
@@ -77,13 +77,13 @@ func (h *Handler) GetListById(ctx context.Context, req openapi.GetListByIdReques
 	}
 
 	return openapi.GetListById200JSONResponse{
-		Uid:       out.UID,
+		UniqId:    out.UniqID,
 		Title:     out.Title,
 		CreatedAt: out.CreatedAt,
 	}, nil
 }
 
-func Register(r *gin.Engine, l lists.Querier) {
+func Register(r *gin.Engine, l repo.Querier) {
 	h := openapi.NewStrictHandler(&Handler{repo: l}, nil)
 
 	schema, _ := openapi.GetSwagger()

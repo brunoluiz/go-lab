@@ -2,7 +2,7 @@
 // versions:
 //   sqlc v1.16.0
 
-package lists
+package repo
 
 import (
 	"database/sql/driver"
@@ -54,7 +54,7 @@ func (ns NullTaskStatus) Value() (driver.Value, error) {
 
 type List struct {
 	ID        int32     `json:"-"`
-	UID       string    `json:"uid"`
+	UniqID    string    `json:"uniq_id"`
 	Title     string    `json:"title"`
 	Position  int32     `json:"position"`
 	UpdatedAt time.Time `json:"updated_at"`
@@ -62,11 +62,12 @@ type List struct {
 }
 
 type Task struct {
-	ID        int32      `json:"id"`
-	UID       string     `json:"uid"`
-	Title     string     `json:"title"`
-	Position  int32      `json:"position"`
-	Status    TaskStatus `json:"status"`
-	UpdatedAt time.Time  `json:"updated_at"`
-	CreatedAt time.Time  `json:"created_at"`
+	ID         int32      `json:"id"`
+	UniqID     string     `json:"uniq_id"`
+	TaskUniqID string     `json:"task_uniq_id"`
+	Title      string     `json:"title"`
+	Position   int32      `json:"position"`
+	Status     TaskStatus `json:"status"`
+	UpdatedAt  time.Time  `json:"updated_at"`
+	CreatedAt  time.Time  `json:"created_at"`
 }

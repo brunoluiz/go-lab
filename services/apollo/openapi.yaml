@@ -71,7 +71,7 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/UpdateList'
       responses:
-        '204':
+        '200':
           $ref: '#/components/responses/UpdateList'
         '400':
           $ref: '#/components/responses/BadRequest'
@@ -90,13 +90,13 @@ components:
           type: string
     List:
       required:
-        - uid
+        - uniq_id
         - title
         - created_at
         - updated_at
       type: object
       properties:
-        uid:
+        uniq_id:
           type: string
           example: 0ujsswThIGTUYm2K8FjOOfXtY1K
         title:

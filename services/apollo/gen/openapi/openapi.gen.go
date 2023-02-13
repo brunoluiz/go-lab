@@ -422,7 +422,7 @@ type AddListResponse struct {
 		CreatedAt time.Time `json:"created_at"`
 		Tasks     *[]string `json:"tasks,omitempty"`
 		Title     string    `json:"title"`
-		Uid       string    `json:"uid"`
+		UniqId    string    `json:"uniq_id"`
 		UpdatedAt time.Time `json:"updated_at"`
 	}
 	JSON400 *struct {
@@ -482,7 +482,7 @@ type GetListByIdResponse struct {
 		CreatedAt time.Time `json:"created_at"`
 		Tasks     *[]string `json:"tasks,omitempty"`
 		Title     string    `json:"title"`
-		Uid       string    `json:"uid"`
+		UniqId    string    `json:"uniq_id"`
 		UpdatedAt time.Time `json:"updated_at"`
 	}
 	JSON400 *struct {
@@ -514,11 +514,11 @@ func (r GetListByIdResponse) StatusCode() int {
 type UpdateListResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON204      *struct {
+	JSON200      *struct {
 		CreatedAt time.Time `json:"created_at"`
 		Tasks     *[]string `json:"tasks,omitempty"`
 		Title     string    `json:"title"`
-		Uid       string    `json:"uid"`
+		UniqId    string    `json:"uniq_id"`
 		UpdatedAt time.Time `json:"updated_at"`
 	}
 	JSON400 *struct {
@@ -618,7 +618,7 @@ func ParseAddListResponse(rsp *http.Response) (*AddListResponse, error) {
 			CreatedAt time.Time `json:"created_at"`
 			Tasks     *[]string `json:"tasks,omitempty"`
 			Title     string    `json:"title"`
-			Uid       string    `json:"uid"`
+			UniqId    string    `json:"uniq_id"`
 			UpdatedAt time.Time `json:"updated_at"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -698,7 +698,7 @@ func ParseGetListByIdResponse(rsp *http.Response) (*GetListByIdResponse, error) 
 			CreatedAt time.Time `json:"created_at"`
 			Tasks     *[]string `json:"tasks,omitempty"`
 			Title     string    `json:"title"`
-			Uid       string    `json:"uid"`
+			UniqId    string    `json:"uniq_id"`
 			UpdatedAt time.Time `json:"updated_at"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -745,18 +745,18 @@ func ParseUpdateListResponse(rsp *http.Response) (*UpdateListResponse, error) {
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 204:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
 			CreatedAt time.Time `json:"created_at"`
 			Tasks     *[]string `json:"tasks,omitempty"`
 			Title     string    `json:"title"`
-			Uid       string    `json:"uid"`
+			UniqId    string    `json:"uniq_id"`
 			UpdatedAt time.Time `json:"updated_at"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON204 = &dest
+		response.JSON200 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest struct {
@@ -933,7 +933,7 @@ type AddList201JSONResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	Tasks     *[]string `json:"tasks,omitempty"`
 	Title     string    `json:"title"`
-	Uid       string    `json:"uid"`
+	UniqId    string    `json:"uniq_id"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
@@ -999,7 +999,7 @@ type GetListById200JSONResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	Tasks     *[]string `json:"tasks,omitempty"`
 	Title     string    `json:"title"`
-	Uid       string    `json:"uid"`
+	UniqId    string    `json:"uniq_id"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
@@ -1043,17 +1043,17 @@ type UpdateListResponseObject interface {
 	VisitUpdateListResponse(w http.ResponseWriter) error
 }
 
-type UpdateList204JSONResponse struct {
+type UpdateList200JSONResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	Tasks     *[]string `json:"tasks,omitempty"`
 	Title     string    `json:"title"`
-	Uid       string    `json:"uid"`
+	UniqId    string    `json:"uniq_id"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (response UpdateList204JSONResponse) VisitUpdateListResponse(w http.ResponseWriter) error {
+func (response UpdateList200JSONResponse) VisitUpdateListResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(204)
+	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -1232,19 +1232,19 @@ func (sh *strictHandler) UpdateList(ctx *gin.Context, listId string) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
