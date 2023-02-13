@@ -7,20 +7,6 @@ info:
   version: 1.0.0
 paths:
   /api/v1/lists:
-    put:
-      tags: [list]
-      summary: Update existing list
-      description: Update exisiting list
-      operationId: updateList
-      requestBody:
-        $ref: '#/components/requestBodies/UpdateList'
-      responses:
-        '200':
-          $ref: '#/components/responses/UpdateList'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
     post:
       tags: [list]
       summary: Add a new list to the store
@@ -29,7 +15,7 @@ paths:
       requestBody:
         $ref: '#/components/requestBodies/AddList'
       responses:
-        '200':
+        '201':
           $ref: '#/components/responses/AddList'
         '400':
           $ref: '#/components/responses/BadRequest'
@@ -66,6 +52,29 @@ paths:
           schema:
             type: string
       responses:
+        '200':
+          $ref: '#/components/responses/Operation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [list]
+      summary: Update existing list
+      description: Update exisiting list
+      operationId: updateList
+      parameters:
+        - name: list_id
+          in: path
+          description: Resource ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateList'
+      responses:
+        '204':
+          $ref: '#/components/responses/UpdateList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -80,7 +89,11 @@ components:
         code:
           type: string
     List:
-      required: [title]
+      required:
+        - uid
+        - title
+        - created_at
+        - updated_at
       type: object
       properties:
         uid:
@@ -89,12 +102,29 @@ components:
         title:
           type: string
           example: My to-do list
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
         tasks:
           type: array
           items:
             type: string
 
   responses:
+    Operation:
+      description: Operation finished with success (no content)
+      content:
+        application/json:
+          schema:
+            required: [success]
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: My to-do list
     NotFound:
       description: The specified resource was not found
       content:
@@ -132,10 +162,20 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/List'
+            required: [title]
+            type: object
+            properties:
+              title:
+                type: string
+                example: My to-do list
     UpdateList:
       required: true
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/List'
+            required: [title]
+            type: object
+            properties:
+              title:
+                type: string
+                example: My to-do list

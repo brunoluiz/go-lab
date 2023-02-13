@@ -9,43 +9,60 @@ import (
 	"context"
 )
 
-const byUID = `-- name: ByUID :one
-SELECT id, uid, title, created_at FROM lists
+const deleteList = `-- name: DeleteList :exec
+DELETE FROM lists
+WHERE uid = $1
+`
+
+func (q *Queries) DeleteList(ctx context.Context, uid string) error {
+	_, err := q.db.ExecContext(ctx, deleteList, uid)
+	return err
+}
+
+const getListByID = `-- name: GetListByID :one
+SELECT id, uid, title, position, updated_at, created_at FROM lists
 WHERE uid = $1 LIMIT 1
 `
 
-func (q *Queries) ByUID(ctx context.Context, uid string) (List, error) {
-	row := q.db.QueryRowContext(ctx, byUID, uid)
+func (q *Queries) GetListByID(ctx context.Context, uid string) (List, error) {
+	row := q.db.QueryRowContext(ctx, getListByID, uid)
 	var i List
 	err := row.Scan(
 		&i.ID,
 		&i.UID,
 		&i.Title,
+		&i.Position,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err
 }
 
-const create = `-- name: Create :one
+const saveList = `-- name: SaveList :one
 INSERT INTO lists (
   uid,
   title
 ) VALUES ($1, $2)
-RETURNING id, uid, title, created_at
+ON CONFLICT (uid) DO UPDATE
+SET
+  title = EXCLUDED.title
+RETURNING id, uid, title, position, updated_at, created_at
 `
 
-type CreateParams struct {
+type SaveListParams struct {
 	UID   string `json:"uid"`
 	Title string `json:"title"`
 }
 
-func (q *Queries) Create(ctx context.Context, arg CreateParams) (List, error) {
-	row := q.db.QueryRowContext(ctx, create, arg.UID, arg.Title)
+func (q *Queries) SaveList(ctx context.Context, arg SaveListParams) (List, error) {
+	row := q.db.QueryRowContext(ctx, saveList, arg.UID, arg.Title)
 	var i List
 	err := row.Scan(
 		&i.ID,
 		&i.UID,
 		&i.Title,
+		&i.Position,
+		&i.UpdatedAt,
 		&i.CreatedAt,
 	)
 	return i, err

@@ -15,6 +15,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/deepmap/oapi-codegen/pkg/runtime"
 	"github.com/getkin/kin-openapi/openapi3"
@@ -23,21 +24,12 @@ import (
 
 // AddListJSONBody defines parameters for AddList.
 type AddListJSONBody struct {
-	Tasks *[]string `json:"tasks,omitempty"`
-	Title string    `json:"title"`
-	Uid   *string   `json:"uid,omitempty"`
+	Title string `json:"title"`
 }
 
 // UpdateListJSONBody defines parameters for UpdateList.
 type UpdateListJSONBody struct {
-	Tasks *[]string `json:"tasks,omitempty"`
-	Title string    `json:"title"`
-	Uid   *string   `json:"uid,omitempty"`
-}
-
-// DeleteListParams defines parameters for DeleteList.
-type DeleteListParams struct {
-	ApiKey *string `json:"api_key,omitempty"`
+	Title string `json:"title"`
 }
 
 // AddListJSONRequestBody defines body for AddList for application/json ContentType.
@@ -124,16 +116,16 @@ type ClientInterface interface {
 
 	AddList(ctx context.Context, body AddListJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
-	// UpdateList request with any body
-	UpdateListWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
-
-	UpdateList(ctx context.Context, body UpdateListJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// DeleteList request
-	DeleteList(ctx context.Context, listId string, params *DeleteListParams, reqEditors ...RequestEditorFn) (*http.Response, error)
+	DeleteList(ctx context.Context, listId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetListById request
 	GetListById(ctx context.Context, listId string, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// UpdateList request with any body
+	UpdateListWithBody(ctx context.Context, listId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	UpdateList(ctx context.Context, listId string, body UpdateListJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) AddListWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -160,32 +152,8 @@ func (c *Client) AddList(ctx context.Context, body AddListJSONRequestBody, reqEd
 	return c.Client.Do(req)
 }
 
-func (c *Client) UpdateListWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateListRequestWithBody(c.Server, contentType, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) UpdateList(ctx context.Context, body UpdateListJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateListRequest(c.Server, body)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
-}
-
-func (c *Client) DeleteList(ctx context.Context, listId string, params *DeleteListParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewDeleteListRequest(c.Server, listId, params)
+func (c *Client) DeleteList(ctx context.Context, listId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewDeleteListRequest(c.Server, listId)
 	if err != nil {
 		return nil, err
 	}
@@ -198,6 +166,30 @@ func (c *Client) DeleteList(ctx context.Context, listId string, params *DeleteLi
 
 func (c *Client) GetListById(ctx context.Context, listId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetListByIdRequest(c.Server, listId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateListWithBody(ctx context.Context, listId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateListRequestWithBody(c.Server, listId, contentType, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) UpdateList(ctx context.Context, listId string, body UpdateListJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateListRequest(c.Server, listId, body)
 	if err != nil {
 		return nil, err
 	}
@@ -248,48 +240,8 @@ func NewAddListRequestWithBody(server string, contentType string, body io.Reader
 	return req, nil
 }
 
-// NewUpdateListRequest calls the generic UpdateList builder with application/json body
-func NewUpdateListRequest(server string, body UpdateListJSONRequestBody) (*http.Request, error) {
-	var bodyReader io.Reader
-	buf, err := json.Marshal(body)
-	if err != nil {
-		return nil, err
-	}
-	bodyReader = bytes.NewReader(buf)
-	return NewUpdateListRequestWithBody(server, "application/json", bodyReader)
-}
-
-// NewUpdateListRequestWithBody generates requests for UpdateList with any type of body
-func NewUpdateListRequestWithBody(server string, contentType string, body io.Reader) (*http.Request, error) {
-	var err error
-
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-
-	operationPath := fmt.Sprintf("/api/v1/lists")
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("PUT", queryURL.String(), body)
-	if err != nil {
-		return nil, err
-	}
-
-	req.Header.Add("Content-Type", contentType)
-
-	return req, nil
-}
-
 // NewDeleteListRequest generates requests for DeleteList
-func NewDeleteListRequest(server string, listId string, params *DeleteListParams) (*http.Request, error) {
+func NewDeleteListRequest(server string, listId string) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -317,17 +269,6 @@ func NewDeleteListRequest(server string, listId string, params *DeleteListParams
 	req, err := http.NewRequest("DELETE", queryURL.String(), nil)
 	if err != nil {
 		return nil, err
-	}
-
-	if params.ApiKey != nil {
-		var headerParam0 string
-
-		headerParam0, err = runtime.StyleParamWithLocation("simple", false, "api_key", runtime.ParamLocationHeader, *params.ApiKey)
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("api_key", headerParam0)
 	}
 
 	return req, nil
@@ -363,6 +304,53 @@ func NewGetListByIdRequest(server string, listId string) (*http.Request, error) 
 	if err != nil {
 		return nil, err
 	}
+
+	return req, nil
+}
+
+// NewUpdateListRequest calls the generic UpdateList builder with application/json body
+func NewUpdateListRequest(server string, listId string, body UpdateListJSONRequestBody) (*http.Request, error) {
+	var bodyReader io.Reader
+	buf, err := json.Marshal(body)
+	if err != nil {
+		return nil, err
+	}
+	bodyReader = bytes.NewReader(buf)
+	return NewUpdateListRequestWithBody(server, listId, "application/json", bodyReader)
+}
+
+// NewUpdateListRequestWithBody generates requests for UpdateList with any type of body
+func NewUpdateListRequestWithBody(server string, listId string, contentType string, body io.Reader) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "list_id", runtime.ParamLocationPath, listId)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/v1/lists/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PUT", queryURL.String(), body)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", contentType)
 
 	return req, nil
 }
@@ -415,25 +403,27 @@ type ClientWithResponsesInterface interface {
 
 	AddListWithResponse(ctx context.Context, body AddListJSONRequestBody, reqEditors ...RequestEditorFn) (*AddListResponse, error)
 
-	// UpdateList request with any body
-	UpdateListWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateListResponse, error)
-
-	UpdateListWithResponse(ctx context.Context, body UpdateListJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListResponse, error)
-
 	// DeleteList request
-	DeleteListWithResponse(ctx context.Context, listId string, params *DeleteListParams, reqEditors ...RequestEditorFn) (*DeleteListResponse, error)
+	DeleteListWithResponse(ctx context.Context, listId string, reqEditors ...RequestEditorFn) (*DeleteListResponse, error)
 
 	// GetListById request
 	GetListByIdWithResponse(ctx context.Context, listId string, reqEditors ...RequestEditorFn) (*GetListByIdResponse, error)
+
+	// UpdateList request with any body
+	UpdateListWithBodyWithResponse(ctx context.Context, listId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateListResponse, error)
+
+	UpdateListWithResponse(ctx context.Context, listId string, body UpdateListJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListResponse, error)
 }
 
 type AddListResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON200      *struct {
-		Tasks *[]string `json:"tasks,omitempty"`
-		Title string    `json:"title"`
-		Uid   *string   `json:"uid,omitempty"`
+	JSON201      *struct {
+		CreatedAt time.Time `json:"created_at"`
+		Tasks     *[]string `json:"tasks,omitempty"`
+		Title     string    `json:"title"`
+		Uid       string    `json:"uid"`
+		UpdatedAt time.Time `json:"updated_at"`
 	}
 	JSON400 *struct {
 		Code    string `json:"code"`
@@ -457,44 +447,13 @@ func (r AddListResponse) StatusCode() int {
 	return 0
 }
 
-type UpdateListResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *struct {
-		Tasks *[]string `json:"tasks,omitempty"`
-		Title string    `json:"title"`
-		Uid   *string   `json:"uid,omitempty"`
-	}
-	JSON400 *struct {
-		Code    string `json:"code"`
-		Message string `json:"message"`
-	}
-	JSON404 *struct {
-		Code    string `json:"code"`
-		Message string `json:"message"`
-	}
-}
-
-// Status returns HTTPResponse.Status
-func (r UpdateListResponse) Status() string {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.Status
-	}
-	return http.StatusText(0)
-}
-
-// StatusCode returns HTTPResponse.StatusCode
-func (r UpdateListResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
-}
-
 type DeleteListResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
-	JSON404      *struct {
+	JSON200      *struct {
+		Success bool `json:"success"`
+	}
+	JSON404 *struct {
 		Code    string `json:"code"`
 		Message string `json:"message"`
 	}
@@ -520,9 +479,11 @@ type GetListByIdResponse struct {
 	Body         []byte
 	HTTPResponse *http.Response
 	JSON200      *struct {
-		Tasks *[]string `json:"tasks,omitempty"`
-		Title string    `json:"title"`
-		Uid   *string   `json:"uid,omitempty"`
+		CreatedAt time.Time `json:"created_at"`
+		Tasks     *[]string `json:"tasks,omitempty"`
+		Title     string    `json:"title"`
+		Uid       string    `json:"uid"`
+		UpdatedAt time.Time `json:"updated_at"`
 	}
 	JSON400 *struct {
 		Code    string `json:"code"`
@@ -550,6 +511,42 @@ func (r GetListByIdResponse) StatusCode() int {
 	return 0
 }
 
+type UpdateListResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON204      *struct {
+		CreatedAt time.Time `json:"created_at"`
+		Tasks     *[]string `json:"tasks,omitempty"`
+		Title     string    `json:"title"`
+		Uid       string    `json:"uid"`
+		UpdatedAt time.Time `json:"updated_at"`
+	}
+	JSON400 *struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	}
+	JSON404 *struct {
+		Code    string `json:"code"`
+		Message string `json:"message"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r UpdateListResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r UpdateListResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // AddListWithBodyWithResponse request with arbitrary body returning *AddListResponse
 func (c *ClientWithResponses) AddListWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*AddListResponse, error) {
 	rsp, err := c.AddListWithBody(ctx, contentType, body, reqEditors...)
@@ -567,26 +564,9 @@ func (c *ClientWithResponses) AddListWithResponse(ctx context.Context, body AddL
 	return ParseAddListResponse(rsp)
 }
 
-// UpdateListWithBodyWithResponse request with arbitrary body returning *UpdateListResponse
-func (c *ClientWithResponses) UpdateListWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateListResponse, error) {
-	rsp, err := c.UpdateListWithBody(ctx, contentType, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateListResponse(rsp)
-}
-
-func (c *ClientWithResponses) UpdateListWithResponse(ctx context.Context, body UpdateListJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListResponse, error) {
-	rsp, err := c.UpdateList(ctx, body, reqEditors...)
-	if err != nil {
-		return nil, err
-	}
-	return ParseUpdateListResponse(rsp)
-}
-
 // DeleteListWithResponse request returning *DeleteListResponse
-func (c *ClientWithResponses) DeleteListWithResponse(ctx context.Context, listId string, params *DeleteListParams, reqEditors ...RequestEditorFn) (*DeleteListResponse, error) {
-	rsp, err := c.DeleteList(ctx, listId, params, reqEditors...)
+func (c *ClientWithResponses) DeleteListWithResponse(ctx context.Context, listId string, reqEditors ...RequestEditorFn) (*DeleteListResponse, error) {
+	rsp, err := c.DeleteList(ctx, listId, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -600,6 +580,23 @@ func (c *ClientWithResponses) GetListByIdWithResponse(ctx context.Context, listI
 		return nil, err
 	}
 	return ParseGetListByIdResponse(rsp)
+}
+
+// UpdateListWithBodyWithResponse request with arbitrary body returning *UpdateListResponse
+func (c *ClientWithResponses) UpdateListWithBodyWithResponse(ctx context.Context, listId string, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateListResponse, error) {
+	rsp, err := c.UpdateListWithBody(ctx, listId, contentType, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateListResponse(rsp)
+}
+
+func (c *ClientWithResponses) UpdateListWithResponse(ctx context.Context, listId string, body UpdateListJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateListResponse, error) {
+	rsp, err := c.UpdateList(ctx, listId, body, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseUpdateListResponse(rsp)
 }
 
 // ParseAddListResponse parses an HTTP response from a AddListWithResponse call
@@ -616,16 +613,18 @@ func ParseAddListResponse(rsp *http.Response) (*AddListResponse, error) {
 	}
 
 	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 201:
 		var dest struct {
-			Tasks *[]string `json:"tasks,omitempty"`
-			Title string    `json:"title"`
-			Uid   *string   `json:"uid,omitempty"`
+			CreatedAt time.Time `json:"created_at"`
+			Tasks     *[]string `json:"tasks,omitempty"`
+			Title     string    `json:"title"`
+			Uid       string    `json:"uid"`
+			UpdatedAt time.Time `json:"updated_at"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}
-		response.JSON200 = &dest
+		response.JSON201 = &dest
 
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
 		var dest struct {
@@ -636,56 +635,6 @@ func ParseAddListResponse(rsp *http.Response) (*AddListResponse, error) {
 			return nil, err
 		}
 		response.JSON400 = &dest
-
-	}
-
-	return response, nil
-}
-
-// ParseUpdateListResponse parses an HTTP response from a UpdateListWithResponse call
-func ParseUpdateListResponse(rsp *http.Response) (*UpdateListResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-
-	response := &UpdateListResponse{
-		Body:         bodyBytes,
-		HTTPResponse: rsp,
-	}
-
-	switch {
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
-		var dest struct {
-			Tasks *[]string `json:"tasks,omitempty"`
-			Title string    `json:"title"`
-			Uid   *string   `json:"uid,omitempty"`
-		}
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
-		var dest struct {
-			Code    string `json:"code"`
-			Message string `json:"message"`
-		}
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON400 = &dest
-
-	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
-		var dest struct {
-			Code    string `json:"code"`
-			Message string `json:"message"`
-		}
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON404 = &dest
 
 	}
 
@@ -706,6 +655,15 @@ func ParseDeleteListResponse(rsp *http.Response) (*DeleteListResponse, error) {
 	}
 
 	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			Success bool `json:"success"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
 		var dest struct {
 			Code    string `json:"code"`
@@ -737,9 +695,11 @@ func ParseGetListByIdResponse(rsp *http.Response) (*GetListByIdResponse, error) 
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
-			Tasks *[]string `json:"tasks,omitempty"`
-			Title string    `json:"title"`
-			Uid   *string   `json:"uid,omitempty"`
+			CreatedAt time.Time `json:"created_at"`
+			Tasks     *[]string `json:"tasks,omitempty"`
+			Title     string    `json:"title"`
+			Uid       string    `json:"uid"`
+			UpdatedAt time.Time `json:"updated_at"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
@@ -771,20 +731,72 @@ func ParseGetListByIdResponse(rsp *http.Response) (*GetListByIdResponse, error) 
 	return response, nil
 }
 
+// ParseUpdateListResponse parses an HTTP response from a UpdateListWithResponse call
+func ParseUpdateListResponse(rsp *http.Response) (*UpdateListResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &UpdateListResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 204:
+		var dest struct {
+			CreatedAt time.Time `json:"created_at"`
+			Tasks     *[]string `json:"tasks,omitempty"`
+			Title     string    `json:"title"`
+			Uid       string    `json:"uid"`
+			UpdatedAt time.Time `json:"updated_at"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON204 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 400:
+		var dest struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON400 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 404:
+		var dest struct {
+			Code    string `json:"code"`
+			Message string `json:"message"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON404 = &dest
+
+	}
+
+	return response, nil
+}
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// Add a new list to the store
 	// (POST /api/v1/lists)
 	AddList(c *gin.Context)
-	// Update existing list
-	// (PUT /api/v1/lists)
-	UpdateList(c *gin.Context)
 	// Deletes a list
 	// (DELETE /api/v1/lists/{list_id})
-	DeleteList(c *gin.Context, listId string, params DeleteListParams)
+	DeleteList(c *gin.Context, listId string)
 	// Find list by ID
 	// (GET /api/v1/lists/{list_id})
 	GetListById(c *gin.Context, listId string)
+	// Update existing list
+	// (PUT /api/v1/lists/{list_id})
+	UpdateList(c *gin.Context, listId string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -806,16 +818,6 @@ func (siw *ServerInterfaceWrapper) AddList(c *gin.Context) {
 	siw.Handler.AddList(c)
 }
 
-// UpdateList operation middleware
-func (siw *ServerInterfaceWrapper) UpdateList(c *gin.Context) {
-
-	for _, middleware := range siw.HandlerMiddlewares {
-		middleware(c)
-	}
-
-	siw.Handler.UpdateList(c)
-}
-
 // DeleteList operation middleware
 func (siw *ServerInterfaceWrapper) DeleteList(c *gin.Context) {
 
@@ -830,35 +832,11 @@ func (siw *ServerInterfaceWrapper) DeleteList(c *gin.Context) {
 		return
 	}
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params DeleteListParams
-
-	headers := c.Request.Header
-
-	// ------------- Optional header parameter "api_key" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("api_key")]; found {
-		var ApiKey string
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandler(c, fmt.Errorf("Expected one value for api_key, got %d", n), http.StatusBadRequest)
-			return
-		}
-
-		err = runtime.BindStyledParameterWithLocation("simple", false, "api_key", runtime.ParamLocationHeader, valueList[0], &ApiKey)
-		if err != nil {
-			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter api_key: %s", err), http.StatusBadRequest)
-			return
-		}
-
-		params.ApiKey = &ApiKey
-
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 	}
 
-	siw.Handler.DeleteList(c, listId, params)
+	siw.Handler.DeleteList(c, listId)
 }
 
 // GetListById operation middleware
@@ -880,6 +858,27 @@ func (siw *ServerInterfaceWrapper) GetListById(c *gin.Context) {
 	}
 
 	siw.Handler.GetListById(c, listId)
+}
+
+// UpdateList operation middleware
+func (siw *ServerInterfaceWrapper) UpdateList(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "list_id" -------------
+	var listId string
+
+	err = runtime.BindStyledParameter("simple", false, "list_id", c.Param("list_id"), &listId)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter list_id: %s", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+	}
+
+	siw.Handler.UpdateList(c, listId)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -913,11 +912,11 @@ func RegisterHandlersWithOptions(router *gin.Engine, si ServerInterface, options
 
 	router.POST(options.BaseURL+"/api/v1/lists", wrapper.AddList)
 
-	router.PUT(options.BaseURL+"/api/v1/lists", wrapper.UpdateList)
-
 	router.DELETE(options.BaseURL+"/api/v1/lists/:list_id", wrapper.DeleteList)
 
 	router.GET(options.BaseURL+"/api/v1/lists/:list_id", wrapper.GetListById)
+
+	router.PUT(options.BaseURL+"/api/v1/lists/:list_id", wrapper.UpdateList)
 
 	return router
 }
@@ -930,15 +929,17 @@ type AddListResponseObject interface {
 	VisitAddListResponse(w http.ResponseWriter) error
 }
 
-type AddList200JSONResponse struct {
-	Tasks *[]string `json:"tasks,omitempty"`
-	Title string    `json:"title"`
-	Uid   *string   `json:"uid,omitempty"`
+type AddList201JSONResponse struct {
+	CreatedAt time.Time `json:"created_at"`
+	Tasks     *[]string `json:"tasks,omitempty"`
+	Title     string    `json:"title"`
+	Uid       string    `json:"uid"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func (response AddList200JSONResponse) VisitAddListResponse(w http.ResponseWriter) error {
+func (response AddList201JSONResponse) VisitAddListResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
+	w.WriteHeader(201)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -955,58 +956,23 @@ func (response AddList400JSONResponse) VisitAddListResponse(w http.ResponseWrite
 	return json.NewEncoder(w).Encode(response)
 }
 
-type UpdateListRequestObject struct {
-	Body *UpdateListJSONRequestBody
-}
-
-type UpdateListResponseObject interface {
-	VisitUpdateListResponse(w http.ResponseWriter) error
-}
-
-type UpdateList200JSONResponse struct {
-	Tasks *[]string `json:"tasks,omitempty"`
-	Title string    `json:"title"`
-	Uid   *string   `json:"uid,omitempty"`
-}
-
-func (response UpdateList200JSONResponse) VisitUpdateListResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type UpdateList400JSONResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
-func (response UpdateList400JSONResponse) VisitUpdateListResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type UpdateList404JSONResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
-func (response UpdateList404JSONResponse) VisitUpdateListResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
 type DeleteListRequestObject struct {
 	ListId string `json:"list_id"`
-	Params DeleteListParams
 }
 
 type DeleteListResponseObject interface {
 	VisitDeleteListResponse(w http.ResponseWriter) error
+}
+
+type DeleteList200JSONResponse struct {
+	Success bool `json:"success"`
+}
+
+func (response DeleteList200JSONResponse) VisitDeleteListResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type DeleteList404JSONResponse struct {
@@ -1030,9 +996,11 @@ type GetListByIdResponseObject interface {
 }
 
 type GetListById200JSONResponse struct {
-	Tasks *[]string `json:"tasks,omitempty"`
-	Title string    `json:"title"`
-	Uid   *string   `json:"uid,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	Tasks     *[]string `json:"tasks,omitempty"`
+	Title     string    `json:"title"`
+	Uid       string    `json:"uid"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 func (response GetListById200JSONResponse) VisitGetListByIdResponse(w http.ResponseWriter) error {
@@ -1066,20 +1034,68 @@ func (response GetListById404JSONResponse) VisitGetListByIdResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type UpdateListRequestObject struct {
+	ListId string `json:"list_id"`
+	Body   *UpdateListJSONRequestBody
+}
+
+type UpdateListResponseObject interface {
+	VisitUpdateListResponse(w http.ResponseWriter) error
+}
+
+type UpdateList204JSONResponse struct {
+	CreatedAt time.Time `json:"created_at"`
+	Tasks     *[]string `json:"tasks,omitempty"`
+	Title     string    `json:"title"`
+	Uid       string    `json:"uid"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func (response UpdateList204JSONResponse) VisitUpdateListResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(204)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateList400JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+func (response UpdateList400JSONResponse) VisitUpdateListResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type UpdateList404JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
+
+func (response UpdateList404JSONResponse) VisitUpdateListResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// Add a new list to the store
 	// (POST /api/v1/lists)
 	AddList(ctx context.Context, request AddListRequestObject) (AddListResponseObject, error)
-	// Update existing list
-	// (PUT /api/v1/lists)
-	UpdateList(ctx context.Context, request UpdateListRequestObject) (UpdateListResponseObject, error)
 	// Deletes a list
 	// (DELETE /api/v1/lists/{list_id})
 	DeleteList(ctx context.Context, request DeleteListRequestObject) (DeleteListResponseObject, error)
 	// Find list by ID
 	// (GET /api/v1/lists/{list_id})
 	GetListById(ctx context.Context, request GetListByIdRequestObject) (GetListByIdResponseObject, error)
+	// Update existing list
+	// (PUT /api/v1/lists/{list_id})
+	UpdateList(ctx context.Context, request UpdateListRequestObject) (UpdateListResponseObject, error)
 }
 
 type StrictHandlerFunc func(ctx *gin.Context, args interface{}) (interface{}, error)
@@ -1127,44 +1143,11 @@ func (sh *strictHandler) AddList(ctx *gin.Context) {
 	}
 }
 
-// UpdateList operation middleware
-func (sh *strictHandler) UpdateList(ctx *gin.Context) {
-	var request UpdateListRequestObject
-
-	var body UpdateListJSONRequestBody
-	if err := ctx.ShouldBind(&body); err != nil {
-		ctx.Status(http.StatusBadRequest)
-		ctx.Error(err)
-		return
-	}
-	request.Body = &body
-
-	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.UpdateList(ctx, request.(UpdateListRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "UpdateList")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		ctx.Error(err)
-	} else if validResponse, ok := response.(UpdateListResponseObject); ok {
-		if err := validResponse.VisitUpdateListResponse(ctx.Writer); err != nil {
-			ctx.Error(err)
-		}
-	} else if response != nil {
-		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
-	}
-}
-
 // DeleteList operation middleware
-func (sh *strictHandler) DeleteList(ctx *gin.Context, listId string, params DeleteListParams) {
+func (sh *strictHandler) DeleteList(ctx *gin.Context, listId string) {
 	var request DeleteListRequestObject
 
 	request.ListId = listId
-	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteList(ctx, request.(DeleteListRequestObject))
@@ -1212,21 +1195,56 @@ func (sh *strictHandler) GetListById(ctx *gin.Context, listId string) {
 	}
 }
 
+// UpdateList operation middleware
+func (sh *strictHandler) UpdateList(ctx *gin.Context, listId string) {
+	var request UpdateListRequestObject
+
+	request.ListId = listId
+
+	var body UpdateListJSONRequestBody
+	if err := ctx.ShouldBind(&body); err != nil {
+		ctx.Status(http.StatusBadRequest)
+		ctx.Error(err)
+		return
+	}
+	request.Body = &body
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.UpdateList(ctx, request.(UpdateListRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "UpdateList")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+	} else if validResponse, ok := response.(UpdateListResponseObject); ok {
+		if err := validResponse.VisitUpdateListResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("Unexpected response type: %T", response))
+	}
+}
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+xWTW/bMAz9KwLPXpJ+HIactqJoEXRDgS0FVgxFoVpMwtSWNJFu6wX+74PkJG0SYxs2",
-	"7DA0pzg0ST2Seo9eQO5K7yxaYRgumgzIThwMo92KziU+YqmpgOHK9O4uVNYVFX3vWRRoMjDIeSAv5CwM",
-	"YezeGKcKYlGltnqKJVqBDISkwPhe8z0GyOABA7chB71BbxAzOY9We4IhHPUGvSPIwGuZRWjQ1576Dwf9",
-	"mDgZvOMEb/P098YorSw+tgjEKZmhYnEBIeUPOnqOTOv7gThiC/itQpYTZ+pV8RH0cAHa+4LyFNOfczxi",
-	"AZzPsNQJQ4gZhTAhEs336YEEy9ZS+1gySyA7jQUuDToEXaf/bVMWgE+69Kk/H2sl6xZCtpujIrMZMajm",
-	"zI/j2eh8fHVdHl68PZtfXk6+yPXBxW5801ZLAQ0Mvy4B3Kzd3N0cc4Fm009ChcnA3lluqz0cDPa9Wvdq",
-	"8xZ+rvIcmSOC479qU+4MdjanRGY97Xq3BXrlmLW5fgf9eIZqyQiVSE+WFdkHXZBRZH0lnI7hqix1qH/J",
-	"OtFTjlDSkG6aDHzVwdwrb7SgwidiErLT1Uw3Odt67Wm7p+2etn9C21jZ8f9YGXvMaUJoVEB2VchRPWpW",
-	"1omauMqaLUV6oSYvxWRLipps87uiv4g/t2SaVp8KFNxVqtNkV7pbodq3S4XyOugSBUM8dQEUw2eoTfoA",
-	"srpMTPF0e481ZC+avtPCbQwxvyITpXYJM2uzxw+m59zLcmBbFX521s2WYryOC9OOjZ+nurO1ptixtT6h",
-	"VMHGMCY7LbD7TpyjxIGd1COzeyk2E45OlZus12hI6f/dbPfbYL8NXgG5z8iallN3tRqddiyCpvkRAAD/",
-	"/7pRyJcMDwAA",
+	"H4sIAAAAAAAC/+xX34vbRhD+V5Z5akGxfck9FD214UgwaTlIL9BQjrDWju1xpN3tzugc1+h/L7uSrrYs",
+	"iMOF0hA/WV7Nj29mvvnW3kPhKu8sWmHI900GZJcO8nhuRRcSH7HSVELeH/28CLV1ZU1/TywKNBkY5CKQ",
+	"F3IWcrhzz4xTJbGoSlu9wgqtQAZCUmJ8r/kjBsjgAQO3LleT2WQWIzmPVnuCHF5MZpMXkIHXso7QYKo9",
+	"TR+upjFwOvCOE7zj7L8Yo7SyuG0RiFOyRsXiAkKKH3S0nJvW9lfiiC3gXzWyvHRm1xcfQed70N6XVCSf",
+	"6YZjij1wscZKJwwhRhTChKircA/4SVc+FfvbTsljP2ITdj4eswSyK2iaNjUFNJD/2QW4fzRziw0WAs2x",
+	"nYQa0wF7Z7lN/Xx29QTgRUAtaD7o5Ll0oYpPYLTgM6EKT4FnIJo/JmcSrNryT0zaAx2C3qXvX9yfDGoy",
+	"xx6zesO8vVvPX9+9e189f/PTq83t7fIPeX/1ZtTfmy8sbTCTCKCHnh126ij2+MyOqfl7XRTIHFFdz2ZP",
+	"GZczONrwCpn1auzdoKjeMGtjnYP+bo2qWxOVlIAsK7IPuiSjyPpaOKXhuqp02H12FUWvOEJJg7+Pnkcb",
+	"Pt3Hjw9kmnbHSxQ83fabdK50T5/j/W7fdivuddAVCoaYdRgn2igyEWOXKioh5El+IAOrq9idDhIMtzE7",
+	"GNWw8fcnm/qU0XPHoXOWaOFcidqeDL+Pcc7Ub/uGqiVZ4jUatSVZqy6G+sE61ZXyY0vs62+R2OyxoCWh",
+	"UQHZ1aFAtdWsrBO1dLU1A2a3xOJ/eTcgcwYrHLmb3qLUwUY3JrsqcZy1r1EiHV/u5uZztJ3fKLd83K6Q",
+	"wv9fmXu5Yy53zFe5Y74XkXlF1rS7vdip+c2Yyvh6RGXeJcYo/ERMQnY1rjKt1Tl349sebMLwNbXlm//N",
+	"fX3Rw4seXvTwv9HDA107lLXh/4im+ScAAP//qGTYLdUQAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
