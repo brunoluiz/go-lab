@@ -5,6 +5,7 @@ import (
 
 	"github.com/brunoluiz/go-lab/core/app"
 	"github.com/brunoluiz/go-lab/core/storage/postgres"
+	"github.com/brunoluiz/go-lab/core/xgin"
 	"github.com/brunoluiz/go-lab/core/xlog"
 	"github.com/brunoluiz/go-lab/services/apollo/internal/handler"
 	"github.com/brunoluiz/go-lab/services/apollo/internal/repo"
@@ -14,7 +15,7 @@ import (
 
 type config struct {
 	app.CommonConfig
-	HTTP app.HTTPConfig
+	HTTP xgin.HTTPConfig
 	DB   postgres.EnvConfig
 }
 
@@ -37,8 +38,8 @@ func main() {
 		return
 	}
 
-	r := app.NewGin()
-	handler.Register(r, repo.New(db))
+	r := xgin.New(logger)
+	handler.Register(r, repo.New(db), logger)
 
 	logger.Info(fmt.Sprintf("listening at %s", c.HTTP.GetAddress()))
 	r.Run(c.HTTP.GetAddress())
