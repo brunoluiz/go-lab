@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title: Tasker
+  title: To-do
   description: To-do list management
   contact:
     email: contact@brunoluiz.net

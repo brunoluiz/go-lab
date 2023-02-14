@@ -1,8 +1,8 @@
 package handler
 
 import (
-	"github.com/brunoluiz/go-lab/services/apollo/gen/openapi"
-	"github.com/brunoluiz/go-lab/services/apollo/internal/repo"
+	"github.com/brunoluiz/go-lab/services/todo/gen/openapi"
+	"github.com/brunoluiz/go-lab/services/todo/internal/repo"
 	middleware "github.com/deepmap/oapi-codegen/pkg/gin-middleware"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/exp/slog"
