@@ -1,0 +1,181 @@
+openapi: 3.0.3
+info:
+  title: To-do
+  description: To-do list management
+  contact:
+    email: contact@brunoluiz.net
+  version: 1.0.0
+paths:
+  /api/v1/lists:
+    post:
+      tags: [list]
+      summary: Add a new list to the store
+      description: Add a new list to the store
+      operationId: addList
+      requestBody:
+        $ref: '#/components/requestBodies/AddList'
+      responses:
+        '201':
+          $ref: '#/components/responses/AddList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+  /api/v1/lists/{list_id}:
+    get:
+      tags: [list]
+      summary: Find list by ID
+      description: Returns a single list
+      operationId: getListById
+      parameters:
+        - name: list_id
+          in: path
+          description: ID of list to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/GetListById'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [list]
+      summary: Deletes a list
+      description: Delete a list
+      operationId: deleteList
+      parameters:
+        - name: list_id
+          in: path
+          description: List id to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: '#/components/responses/Operation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      tags: [list]
+      summary: Update existing list
+      description: Update exisiting list
+      operationId: updateList
+      parameters:
+        - name: list_id
+          in: path
+          description: Resource ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateList'
+      responses:
+        '200':
+          $ref: '#/components/responses/UpdateList'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  schemas:
+    Error:
+      required: [message, code]
+      type: object
+      properties:
+        message:
+          type: string
+        code:
+          type: string
+    List:
+      required:
+        - uniq_id
+        - title
+        - created_at
+        - updated_at
+      type: object
+      properties:
+        uniq_id:
+          type: string
+          example: 0ujsswThIGTUYm2K8FjOOfXtY1K
+        title:
+          type: string
+          example: My to-do list
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        tasks:
+          type: array
+          items:
+            type: string
+
+  responses:
+    Operation:
+      description: Operation finished with success (no content)
+      content:
+        application/json:
+          schema:
+            required: [success]
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: My to-do list
+    NotFound:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: The request contains invalid inputs
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    GetListById:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/List'
+    AddList:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/List'
+    UpdateList:
+      description: Success
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/List'
+
+  requestBodies:
+    AddList:
+      required: true
+      content:
+        application/json:
+          schema:
+            required: [title]
+            type: object
+            properties:
+              title:
+                type: string
+                example: My to-do list
+    UpdateList:
+      required: true
+      content:
+        application/json:
+          schema:
+            required: [title]
+            type: object
+            properties:
+              title:
+                type: string
+                example: My to-do list
