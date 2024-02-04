@@ -21,5 +21,5 @@ func Register(r *gin.Engine, repo repo.Querier, log *slog.Logger) {
 	r.Use(
 		middleware.OapiRequestValidator(schema),
 	)
-	r = openapi.RegisterHandlers(r, h)
+	openapi.RegisterHandlers(r, h)
 }

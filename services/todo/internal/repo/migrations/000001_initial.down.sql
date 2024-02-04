@@ -1,2 +1,3 @@
-drop table tasks;
-drop table lists;
+drop table radar_items;
+drop table radar_quadrants;
+drop table radars;

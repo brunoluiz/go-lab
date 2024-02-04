@@ -9,14 +9,10 @@ import (
 )
 
 type Querier interface {
-	DeleteList(ctx context.Context, uniqID string) error
-	DeleteTask(ctx context.Context, uniqID string) error
-	GetListByID(ctx context.Context, uniqID string) (List, error)
-	GetLists(ctx context.Context) (List, error)
-	GetTaskByID(ctx context.Context, uniqID string) (Task, error)
-	GetTasks(ctx context.Context) ([]Task, error)
-	SaveList(ctx context.Context, arg SaveListParams) (List, error)
-	SaveTask(ctx context.Context, arg SaveTaskParams) (Task, error)
+	DeleteRadar(ctx context.Context, uniqID string) error
+	GetRadarByID(ctx context.Context, uniqID string) (Radar, error)
+	GetRadars(ctx context.Context) ([]Radar, error)
+	SaveRadar(ctx context.Context, arg SaveRadarParams) (Radar, error)
 }
 
 var _ Querier = (*Queries)(nil)
