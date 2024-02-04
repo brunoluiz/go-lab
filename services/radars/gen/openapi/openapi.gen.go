@@ -30,10 +30,20 @@ type Error struct {
 
 // Radar defines model for Radar.
 type Radar struct {
-	CreatedAt time.Time `json:"created_at"`
-	Title     string    `json:"title"`
-	UniqId    string    `json:"uniq_id"`
-	UpdatedAt time.Time `json:"updated_at"`
+	CreatedAt time.Time    `json:"created_at"`
+	Items     *[]RadarItem `json:"items,omitempty"`
+	Title     string       `json:"title"`
+	UniqId    string       `json:"uniq_id"`
+	UpdatedAt time.Time    `json:"updated_at"`
+}
+
+// RadarItem defines model for RadarItem.
+type RadarItem struct {
+	CreatedAt   time.Time `json:"created_at"`
+	Description string    `json:"description"`
+	Name        string    `json:"name"`
+	UniqId      string    `json:"uniq_id"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // AddRadarOut defines model for AddRadarOut.
@@ -515,21 +525,21 @@ func (sh *strictHandler) UpdateRadar(ctx *gin.Context, radarId string) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/9SW34rjNhTGX0Wc9qIFNU5296LkqjtMZwlLG0hnocsSBsU6ThRsSSvJk00Hv3uRZGds",
-	"xyHNdEjplYX+HH36fUc6foJUFVpJlM7C9AkMfi3RuhvFBYaO95wvGGfGt1MlHUrnm0zrXKTMCSWTrVXS",
-	"99l0gwXzLW2URuPqEE64HH0Dv7FC+yb8ticmRKXg9tr3WGeEXENV0aBBGOQw/VKvXR6mqdUWUwdVd54z",
-	"JVYUPmnOHP5P5IYeq5W0XdDz0l0k/nuDGUzhu+TZyCSO2iSiCLtztKkR2geBKfxRpilaCxWFG8YX0fRX",
-	"2/ZXY9TgtvcbJHWGEb8TE9ISIR9ZLjgRUpcuSPqALii/2c/4tXH8rtydKiW/DgyrMRWZQE4MWlWaFMmO",
-	"WSKVI1lQUVGYazQsrnlxTtv6gGeyeqVUjkwepXWzfDixu8c6yCWZkMJukJOdcBtSxyA/SEXqU/wI3Ut7",
-	"Xa8rWocKWKJNR+BSxcNb0Lv2FAq0lq2Hxnrsmok0xjpGSOHwYvX2Nsgc8gcWUGTKFL4FHtdPThR4/BrR",
-	"yx4vCqUUXx8E7y4Yl1trd/eb2Yf7T5+LNx9/vtvO59mf7vPk42CMYOAlMnuEGhGNeto+eSf+cP4Jmakm",
-	"b1gaVGDBRA7TpuuXlSmlykvx10hiQN67iphuIiRSMMnWWPj8O9CM44sa4iMaG5dNRuPR2EdTGiXTAqbw",
-	"djQevQUKmrlNMDFhWiSPkyREDz1axae2K+E954QRibuDWaq5SDMexxsBzzV6f+oWdMp4cljbrzlvxpPT",
-	"Eep5SbswVRTejcfn17SKSrhnZVEwsx88pmNr67OgBrT087vQkqfwfRC8itxydHhM8Db0E3YCYBxuGGpm",
-	"WIEOvSVf+pHCJCI4cYrUu/ksg2mwFShIVvi0aGRBv7jT1iPVz/3lkQf/gOdzDQgOvDu/4lDHuvwjBdui",
-	"1OEPy4rCGgfyc4GuNNIvtEKuczxBuV26z2Ge3RKV1dfOKWLCDv816f6/x0sy/t9ZdCckr6ms9mR2O+iR",
-	"Lgc8iqWU4DdhhRNyfcKj9m/yGYvmpYt/JUHGqxpz4RvWFl29xNjef8b1fW250zGnb25VVX8HAAD//0gA",
-	"JBaWDQAA",
+	"H4sIAAAAAAAC/9RXUW/bNhD+K8RtDxvAWU7bh8FPa5ClMIrNQJYCK4oguIhnm4FFMuQpqRfovw+kJMeS",
+	"ZXjOgmx9CkPyjh+/7+Pp/Ai5LZw1ZDjA5BE83ZUU+NQqTWnivVIXqNDHcW4Nk+E4ROdWOkfW1mS3wZo4",
+	"F/IlFRhHzltHnpsUrHlFcUBfsXBxCL+thU9ZJfDaxZnAXpsFVJVMGLQnBZMvTezVZpu9uaWcoeruY19S",
+	"JeGTU8j0jcBNM8FZE7pEz0o+Cvz3nuYwge+yJyGzejVkNRXpdEUh99rFJDCBP8o8pxCgknCK6qIW/cWO",
+	"/dV7O3js5ZJE4zART0JtgtDmHldaCW1cyQnSB+KE/HQ9Va9Nx++Wz21p1OuQERzleq5JCU/Blj4n8YBB",
+	"GMtinlBUEmaOPNYxz/Z0aC54wNU31q4IzY6t2/BhY3evtYEr5trosCQlHjQvRZND/GCsaG7xI3Qf7etq",
+	"XckmVaKllmmHuNyqVAt6z15CQSHgYmitx127Uda5dimUsKlYvbM9IZO6xkTF3PoijiDS9RPrgnarkQTN",
+	"VKTgzeAgSVOmIoY2udB7XKf/j6mDEkqj76616gaMy9sQHi6X0w+Xnz4Xbz7+fH47m83/5M8nHwdzJC8c",
+	"c+Me2S2IFr3cJrGTf68OiY4X0aLjuwELGSyGvfU/ozLh7F5Hwl2JyqPhoyiOZ2gzt+0rxzyhowL1Cibt",
+	"1C83vjR2Veq/RoYYdgsn5cvah6JAgwsqKOFoDFuvXzQ+vScf6rCT0Xg0jtmsI4NOwwTejsajtyDBIS+T",
+	"zBk6nd2fZCl7mnG2/jB2IbxXSqAw9LB5D7Yte1NVr7cAnjqq9b7n2Gm6sk1sv0N4Mz7Zn6HZl223EZWE",
+	"d+Px4ZitFiBVxbIo0K8Hr8m4CNEdDUFXcX+XtOwx/b3Wqqp5WxHTLoNnaV7gHgLr5ZZDhx4LYoqSfOln",
+	"SpuEVoKtaE6LLoNJkrX17wRaWNBvxeTWJ6X/Jq52NPgHfD59sZMC7w5HbLqOLv81C2GLpQ7/cFVJWNCA",
+	"Py+IS29iYNBmsaI9LG83Wodonp4JO2+eHVvh0wn/NdP9TvE5jv93Ep1roxpWbtZiejaokSsHNKobH0Ff",
+	"ddCszWKPRts/ag5INCu57iETjBcV5sgatg26eo6wva7w9XXdUqcjTl/cqqr+DgAA//8W+ZQeRA8AAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
