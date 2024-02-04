@@ -13,7 +13,7 @@ import (
 )
 
 type EnvConfig struct {
-	DSN string `envconfig:"db_dsn"`
+	DSN string `envconfig:"db_dsn" required:"true"`
 }
 
 type config struct {

@@ -11,6 +11,11 @@ import (
 func ErrorHandler(log *slog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
+		if len(c.Errors) == 0 {
+			c.Next()
+			return
+		}
+
 		l := log.
 			With("path", c.FullPath()).
 			With("client_ip", c.ClientIP())

@@ -10,7 +10,7 @@ CREATE TABLE radars (
 
 CREATE TABLE radar_quadrants (
   id SERIAL PRIMARY KEY,
-  radar_id TEXT NOT NULL REFERENCES radars(id),
+  radar_id INTEGER NOT NULL REFERENCES radars(id),
 
   name TEXT NOT NULL
 );
@@ -21,7 +21,8 @@ CREATE TABLE radar_items (
   radar_id INTEGER NOT NULL REFERENCES radars(id),
   quadrant_id INTEGER NOT NULL REFERENCES radar_quadrants(id),
 
-  title TEXT NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT NOT NULL,
 
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
   created_at TIMESTAMP NOT NULL DEFAULT NOW()
