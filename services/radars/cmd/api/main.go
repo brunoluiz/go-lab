@@ -7,8 +7,8 @@ import (
 	"github.com/brunoluiz/go-lab/core/storage/postgres"
 	"github.com/brunoluiz/go-lab/core/xgin"
 	"github.com/brunoluiz/go-lab/core/xlog"
-	"github.com/brunoluiz/go-lab/services/todo/internal/handler"
-	"github.com/brunoluiz/go-lab/services/todo/internal/repo"
+	"github.com/brunoluiz/go-lab/services/radars/internal/handler"
+	"github.com/brunoluiz/go-lab/services/radars/internal/repo"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/kelseyhightower/envconfig"
 )
@@ -23,7 +23,7 @@ func main() {
 	logger := xlog.New()
 
 	var c config
-	err := envconfig.Process("todo_api", &c)
+	err := envconfig.Process("radars_api", &c)
 	if err != nil {
 		logger.Error("problem reading envconfig", err)
 		return

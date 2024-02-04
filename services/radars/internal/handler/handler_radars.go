@@ -6,8 +6,8 @@ import (
 	"errors"
 
 	"github.com/brunoluiz/go-lab/core/app"
-	"github.com/brunoluiz/go-lab/services/todo/gen/openapi"
-	"github.com/brunoluiz/go-lab/services/todo/internal/repo"
+	"github.com/brunoluiz/go-lab/services/radars/gen/openapi"
+	"github.com/brunoluiz/go-lab/services/radars/internal/repo"
 	"github.com/segmentio/ksuid"
 )
 
