@@ -2,6 +2,10 @@
 
 These are notes I am gathering from my experiments.
 
+# 2024-02-04
+
+- Added `tools.go` to pin dependency versions
+
 ## 2023-02-14
 
 - Created a `app.Err*`: is going to be useful to standardise errors across application
