@@ -20,7 +20,7 @@ func WithEnv(env app.Env) func(*config) {
 type Options func(*config)
 
 func New(opts ...Options) *slog.Logger {
-	o := slog.HandlerOptions{
+	o := &slog.HandlerOptions{
 		Level: slog.LevelDebug,
 	}
 
@@ -32,10 +32,13 @@ func New(opts ...Options) *slog.Logger {
 		opt(c)
 	}
 
+	var h slog.Handler
 	switch c.env {
 	case app.EnvProduction:
-		return slog.New(o.NewJSONHandler(os.Stdout))
+		h = slog.NewJSONHandler(os.Stdout, o)
 	default:
-		return slog.New(o.NewTextHandler(os.Stdout))
+		h = slog.NewTextHandler(os.Stdout, o)
 	}
+
+	return slog.New(h)
 }

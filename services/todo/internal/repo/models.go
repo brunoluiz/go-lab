@@ -5,69 +5,29 @@
 package repo
 
 import (
-	"database/sql/driver"
-	"fmt"
 	"time"
 )
 
-type TaskStatus string
-
-const (
-	TaskStatusCompleted TaskStatus = "completed"
-	TaskStatusPending   TaskStatus = "pending"
-)
-
-func (e *TaskStatus) Scan(src interface{}) error {
-	switch s := src.(type) {
-	case []byte:
-		*e = TaskStatus(s)
-	case string:
-		*e = TaskStatus(s)
-	default:
-		return fmt.Errorf("unsupported scan type for TaskStatus: %T", src)
-	}
-	return nil
-}
-
-type NullTaskStatus struct {
-	TaskStatus TaskStatus `json:"task_status"`
-	Valid      bool       `json:"valid"` // Valid is true if TaskStatus is not NULL
-}
-
-// Scan implements the Scanner interface.
-func (ns *NullTaskStatus) Scan(value interface{}) error {
-	if value == nil {
-		ns.TaskStatus, ns.Valid = "", false
-		return nil
-	}
-	ns.Valid = true
-	return ns.TaskStatus.Scan(value)
-}
-
-// Value implements the driver Valuer interface.
-func (ns NullTaskStatus) Value() (driver.Value, error) {
-	if !ns.Valid {
-		return nil, nil
-	}
-	return string(ns.TaskStatus), nil
-}
-
-type List struct {
-	ID        int32     `json:"-"`
+type Radar struct {
+	ID        int32     `json:"id"`
 	UniqID    string    `json:"uniq_id"`
 	Title     string    `json:"title"`
-	Position  int32     `json:"position"`
 	UpdatedAt time.Time `json:"updated_at"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
-type Task struct {
-	ID         int32      `json:"id"`
-	UniqID     string     `json:"uniq_id"`
-	TaskUniqID string     `json:"task_uniq_id"`
-	Title      string     `json:"title"`
-	Position   int32      `json:"position"`
-	Status     TaskStatus `json:"status"`
-	UpdatedAt  time.Time  `json:"updated_at"`
-	CreatedAt  time.Time  `json:"created_at"`
+type RadarItem struct {
+	ID         int32     `json:"id"`
+	UniqID     string    `json:"uniq_id"`
+	RadarID    int32     `json:"radar_id"`
+	QuadrantID int32     `json:"quadrant_id"`
+	Title      string    `json:"title"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	CreatedAt  time.Time `json:"created_at"`
+}
+
+type RadarQuadrant struct {
+	ID      int32  `json:"id"`
+	RadarID string `json:"radar_id"`
+	Name    string `json:"name"`
 }

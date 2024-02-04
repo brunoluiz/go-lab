@@ -1,53 +1,53 @@
 openapi: 3.0.3
 info:
-  title: To-do
-  description: To-do list management
+  title: Tech Radar
+  description: Tech radar management
   contact:
     email: contact@brunoluiz.net
   version: 1.0.0
 paths:
-  /api/v1/lists:
+  /api/v1/radars:
     post:
-      tags: [list]
-      summary: Add a new list to the store
-      description: Add a new list to the store
-      operationId: addList
+      tags: [radars]
+      summary: Add a new radar
+      description: Add a new radar
+      operationId: addRadar
       requestBody:
-        $ref: '#/components/requestBodies/AddList'
+        $ref: '#/components/requestBodies/AddRadar'
       responses:
         '201':
-          $ref: '#/components/responses/AddList'
+          $ref: '#/components/responses/AddRadarOut'
         '400':
           $ref: '#/components/responses/BadRequest'
-  /api/v1/lists/{list_id}:
+  /api/v1/radars/{radar_id}:
     get:
-      tags: [list]
-      summary: Find list by ID
-      description: Returns a single list
-      operationId: getListById
+      tags: [radar]
+      summary: Find radar by ID
+      description: Returns a single radar
+      operationId: getRadarById
       parameters:
-        - name: list_id
+        - name: radar_id
           in: path
-          description: ID of list to return
+          description: ID of radar to return
           required: true
           schema:
             type: string
       responses:
         '200':
-          $ref: '#/components/responses/GetListById'
+          $ref: '#/components/responses/GetRadarByIdOut'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
     delete:
-      tags: [list]
-      summary: Deletes a list
-      description: Delete a list
-      operationId: deleteList
+      tags: [radar]
+      summary: Deletes a radar
+      description: Delete a radar
+      operationId: deleteRadar
       parameters:
-        - name: list_id
+        - name: radar_id
           in: path
-          description: List id to delete
+          description: Radar id to delete
           required: true
           schema:
             type: string
@@ -57,22 +57,22 @@ paths:
         '404':
           $ref: '#/components/responses/NotFound'
     put:
-      tags: [list]
-      summary: Update existing list
-      description: Update exisiting list
-      operationId: updateList
+      tags: [radar]
+      summary: Update existing radar
+      description: Update exisiting radar
+      operationId: updateRadar
       parameters:
-        - name: list_id
+        - name: radar_id
           in: path
-          description: Resource ID
+          description: Outource ID
           required: true
           schema:
             type: string
       requestBody:
-        $ref: '#/components/requestBodies/UpdateList'
+        $ref: '#/components/requestBodies/UpdateRadar'
       responses:
         '200':
-          $ref: '#/components/responses/UpdateList'
+          $ref: '#/components/responses/UpdateRadarOut'
         '400':
           $ref: '#/components/responses/BadRequest'
         '404':
@@ -88,7 +88,7 @@ components:
           type: string
         code:
           type: string
-    List:
+    Radar:
       required:
         - uniq_id
         - title
@@ -101,17 +101,13 @@ components:
           example: 0ujsswThIGTUYm2K8FjOOfXtY1K
         title:
           type: string
-          example: My to-do list
+          example: My radar
         created_at:
           type: string
           format: date-time
         updated_at:
           type: string
           format: date-time
-        tasks:
-          type: array
-          items:
-            type: string
 
   responses:
     Operation:
@@ -124,7 +120,7 @@ components:
             properties:
               success:
                 type: boolean
-                example: My to-do list
+                example: My radar
     NotFound:
       description: The specified resource was not found
       content:
@@ -137,27 +133,27 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    GetListById:
+    GetRadarByIdOut:
       description: Success
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/List'
-    AddList:
+            $ref: '#/components/schemas/Radar'
+    AddRadarOut:
       description: Success
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/List'
-    UpdateList:
+            $ref: '#/components/schemas/Radar'
+    UpdateRadarOut:
       description: Success
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/List'
+            $ref: '#/components/schemas/Radar'
 
   requestBodies:
-    AddList:
+    AddRadar:
       required: true
       content:
         application/json:
@@ -167,8 +163,8 @@ components:
             properties:
               title:
                 type: string
-                example: My to-do list
-    UpdateList:
+                example: My radar
+    UpdateRadar:
       required: true
       content:
         application/json:
@@ -178,4 +174,4 @@ components:
             properties:
               title:
                 type: string
-                example: My to-do list
+                example: My radar

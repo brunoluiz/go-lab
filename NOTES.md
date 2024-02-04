@@ -5,6 +5,15 @@ These are notes I am gathering from my experiments.
 # 2024-02-04
 
 - Added `tools.go` to pin dependency versions
+- Changing things to Tech Radar, as it will probably be a more palpable example
+  - Requires routes and UI
+  - New routes would be:
+    - `GET /api/v1/radars`: get all radars available
+    - `POST /api/v1/radars`: create a new radar
+    - `PUT /api/v1/radar/{}`: update existing radar settings (eg: quadradants, name, labels)
+    - `PUT /api/v1/radar/{}/items`: update full items list (should be in a separate table)
+    - `GET /api/v1/radar/{}`: fetch radar + items
+- While renaming openapi schema, I've noticed that using the same name for the request and response body leads to conflicts. I suffixed all the responses with `Out` to sort this.
 
 ## 2023-02-14
 

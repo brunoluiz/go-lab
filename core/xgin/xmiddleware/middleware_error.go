@@ -11,7 +11,7 @@ import (
 func ErrorHandler(log *slog.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
-		l := log.WithContext(c.Request.Context()).
+		l := log.
 			With("path", c.FullPath()).
 			With("client_ip", c.ClientIP())
 
@@ -27,7 +27,7 @@ func ErrorHandler(log *slog.Logger) gin.HandlerFunc {
 			}
 		}
 
-		l.Error("Unknown unmapped error", &app.ErrUnknown{})
+		l.ErrorContext(c.Request.Context(), "Unknown unmapped error", &app.ErrUnknown{})
 		c.JSON(500, map[string]string{"message": "Internal error"})
 	}
 }
