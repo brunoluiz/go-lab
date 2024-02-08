@@ -10,6 +10,7 @@ CREATE TABLE radars (
 
 CREATE TABLE radar_quadrants (
   id SERIAL PRIMARY KEY,
+  uniq_id TEXT UNIQUE NOT NULL,
   radar_id INTEGER NOT NULL REFERENCES radars(id),
 
   name TEXT NOT NULL

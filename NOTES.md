@@ -2,6 +2,10 @@
 
 These are notes I am gathering from my experiments.
 
+# 2024-02-07
+
+- Trying to refresh my mind on how to `sqlc` and do transactions
+
 # 2024-02-04
 
 - Added `tools.go` to pin dependency versions

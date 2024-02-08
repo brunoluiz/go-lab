@@ -12,26 +12,36 @@ import (
 )
 
 func (h *Handler) AddRadar(ctx context.Context, req openapi.AddRadarRequestObject) (openapi.AddRadarResponseObject, error) {
-	out, err := h.repo.SaveRadar(ctx, repo.SaveRadarParams{
-		UniqID: ksuid.New().String(),
-		Title:  req.Body.Title,
+	var res openapi.AddRadarOutJSONResponse
+
+	err := h.WithTx(func(tx repo.Querier) error {
+		radar, err := tx.SaveRadar(ctx, repo.SaveRadarParams{
+			UniqID: ksuid.New().String(),
+			Title:  req.Body.Title,
+		})
+		if err != nil {
+			return err
+		}
+		res = openapi.AddRadarOutJSONResponse{
+			Title:     radar.Title,
+			UniqId:    radar.UniqID,
+			CreatedAt: radar.CreatedAt,
+			UpdatedAt: radar.UpdatedAt,
+		}
+
+		return nil
 	})
 	if err != nil {
-		return nil, err
+		return openapi.AddRadar201JSONResponse{}, err
 	}
 
 	return openapi.AddRadar201JSONResponse{
-		AddRadarOutJSONResponse: openapi.AddRadarOutJSONResponse{
-			Title:     out.Title,
-			UniqId:    out.UniqID,
-			CreatedAt: out.CreatedAt,
-			UpdatedAt: out.UpdatedAt,
-		},
+		AddRadarOutJSONResponse: res,
 	}, nil
 }
 
 func (h *Handler) UpdateRadar(ctx context.Context, req openapi.UpdateRadarRequestObject) (openapi.UpdateRadarResponseObject, error) {
-	out, err := h.repo.SaveRadar(ctx, repo.SaveRadarParams{
+	out, err := h.Repo.SaveRadar(ctx, repo.SaveRadarParams{
 		UniqID: req.RadarId,
 		Title:  req.Body.Title,
 	})
@@ -53,7 +63,7 @@ func (h *Handler) UpdateRadar(ctx context.Context, req openapi.UpdateRadarReques
 }
 
 func (h *Handler) DeleteRadar(ctx context.Context, req openapi.DeleteRadarRequestObject) (openapi.DeleteRadarResponseObject, error) {
-	err := h.repo.DeleteRadar(ctx, req.RadarId)
+	err := h.Repo.DeleteRadar(ctx, req.RadarId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, &app.ErrNotFound{}
@@ -69,7 +79,7 @@ func (h *Handler) DeleteRadar(ctx context.Context, req openapi.DeleteRadarReques
 }
 
 func (h *Handler) GetRadarById(ctx context.Context, req openapi.GetRadarByIdRequestObject) (openapi.GetRadarByIdResponseObject, error) {
-	out, err := h.repo.GetRadarByID(ctx, req.RadarId)
+	out, err := h.Repo.GetRadarByID(ctx, req.RadarId)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, &app.ErrNotFound{}

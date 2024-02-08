@@ -10,12 +10,16 @@ import (
 
 type Handler struct {
 	openapi.StrictServerInterface
-
-	repo repo.Querier
+	Repo   repo.Querier
+	WithTx repo.Tx
 }
 
-func Register(r *gin.Engine, repo repo.Querier, log *slog.Logger) {
-	h := openapi.NewStrictHandler(&Handler{repo: repo}, []openapi.StrictMiddlewareFunc{})
+func Register(
+	r *gin.Engine,
+	handler *Handler,
+	log *slog.Logger,
+) {
+	h := openapi.NewStrictHandler(handler, []openapi.StrictMiddlewareFunc{})
 
 	schema, _ := openapi.GetSwagger()
 	r.Use(
