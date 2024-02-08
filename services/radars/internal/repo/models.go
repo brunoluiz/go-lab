@@ -29,6 +29,7 @@ type RadarItem struct {
 
 type RadarQuadrant struct {
 	ID      int32  `json:"id"`
-	RadarID string `json:"radar_id"`
+	UniqID  string `json:"uniq_id"`
+	RadarID int32  `json:"radar_id"`
 	Name    string `json:"name"`
 }

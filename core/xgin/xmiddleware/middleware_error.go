@@ -32,7 +32,10 @@ func ErrorHandler(log *slog.Logger) gin.HandlerFunc {
 			}
 		}
 
-		l.ErrorContext(c.Request.Context(), "Unknown unmapped error", &app.ErrUnknown{})
+		l.ErrorContext(c.Request.Context(),
+			"Unknown unmapped error",
+			"error", c.Errors,
+		)
 		c.JSON(500, map[string]string{"message": "Internal error"})
 	}
 }
