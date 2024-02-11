@@ -22,60 +22,6 @@ import (
 	strictgin "github.com/oapi-codegen/runtime/strictmiddleware/gin"
 )
 
-// Error defines model for Error.
-type Error struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-}
-
-// Radar defines model for Radar.
-type Radar struct {
-	CreatedAt time.Time    `json:"created_at"`
-	Items     *[]RadarItem `json:"items,omitempty"`
-	Title     string       `json:"title"`
-	UniqId    string       `json:"uniq_id"`
-	UpdatedAt time.Time    `json:"updated_at"`
-}
-
-// RadarItem defines model for RadarItem.
-type RadarItem struct {
-	CreatedAt   time.Time `json:"created_at"`
-	Description string    `json:"description"`
-	Name        string    `json:"name"`
-	UniqId      string    `json:"uniq_id"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
-
-// AddRadarOut defines model for AddRadarOut.
-type AddRadarOut = Radar
-
-// BadRequest defines model for BadRequest.
-type BadRequest = Error
-
-// GetRadarByIdOut defines model for GetRadarByIdOut.
-type GetRadarByIdOut = Radar
-
-// NotFound defines model for NotFound.
-type NotFound = Error
-
-// Operation defines model for Operation.
-type Operation struct {
-	Success bool `json:"success"`
-}
-
-// UpdateRadarOut defines model for UpdateRadarOut.
-type UpdateRadarOut = Radar
-
-// AddRadar defines model for AddRadar.
-type AddRadar struct {
-	Title string `json:"title"`
-}
-
-// UpdateRadar defines model for UpdateRadar.
-type UpdateRadar struct {
-	Title string `json:"title"`
-}
-
 // AddRadarJSONBody defines parameters for AddRadar.
 type AddRadarJSONBody struct {
 	Title string `json:"title"`
@@ -235,20 +181,6 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/api/v1/radars/:radar_id", wrapper.UpdateRadar)
 }
 
-type AddRadarOutJSONResponse Radar
-
-type BadRequestJSONResponse Error
-
-type GetRadarByIdOutJSONResponse Radar
-
-type NotFoundJSONResponse Error
-
-type OperationJSONResponse struct {
-	Success bool `json:"success"`
-}
-
-type UpdateRadarOutJSONResponse Radar
-
 type AddRadarRequestObject struct {
 	Body *AddRadarJSONRequestBody
 }
@@ -257,7 +189,19 @@ type AddRadarResponseObject interface {
 	VisitAddRadarResponse(w http.ResponseWriter) error
 }
 
-type AddRadar201JSONResponse struct{ AddRadarOutJSONResponse }
+type AddRadar201JSONResponse struct {
+	CreatedAt time.Time `json:"created_at"`
+	Items     *[]struct {
+		CreatedAt   time.Time `json:"created_at"`
+		Description string    `json:"description"`
+		Name        string    `json:"name"`
+		UniqId      string    `json:"uniq_id"`
+		UpdatedAt   time.Time `json:"updated_at"`
+	} `json:"items,omitempty"`
+	Title     string    `json:"title"`
+	UniqId    string    `json:"uniq_id"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
 
 func (response AddRadar201JSONResponse) VisitAddRadarResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -266,7 +210,10 @@ func (response AddRadar201JSONResponse) VisitAddRadarResponse(w http.ResponseWri
 	return json.NewEncoder(w).Encode(response)
 }
 
-type AddRadar400JSONResponse struct{ BadRequestJSONResponse }
+type AddRadar400JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response AddRadar400JSONResponse) VisitAddRadarResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -283,7 +230,9 @@ type DeleteRadarResponseObject interface {
 	VisitDeleteRadarResponse(w http.ResponseWriter) error
 }
 
-type DeleteRadar200JSONResponse struct{ OperationJSONResponse }
+type DeleteRadar200JSONResponse struct {
+	Success bool `json:"success"`
+}
 
 func (response DeleteRadar200JSONResponse) VisitDeleteRadarResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -292,7 +241,10 @@ func (response DeleteRadar200JSONResponse) VisitDeleteRadarResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
-type DeleteRadar404JSONResponse struct{ NotFoundJSONResponse }
+type DeleteRadar404JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response DeleteRadar404JSONResponse) VisitDeleteRadarResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -309,7 +261,19 @@ type GetRadarByIdResponseObject interface {
 	VisitGetRadarByIdResponse(w http.ResponseWriter) error
 }
 
-type GetRadarById200JSONResponse struct{ GetRadarByIdOutJSONResponse }
+type GetRadarById200JSONResponse struct {
+	CreatedAt time.Time `json:"created_at"`
+	Items     *[]struct {
+		CreatedAt   time.Time `json:"created_at"`
+		Description string    `json:"description"`
+		Name        string    `json:"name"`
+		UniqId      string    `json:"uniq_id"`
+		UpdatedAt   time.Time `json:"updated_at"`
+	} `json:"items,omitempty"`
+	Title     string    `json:"title"`
+	UniqId    string    `json:"uniq_id"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
 
 func (response GetRadarById200JSONResponse) VisitGetRadarByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -318,7 +282,10 @@ func (response GetRadarById200JSONResponse) VisitGetRadarByIdResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetRadarById400JSONResponse struct{ BadRequestJSONResponse }
+type GetRadarById400JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response GetRadarById400JSONResponse) VisitGetRadarByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -327,7 +294,10 @@ func (response GetRadarById400JSONResponse) VisitGetRadarByIdResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetRadarById404JSONResponse struct{ NotFoundJSONResponse }
+type GetRadarById404JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response GetRadarById404JSONResponse) VisitGetRadarByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -345,7 +315,19 @@ type UpdateRadarResponseObject interface {
 	VisitUpdateRadarResponse(w http.ResponseWriter) error
 }
 
-type UpdateRadar200JSONResponse struct{ UpdateRadarOutJSONResponse }
+type UpdateRadar200JSONResponse struct {
+	CreatedAt time.Time `json:"created_at"`
+	Items     *[]struct {
+		CreatedAt   time.Time `json:"created_at"`
+		Description string    `json:"description"`
+		Name        string    `json:"name"`
+		UniqId      string    `json:"uniq_id"`
+		UpdatedAt   time.Time `json:"updated_at"`
+	} `json:"items,omitempty"`
+	Title     string    `json:"title"`
+	UniqId    string    `json:"uniq_id"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
 
 func (response UpdateRadar200JSONResponse) VisitUpdateRadarResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -354,7 +336,10 @@ func (response UpdateRadar200JSONResponse) VisitUpdateRadarResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
-type UpdateRadar400JSONResponse struct{ BadRequestJSONResponse }
+type UpdateRadar400JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response UpdateRadar400JSONResponse) VisitUpdateRadarResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -363,7 +348,10 @@ func (response UpdateRadar400JSONResponse) VisitUpdateRadarResponse(w http.Respo
 	return json.NewEncoder(w).Encode(response)
 }
 
-type UpdateRadar404JSONResponse struct{ NotFoundJSONResponse }
+type UpdateRadar404JSONResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}
 
 func (response UpdateRadar404JSONResponse) VisitUpdateRadarResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -525,21 +513,22 @@ func (sh *strictHandler) UpdateRadar(ctx *gin.Context, radarId string) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"//8fz21Bog8AAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

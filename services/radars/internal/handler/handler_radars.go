@@ -12,7 +12,7 @@ import (
 )
 
 func (h *Handler) AddRadar(ctx context.Context, req openapi.AddRadarRequestObject) (openapi.AddRadarResponseObject, error) {
-	var res openapi.AddRadarOutJSONResponse
+	var res openapi.AddRadar201JSONResponse
 
 	err := h.WithTx(func(tx repo.Querier) error {
 		radar, err := tx.SaveRadar(ctx, repo.SaveRadarParams{
@@ -22,7 +22,7 @@ func (h *Handler) AddRadar(ctx context.Context, req openapi.AddRadarRequestObjec
 		if err != nil {
 			return err
 		}
-		res = openapi.AddRadarOutJSONResponse{
+		res = openapi.AddRadar201JSONResponse{
 			Title:     radar.Title,
 			UniqId:    radar.UniqID,
 			CreatedAt: radar.CreatedAt,
@@ -35,9 +35,7 @@ func (h *Handler) AddRadar(ctx context.Context, req openapi.AddRadarRequestObjec
 		return openapi.AddRadar201JSONResponse{}, err
 	}
 
-	return openapi.AddRadar201JSONResponse{
-		AddRadarOutJSONResponse: res,
-	}, nil
+	return res, nil
 }
 
 func (h *Handler) UpdateRadar(ctx context.Context, req openapi.UpdateRadarRequestObject) (openapi.UpdateRadarResponseObject, error) {
@@ -53,12 +51,10 @@ func (h *Handler) UpdateRadar(ctx context.Context, req openapi.UpdateRadarReques
 	}
 
 	return openapi.UpdateRadar200JSONResponse{
-		UpdateRadarOutJSONResponse: openapi.UpdateRadarOutJSONResponse{
-			Title:     out.Title,
-			UniqId:    out.UniqID,
-			CreatedAt: out.CreatedAt,
-			UpdatedAt: out.UpdatedAt,
-		},
+		Title:     out.Title,
+		UniqId:    out.UniqID,
+		CreatedAt: out.CreatedAt,
+		UpdatedAt: out.UpdatedAt,
 	}, nil
 }
 
@@ -72,9 +68,7 @@ func (h *Handler) DeleteRadar(ctx context.Context, req openapi.DeleteRadarReques
 	}
 
 	return openapi.DeleteRadar200JSONResponse{
-		OperationJSONResponse: openapi.OperationJSONResponse{
-			Success: true,
-		},
+		Success: true,
 	}, nil
 }
 
@@ -88,10 +82,8 @@ func (h *Handler) GetRadarById(ctx context.Context, req openapi.GetRadarByIdRequ
 	}
 
 	return openapi.GetRadarById200JSONResponse{
-		GetRadarByIdOutJSONResponse: openapi.GetRadarByIdOutJSONResponse{
-			UniqId:    out.UniqID,
-			Title:     out.Title,
-			CreatedAt: out.CreatedAt,
-		},
+		UniqId:    out.UniqID,
+		Title:     out.Title,
+		CreatedAt: out.CreatedAt,
 	}, nil
 }

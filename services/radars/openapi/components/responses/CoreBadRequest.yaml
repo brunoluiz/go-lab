@@ -1,0 +1,5 @@
+description: The request contains invalid inputs
+content:
+  application/json:
+    schema:
+      $ref: '../schemas/Error.yaml'

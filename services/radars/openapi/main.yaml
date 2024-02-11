@@ -1,0 +1,79 @@
+openapi: 3.0.3
+info:
+  title: Tech Radar
+  description: Tech radar management
+  contact:
+    email: contact@brunoluiz.net
+  version: 1.0.0
+paths:
+  /api/v1/radars:
+    post:
+      tags: [radars]
+      summary: Add a new radar
+      description: Add a new radar
+      operationId: addRadar
+      requestBody:
+        $ref: './components/requestBodies/RadarAddRequest.yaml'
+      responses:
+        '201':
+          $ref: './components/responses/RadarAddResponse.yaml'
+        '400':
+          $ref: './components/responses/CoreBadRequest.yaml'
+  /api/v1/radars/{radar_id}:
+    get:
+      tags: [radar]
+      summary: Find radar by ID
+      description: Returns a single radar
+      operationId: getRadarById
+      parameters:
+        - name: radar_id
+          in: path
+          description: ID of radar to return
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: './components/responses/RadarGetByIDResponse.yaml'
+        '400':
+          $ref: './components/responses/CoreBadRequest.yaml'
+        '404':
+          $ref: './components/responses/CoreNotFound.yaml'
+    delete:
+      tags: [radar]
+      summary: Deletes a radar
+      description: Delete a radar
+      operationId: deleteRadar
+      parameters:
+        - name: radar_id
+          in: path
+          description: Radar id to delete
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: './components/responses/CoreSuccess.yaml'
+        '404':
+          $ref: './components/responses/CoreNotFound.yaml'
+    put:
+      tags: [radar]
+      summary: Update existing radar
+      description: Update exisiting radar
+      operationId: updateRadar
+      parameters:
+        - name: radar_id
+          in: path
+          description: Outource ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: './components/requestBodies/RadarUpdateRequest.yaml'
+      responses:
+        '200':
+          $ref: './components/responses/RadarUpdateResponse.yaml'
+        '400':
+          $ref: './components/responses/CoreBadRequest.yaml'
+        '404':
+          $ref: './components/responses/CoreNotFound.yaml'

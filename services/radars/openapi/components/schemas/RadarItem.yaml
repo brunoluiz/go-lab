@@ -1,0 +1,22 @@
+required:
+  - uniq_id
+  - name
+  - description
+  - quadrant
+  - created_at
+  - updated_at
+type: object
+properties:
+  uniq_id:
+    type: string
+    example: 0ujsswThIGTUYm2K8FjOOfXtY1K
+  name:
+    type: string
+  description:
+    type: string
+  created_at:
+    type: string
+    format: date-time
+  updated_at:
+    type: string
+    format: date-time
