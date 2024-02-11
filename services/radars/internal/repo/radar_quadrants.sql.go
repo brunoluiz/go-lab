@@ -22,8 +22,9 @@ func (q *Queries) DeleteRadarByRadarID(ctx context.Context, radarID int32) error
 const saveRadarQuadrant = `-- name: SaveRadarQuadrant :one
 INSERT INTO radar_quadrants (
   uniq_id,
+  radar_id,
   name
-) VALUES ($1, $2)
+) VALUES ($1, $2, $3)
 ON CONFLICT (uniq_id) DO UPDATE
 SET
   name = EXCLUDED.name
@@ -31,12 +32,13 @@ RETURNING id, uniq_id, radar_id, name
 `
 
 type SaveRadarQuadrantParams struct {
-	UniqID string `json:"uniq_id"`
-	Name   string `json:"name"`
+	UniqID  string `json:"uniq_id"`
+	RadarID int32  `json:"radar_id"`
+	Name    string `json:"name"`
 }
 
 func (q *Queries) SaveRadarQuadrant(ctx context.Context, arg SaveRadarQuadrantParams) (RadarQuadrant, error) {
-	row := q.db.QueryRowContext(ctx, saveRadarQuadrant, arg.UniqID, arg.Name)
+	row := q.db.QueryRowContext(ctx, saveRadarQuadrant, arg.UniqID, arg.RadarID, arg.Name)
 	var i RadarQuadrant
 	err := row.Scan(
 		&i.ID,
