@@ -1,0 +1,11 @@
+description: Operation finished with success (no content)
+content:
+  application/json:
+    schema:
+      required: [success]
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: My radar
+
