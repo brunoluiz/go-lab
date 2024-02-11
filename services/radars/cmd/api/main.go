@@ -40,10 +40,11 @@ func main() {
 
 	r := xgin.New(logger)
 	sqlRepo := repo.New(db)
-	handler.Register(r, &handler.Handler{
-		Repo:   sqlRepo,
-		WithTx: repo.NewTx(db, sqlRepo),
-	}, logger)
+	h := handler.New(
+		sqlRepo,
+		repo.NewTx(db, sqlRepo),
+	)
+	h.Register(r)
 
 	logger.Info(fmt.Sprintf("listening at %s", c.HTTP.GetAddress()))
 	r.Run(c.HTTP.GetAddress())
