@@ -77,3 +77,14 @@ paths:
           $ref: './components/responses/CoreBadRequest.yaml'
         '404':
           $ref: './components/responses/CoreNotFound.yaml'
+  /api/v1/radars/{radar_id}/items:
+      tags: [radars]
+      summary: Add a new radar item
+      operationId: addRadarItem
+      requestBody:
+        $ref: './components/requestBodies/RadarAddRequest.yaml'
+      responses:
+        '201':
+          $ref: './components/responses/RadarAddResponse.yaml'
+        '400':
+          $ref: './components/responses/CoreBadRequest.yaml'

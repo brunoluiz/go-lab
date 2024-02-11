@@ -1,3 +1,25 @@
+CREATE TABLE organisation (
+  id SERIAL PRIMARY KEY,
+  uniq_id TEXT UNIQUE NOT NULL,
+
+  name TEXT NOT NULL,
+
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  uniq_id TEXT UNIQUE NOT NULL,
+  organisation_id INTEGER NOT NULL REFERENCES organisation(id),
+
+  name TEXT NOT NULL,
+  email TEXT NOT NULL,
+
+  updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE radars (
   id SERIAL PRIMARY KEY,
   uniq_id TEXT UNIQUE NOT NULL,
