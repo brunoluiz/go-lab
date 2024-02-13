@@ -2,10 +2,10 @@ package xmiddleware
 
 import (
 	"errors"
+	"log/slog"
 
 	"github.com/brunoluiz/go-lab/core/app"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/exp/slog"
 )
 
 func ErrorHandler(log *slog.Logger) gin.HandlerFunc {

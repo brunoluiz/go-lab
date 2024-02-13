@@ -35,13 +35,13 @@ func WithLiveCheck() func(*config) {
 	}
 }
 
-func New(dsn string, opts ...option) (*sql.DB, error) {
+func New(cfg EnvConfig, opts ...option) (*sql.DB, error) {
 	c := &config{}
 	for _, opt := range opts {
 		opt(c)
 	}
 
-	db, err := sql.Open("pgx", dsn)
+	db, err := sql.Open("pgx", cfg.DSN)
 	if err != nil {
 		return nil, err
 	}
