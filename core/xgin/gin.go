@@ -2,10 +2,10 @@ package xgin
 
 import (
 	"fmt"
+	"log/slog"
 
 	"github.com/brunoluiz/go-lab/core/xgin/xmiddleware"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/exp/slog"
 )
 
 type HTTPConfig struct {

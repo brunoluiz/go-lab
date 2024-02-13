@@ -14,7 +14,7 @@ import (
 func (h *Handler) AddRadar(ctx context.Context, req openapi.AddRadarRequestObject) (openapi.AddRadarResponseObject, error) {
 	var res openapi.AddRadar201JSONResponse
 
-	err := h.WithTx(func(tx repo.Querier) error {
+	err := h.Tx.Run(func(tx repo.Querier) error {
 		radar, err := tx.SaveRadar(ctx, repo.SaveRadarParams{
 			UniqID: genid.New(genid.EntityRadar),
 			Title:  req.Body.Title,

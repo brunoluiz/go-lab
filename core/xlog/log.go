@@ -1,10 +1,10 @@
 package xlog
 
 import (
+	"log/slog"
 	"os"
 
 	"github.com/brunoluiz/go-lab/core/app"
-	"golang.org/x/exp/slog"
 )
 
 type config struct {
