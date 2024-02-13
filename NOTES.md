@@ -2,6 +2,11 @@
 
 These are notes I am gathering from my experiments.
 
+# 2024-02-11
+
+- Organised openapi is partial files: seems there is a problem with partial files since nested items are created with anonymous structs. This makes it slightly annoying to map as output
+- First use of the WithTx wrapper
+
 # 2024-02-07
 
 - Trying to refresh my mind on how to `sqlc` and do transactions

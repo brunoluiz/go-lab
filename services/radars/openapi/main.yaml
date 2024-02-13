@@ -88,3 +88,9 @@ paths:
           $ref: './components/responses/RadarAddResponse.yaml'
         '400':
           $ref: './components/responses/CoreBadRequest.yaml'
+components:
+  schemas:
+    Radar:
+      $ref: './components/schemas/Radar.yaml'
+    RadarItem:
+      $ref: './components/schemas/RadarItem.yaml'
