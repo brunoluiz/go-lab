@@ -5,19 +5,23 @@ import (
 	"errors"
 )
 
-type Tx struct {
+type Tx interface {
+	Run(cb func(Querier) error) (errs error)
+}
+
+type TxExec struct {
 	db      *sql.DB
 	queries *Queries
 }
 
-func NewTx(db *sql.DB, q *Queries) *Tx {
-	return &Tx{
+func NewTxExec(db *sql.DB, q *Queries) *TxExec {
+	return &TxExec{
 		db:      db,
 		queries: q,
 	}
 }
 
-func (t *Tx) Run(cb func(Querier) error) (errs error) {
+func (t *TxExec) Run(cb func(Querier) error) (errs error) {
 	tx, err := t.db.Begin()
 	if err != nil {
 		return err
@@ -36,3 +40,5 @@ func (t *Tx) Run(cb func(Querier) error) (errs error) {
 
 	return tx.Commit()
 }
+
+var _ Tx = (*TxExec)(nil)
