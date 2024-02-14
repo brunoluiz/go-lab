@@ -10,12 +10,12 @@ import (
 type Handler struct {
 	openapi.StrictServerInterface
 	Repo repo.Querier
-	Tx   *repo.Tx
+	Tx   *repo.TxExec
 }
 
 func New(
 	q repo.Querier,
-	withTx *repo.Tx,
+	withTx *repo.TxExec,
 ) *Handler {
 	return &Handler{
 		Repo: q,

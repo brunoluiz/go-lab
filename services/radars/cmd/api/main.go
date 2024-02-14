@@ -65,7 +65,7 @@ func main() {
 				fx.As(new(repo.Querier)),
 			),
 			repo.New,
-			repo.NewTx,
+			repo.NewTxExec,
 			handler.New,
 		),
 		fx.Invoke(func(h *handler.Handler, r *gin.Engine, l *slog.Logger) {
