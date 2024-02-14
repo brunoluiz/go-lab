@@ -5,16 +5,28 @@ import (
 	"errors"
 )
 
-type Tx interface {
-	Run(cb func(Querier) error) (errs error)
-}
+var _ Tx = (*TxExec)(nil)
 
-type TxExec struct {
-	db      *sql.DB
-	queries *Queries
-}
+type (
+	// Tx allows the user to run a callback function within a transaction
+	Tx interface {
+		Run(cb func(Querier) error) (errs error)
+	}
 
-func NewTxExec(db *sql.DB, q *Queries) *TxExec {
+	// QuerierTx *Queries object exposes .WithTx, but not in the Querier interface
+	// This interface is used to catch the WithTx method
+	QuerierTx interface {
+		WithTx(tx *sql.Tx) *Queries
+	}
+
+	// TxExec implementation of the Tx interface
+	TxExec struct {
+		db      *sql.DB
+		queries QuerierTx
+	}
+)
+
+func NewTxExec(db *sql.DB, q QuerierTx) *TxExec {
 	return &TxExec{
 		db:      db,
 		queries: q,
@@ -40,5 +52,3 @@ func (t *TxExec) Run(cb func(Querier) error) (errs error) {
 
 	return tx.Commit()
 }
-
-var _ Tx = (*TxExec)(nil)

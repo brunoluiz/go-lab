@@ -59,13 +59,8 @@ func main() {
 			// }, fx.As(new(sql.DB))),
 			xlog.New,
 			xgin.New,
-			// postgres.New,
-			fx.Annotate(
-				repo.New,
-				fx.As(new(repo.Querier)),
-			),
-			repo.New,
-			repo.NewTxExec,
+			fx.Annotate(repo.New, fx.As(new(repo.Querier)), fx.As(new(repo.QuerierTx))),
+			fx.Annotate(repo.NewTxExec, fx.As(new(repo.Tx))),
 			handler.New,
 		),
 		fx.Invoke(func(h *handler.Handler, r *gin.Engine, l *slog.Logger) {
