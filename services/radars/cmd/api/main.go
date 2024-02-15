@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
-	"log/slog"
 
 	"github.com/brunoluiz/go-lab/core/storage/postgres"
 	"github.com/brunoluiz/go-lab/core/xgin"
@@ -11,7 +9,7 @@ import (
 	"github.com/brunoluiz/go-lab/services/radars/internal/config"
 	"github.com/brunoluiz/go-lab/services/radars/internal/handler"
 	"github.com/brunoluiz/go-lab/services/radars/internal/repo"
-	"github.com/gin-gonic/gin"
+	"github.com/brunoluiz/go-lab/services/radars/internal/xhttp"
 	_ "github.com/joho/godotenv/autoload"
 	"go.uber.org/fx"
 )
@@ -21,18 +19,15 @@ func main() {
 		config.Module,
 		xlog.Module,
 		xgin.Module,
+		postgres.Module,
 		repo.Module,
 		handler.Module,
-		postgres.Module,
+		xhttp.Module,
 		fx.Provide(
 			fx.Annotate(func() context.Context {
 				return context.Background()
 			}, fx.As(new(context.Context))),
 		),
-		fx.Invoke(func(c *config.Config, h *handler.Handler, r *gin.Engine, l *slog.Logger) {
-			h.Register(r)
-			l.Info(fmt.Sprintf("listening at %s", c.HTTP.GetAddress()))
-			r.Run(c.HTTP.GetAddress())
-		}),
+		fx.Invoke(xhttp.Serve),
 	).Run()
 }

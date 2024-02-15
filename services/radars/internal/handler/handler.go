@@ -3,8 +3,6 @@ package handler
 import (
 	"github.com/brunoluiz/go-lab/services/radars/gen/openapi"
 	"github.com/brunoluiz/go-lab/services/radars/internal/repo"
-	middleware "github.com/deepmap/oapi-codegen/pkg/gin-middleware"
-	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
@@ -21,12 +19,4 @@ func New(
 		Repo: q,
 		Tx:   withTx,
 	}
-}
-
-func (h *Handler) Register(r *gin.Engine) {
-	schema, _ := openapi.GetSwagger()
-	r.Use(
-		middleware.OapiRequestValidator(schema),
-	)
-	openapi.RegisterHandlers(r, openapi.NewStrictHandler(h, []openapi.StrictMiddlewareFunc{}))
 }
