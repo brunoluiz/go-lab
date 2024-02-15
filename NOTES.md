@@ -2,6 +2,10 @@
 
 These are notes I am gathering from my experiments.
 
+# 2024-02-14
+
+- Converted the project to use `uber/fx` dependency injection. It is actually not that bad, besides the fact that it needs some `fx.go` files spread around the project
+
 # 2024-02-11
 
 - Organised openapi is partial files: seems there is a problem with partial files since nested items are created with anonymous structs. This makes it slightly annoying to map as output

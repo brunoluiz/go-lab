@@ -4,7 +4,6 @@ go 1.21
 
 require (
 	github.com/davecgh/go-spew v1.1.1
-	github.com/deepmap/oapi-codegen v1.16.2
 	github.com/deepmap/oapi-codegen/v2 v2.1.0
 	github.com/getkin/kin-openapi v0.122.0
 	github.com/gin-gonic/gin v1.9.1
@@ -12,6 +11,7 @@ require (
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/joho/godotenv v1.5.1
 	github.com/kelseyhightower/envconfig v1.4.0
+	github.com/oapi-codegen/gin-middleware v1.0.1
 	github.com/oapi-codegen/runtime v1.1.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sqlc-dev/sqlc v1.25.0
