@@ -2,6 +2,11 @@
 
 These are notes I am gathering from my experiments.
 
+# 2024-02-15
+
+- Continued playing with UberFX, but now it is in a better shape
+- Potentially should finish the basic CRUD APIs (will struggle a bit with OpenAPI) and/or implement metrics to it (use otel and push into docker-compose)
+
 # 2024-02-14
 
 - Converted the project to use `uber/fx` dependency injection. It is actually not that bad, besides the fact that it needs some `fx.go` files spread around the project
