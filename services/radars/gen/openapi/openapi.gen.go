@@ -22,6 +22,24 @@ import (
 	strictgin "github.com/oapi-codegen/runtime/strictmiddleware/gin"
 )
 
+// Radar defines model for Radar.
+type Radar struct {
+	CreatedAt time.Time    `json:"created_at"`
+	Items     *[]RadarItem `json:"items,omitempty"`
+	Title     string       `json:"title"`
+	UniqId    string       `json:"uniq_id"`
+	UpdatedAt time.Time    `json:"updated_at"`
+}
+
+// RadarItem defines model for RadarItem.
+type RadarItem struct {
+	CreatedAt   time.Time `json:"created_at"`
+	Description string    `json:"description"`
+	Name        string    `json:"name"`
+	UniqId      string    `json:"uniq_id"`
+	UpdatedAt   time.Time `json:"updated_at"`
+}
+
 // AddRadarJSONBody defines parameters for AddRadar.
 type AddRadarJSONBody struct {
 	Title string `json:"title"`
@@ -189,19 +207,7 @@ type AddRadarResponseObject interface {
 	VisitAddRadarResponse(w http.ResponseWriter) error
 }
 
-type AddRadar201JSONResponse struct {
-	CreatedAt time.Time `json:"created_at"`
-	Items     *[]struct {
-		CreatedAt   time.Time `json:"created_at"`
-		Description string    `json:"description"`
-		Name        string    `json:"name"`
-		UniqId      string    `json:"uniq_id"`
-		UpdatedAt   time.Time `json:"updated_at"`
-	} `json:"items,omitempty"`
-	Title     string    `json:"title"`
-	UniqId    string    `json:"uniq_id"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
+type AddRadar201JSONResponse Radar
 
 func (response AddRadar201JSONResponse) VisitAddRadarResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -261,19 +267,7 @@ type GetRadarByIdResponseObject interface {
 	VisitGetRadarByIdResponse(w http.ResponseWriter) error
 }
 
-type GetRadarById200JSONResponse struct {
-	CreatedAt time.Time `json:"created_at"`
-	Items     *[]struct {
-		CreatedAt   time.Time `json:"created_at"`
-		Description string    `json:"description"`
-		Name        string    `json:"name"`
-		UniqId      string    `json:"uniq_id"`
-		UpdatedAt   time.Time `json:"updated_at"`
-	} `json:"items,omitempty"`
-	Title     string    `json:"title"`
-	UniqId    string    `json:"uniq_id"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
+type GetRadarById200JSONResponse Radar
 
 func (response GetRadarById200JSONResponse) VisitGetRadarByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -315,19 +309,7 @@ type UpdateRadarResponseObject interface {
 	VisitUpdateRadarResponse(w http.ResponseWriter) error
 }
 
-type UpdateRadar200JSONResponse struct {
-	CreatedAt time.Time `json:"created_at"`
-	Items     *[]struct {
-		CreatedAt   time.Time `json:"created_at"`
-		Description string    `json:"description"`
-		Name        string    `json:"name"`
-		UniqId      string    `json:"uniq_id"`
-		UpdatedAt   time.Time `json:"updated_at"`
-	} `json:"items,omitempty"`
-	Title     string    `json:"title"`
-	UniqId    string    `json:"uniq_id"`
-	UpdatedAt time.Time `json:"updated_at"`
-}
+type UpdateRadar200JSONResponse Radar
 
 func (response UpdateRadar200JSONResponse) VisitUpdateRadarResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
