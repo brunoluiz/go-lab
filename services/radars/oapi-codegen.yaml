@@ -6,3 +6,5 @@ generate:
   gin-server: true
   strict-server: true
 output: ./gen/openapi/openapi.gen.go
+output-options:
+  skip-prune: true

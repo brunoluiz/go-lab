@@ -2,4 +2,4 @@ description: Success
 content:
   application/json:
     schema:
-      $ref: '../schemas/Radar.yaml'
+      $ref: '#/components/schemas/Radar'
