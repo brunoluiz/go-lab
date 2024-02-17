@@ -1,4 +1,4 @@
-CREATE TABLE organisation (
+CREATE TABLE orgs (
   id SERIAL PRIMARY KEY,
   uniq_id TEXT UNIQUE NOT NULL,
 
@@ -11,7 +11,7 @@ CREATE TABLE organisation (
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   uniq_id TEXT UNIQUE NOT NULL,
-  organisation_id INTEGER NOT NULL REFERENCES organisation(id),
+  organisation_id INTEGER NOT NULL REFERENCES orgs(id),
 
   name TEXT NOT NULL,
   email TEXT NOT NULL,
