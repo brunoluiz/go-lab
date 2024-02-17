@@ -9,13 +9,13 @@ import (
 	"context"
 )
 
-const deleteRadarByRadarID = `-- name: DeleteRadarByRadarID :exec
+const deleteRadarQuadrantByID = `-- name: DeleteRadarQuadrantByID :exec
 DELETE FROM radar_quadrants
 WHERE radar_id = $1
 `
 
-func (q *Queries) DeleteRadarByRadarID(ctx context.Context, radarID int32) error {
-	_, err := q.db.ExecContext(ctx, deleteRadarByRadarID, radarID)
+func (q *Queries) DeleteRadarQuadrantByID(ctx context.Context, radarID int32) error {
+	_, err := q.db.ExecContext(ctx, deleteRadarQuadrantByID, radarID)
 	return err
 }
 

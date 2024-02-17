@@ -9,6 +9,16 @@ import (
 	"context"
 )
 
+const deleteRadarItem = `-- name: DeleteRadarItem :exec
+DELETE FROM radar_items
+WHERE uniq_id = $1
+`
+
+func (q *Queries) DeleteRadarItem(ctx context.Context, uniqID string) error {
+	_, err := q.db.ExecContext(ctx, deleteRadarItem, uniqID)
+	return err
+}
+
 const saveRadarItem = `-- name: SaveRadarItem :one
 INSERT INTO radar_items (
   uniq_id,
@@ -20,7 +30,8 @@ INSERT INTO radar_items (
 ON CONFLICT (uniq_id) DO UPDATE
 SET
   name = EXCLUDED.name,
-  description = EXCLUDED.description
+  description = EXCLUDED.description,
+  quadrant_id = EXCLUDED.quadrant_id
 RETURNING id, uniq_id, radar_id, quadrant_id, name, description, updated_at, created_at
 `
 

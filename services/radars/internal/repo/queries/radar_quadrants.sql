@@ -9,6 +9,6 @@ SET
   name = EXCLUDED.name
 RETURNING *;
 
--- name: DeleteRadarByRadarID :exec
+-- name: DeleteRadarQuadrantByID :exec
 DELETE FROM radar_quadrants
 WHERE radar_id = $1;

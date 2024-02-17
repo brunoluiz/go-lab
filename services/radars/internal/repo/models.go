@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-type Organisation struct {
+type Org struct {
 	ID        int32     `json:"id"`
 	UniqID    string    `json:"uniq_id"`
 	Name      string    `json:"name"`

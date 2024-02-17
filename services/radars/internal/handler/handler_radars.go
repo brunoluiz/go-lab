@@ -98,8 +98,8 @@ func (h *Handler) GetRadarById(ctx context.Context, req openapi.GetRadarByIdRequ
 	}
 
 	return openapi.GetRadarById200JSONResponse{
-		UniqId:    out.UniqID,
-		Title:     out.Title,
-		CreatedAt: out.CreatedAt,
+		UniqId:    out.Radar.UniqID,
+		Title:     out.Radar.Title,
+		CreatedAt: out.Radar.CreatedAt,
 	}, nil
 }
