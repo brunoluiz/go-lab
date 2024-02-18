@@ -16,3 +16,9 @@ RETURNING *;
 -- name: DeleteRadarItem :exec
 DELETE FROM radar_items
 WHERE uniq_id = $1;
+
+-- name: GetRadarItemsByRadarID :many
+SELECT sqlc.embed(ri), sqlc.embed(rq)
+FROM radar_items ri
+JOIN radar_quadrants rq ON ri.quadrant_id = rq.id
+WHERE ri.radar_id = $1;
