@@ -137,3 +137,16 @@ components:
         updated_at:
           type: string
           format: date-time
+        quadrant:
+          $ref: '#/components/schemas/RadarQuadrant'
+    RadarQuadrant:
+      required:
+        - name
+        - uniq_id
+      type: object
+      properties:
+        uniq_id:
+          type: string
+          example: 0ujsswThIGTUYm2K8FjOOfXtY1K
+        name:
+          type: string

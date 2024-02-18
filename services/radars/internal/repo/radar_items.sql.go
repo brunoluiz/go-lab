@@ -19,6 +19,54 @@ func (q *Queries) DeleteRadarItem(ctx context.Context, uniqID string) error {
 	return err
 }
 
+const getRadarItemsByRadarID = `-- name: GetRadarItemsByRadarID :many
+SELECT ri.id, ri.uniq_id, ri.radar_id, ri.quadrant_id, ri.name, ri.description, ri.updated_at, ri.created_at, rq.id, rq.uniq_id, rq.radar_id, rq.name
+FROM radar_items ri
+JOIN radar_quadrants rq ON ri.quadrant_id = rq.id
+WHERE ri.radar_id = $1
+`
+
+type GetRadarItemsByRadarIDRow struct {
+	RadarItem     RadarItem     `json:"radar_item"`
+	RadarQuadrant RadarQuadrant `json:"radar_quadrant"`
+}
+
+func (q *Queries) GetRadarItemsByRadarID(ctx context.Context, radarID int32) ([]GetRadarItemsByRadarIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, getRadarItemsByRadarID, radarID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetRadarItemsByRadarIDRow
+	for rows.Next() {
+		var i GetRadarItemsByRadarIDRow
+		if err := rows.Scan(
+			&i.RadarItem.ID,
+			&i.RadarItem.UniqID,
+			&i.RadarItem.RadarID,
+			&i.RadarItem.QuadrantID,
+			&i.RadarItem.Name,
+			&i.RadarItem.Description,
+			&i.RadarItem.UpdatedAt,
+			&i.RadarItem.CreatedAt,
+			&i.RadarQuadrant.ID,
+			&i.RadarQuadrant.UniqID,
+			&i.RadarQuadrant.RadarID,
+			&i.RadarQuadrant.Name,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const saveRadarItem = `-- name: SaveRadarItem :one
 INSERT INTO radar_items (
   uniq_id,

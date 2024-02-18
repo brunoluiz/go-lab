@@ -20,40 +20,20 @@ func (q *Queries) DeleteRadar(ctx context.Context, uniqID string) error {
 }
 
 const getRadarByID = `-- name: GetRadarByID :one
-SELECT r.id, r.uniq_id, r.title, r.updated_at, r.created_at, ri.id, ri.uniq_id, ri.radar_id, ri.quadrant_id, ri.name, ri.description, ri.updated_at, ri.created_at, rq.id, rq.uniq_id, rq.radar_id, rq.name
+SELECT id, uniq_id, title, updated_at, created_at
 FROM radars r
-JOIN radar_items ri ON ri.radar_id = r.id
-JOIN radar_quadrants rq ON ri.quadrant_id = rq.id
 WHERE r.uniq_id = $1 LIMIT 1
 `
 
-type GetRadarByIDRow struct {
-	Radar         Radar         `json:"radar"`
-	RadarItem     RadarItem     `json:"radar_item"`
-	RadarQuadrant RadarQuadrant `json:"radar_quadrant"`
-}
-
-func (q *Queries) GetRadarByID(ctx context.Context, uniqID string) (GetRadarByIDRow, error) {
+func (q *Queries) GetRadarByID(ctx context.Context, uniqID string) (Radar, error) {
 	row := q.db.QueryRowContext(ctx, getRadarByID, uniqID)
-	var i GetRadarByIDRow
+	var i Radar
 	err := row.Scan(
-		&i.Radar.ID,
-		&i.Radar.UniqID,
-		&i.Radar.Title,
-		&i.Radar.UpdatedAt,
-		&i.Radar.CreatedAt,
-		&i.RadarItem.ID,
-		&i.RadarItem.UniqID,
-		&i.RadarItem.RadarID,
-		&i.RadarItem.QuadrantID,
-		&i.RadarItem.Name,
-		&i.RadarItem.Description,
-		&i.RadarItem.UpdatedAt,
-		&i.RadarItem.CreatedAt,
-		&i.RadarQuadrant.ID,
-		&i.RadarQuadrant.UniqID,
-		&i.RadarQuadrant.RadarID,
-		&i.RadarQuadrant.Name,
+		&i.ID,
+		&i.UniqID,
+		&i.Title,
+		&i.UpdatedAt,
+		&i.CreatedAt,
 	)
 	return i, err
 }
@@ -117,7 +97,7 @@ INSERT INTO radars (
   uniq_id,
   title
 ) VALUES ($1, $2)
-ON CONFLICT (uniq_id, quadrant_id) DO UPDATE
+ON CONFLICT (uniq_id) DO UPDATE
 SET
   title = EXCLUDED.title
 RETURNING id, uniq_id, title, updated_at, created_at

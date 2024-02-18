@@ -33,11 +33,18 @@ type Radar struct {
 
 // RadarItem defines model for RadarItem.
 type RadarItem struct {
-	CreatedAt   time.Time `json:"created_at"`
-	Description string    `json:"description"`
-	Name        string    `json:"name"`
-	UniqId      string    `json:"uniq_id"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	CreatedAt   time.Time     `json:"created_at"`
+	Description string        `json:"description"`
+	Name        string        `json:"name"`
+	Quadrant    RadarQuadrant `json:"quadrant"`
+	UniqId      string        `json:"uniq_id"`
+	UpdatedAt   time.Time     `json:"updated_at"`
+}
+
+// RadarQuadrant defines model for RadarQuadrant.
+type RadarQuadrant struct {
+	Name   string `json:"name"`
+	UniqId string `json:"uniq_id"`
 }
 
 // AddRadarJSONBody defines parameters for AddRadar.
@@ -495,22 +502,23 @@ func (sh *strictHandler) UpdateRadar(ctx *gin.Context, radarId string) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/9RXXU8jNxT9K5bbh1aaZsIuD1WeupSColWLRFmpqxVCl/FNYjT+wPbATtH898ofEzIf",
-	"gcAi6D4x2L7Xx+cc+97c0UIJrSRKZ+nsjhq8rtC6A8U4hoFTYGA+MHYaJ/xQoaRDGT5B65IX4LiS+ZVV",
-	"0o/ZYoUC/Jc2SqNxKZPjrkT/gV9BaP9J/6yJ8flpRl2t/Yh1hsslbZosQOEGGZ19SbHn62Xq8goLR5vu",
-	"OmcqbLII+ZNm4PC7QR1GrFbSxm1/VwYP4Fms/2hwQWf0h/xe2TzO2vwPY5SJABjawnDtk9AZPVshSdoT",
-	"vxNwaQmXN1ByRrjUlbO0yQKsv5Q7UpVkrwPKaiz4giMjBq2qTIHkFiyRypFFQJFQ/V0VBVr7DUrb+wwP",
-	"aX2pVIkgB2K34eNydw92otEEUGTBJbcrZOSWuxVJOchPUpF0ip9p6+hwCaNFXoz6kHgMYUtnu/kxuoN6",
-	"fvh2ANr7/Or7N1lKFZwRvTrwTqFYwNR7DzIq0FpYjs317NMuzGKuoYsSDyN7GwSH7AICFQtlhP+inq5f",
-	"HBc4fKYyyh2KELz+eJSkuUPhQ1MuMAbq8P9THsiMVpJfX3DWDZhWV9benq3mx2efPot3H389ujo5Wfzj",
-	"Pu99HM0RvPCUE/fIbkG06LNNEjv5t+oQ6HgRLTq+G7GQBDHurf8ZlQFn9zgZva6AGZDuSRT7PbhcqPaW",
-	"QxHQoQBe0lk79NulqaQqK/7vRKKjw+qBxSr6kAiQsESBAUcybJw/TT69QWNj2N5kOpn6bEqjBM3pjL6f",
-	"TCfvaUY1uFWQOQfN85u9PGQPI1rFKt2F8IExAkTi7fo+qPbln7M43wK4b7zqbdex05vl/cas30G8m+5t",
-	"T5TW5YPC0mR0fzp9PLDXn4RXshICTD16bAdL692SCDv367sk5nfh7wVnTeSxRIdDRg/DOIEthMbpllMN",
-	"BgQ69BJ96WcKiwhnxCmSdvOuo7Mgc+vnGW1h0X7Plm2UmP4dOR+IsSOnG2Vvf7q/W8y6IeuqELmwG1x1",
-	"VKDnTUaXOOLaU3SVkT7QcrkscQvXx+gChwf1nD1G9vyQqEW6jE4RE3Z4a75HG5vnXoBv1+uIS5YouqzJ",
-	"/HBUMF2NCBZ7I4JfueWOy+UWwVILtcvlOKlc7LUDjBdV6TnPXPfHXPNssXtN5NtpvaFYR7C+4A89k/m6",
-	"d+vKDKmohA5lG+OTnQvLpAZRPlJdJrtVl3WqLuuTXVhPsQ/VGcLjiYfFpvkvAAD//993G7/nEAAA",
+	"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",
+	"PlVnCA83Hhab5r8AAAD//y5kjCfMEQAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
