@@ -2,6 +2,14 @@
 
 These are notes I am gathering from my experiments.
 
+# 2024-02-18
+
+- As the handlers start to grow, perhaps is better to keep each method in separate files, making it easier to fuzzy search. It might reach a point though where there are too many files.
+
+# 2024-02-16
+
+- Seems `oapi-codegen` does not like schemas with nested $ref calls... Had to place it back to `openapi/main.yaml` again
+
 # 2024-02-15
 
 - Continued playing with UberFX, but now it is in a better shape
