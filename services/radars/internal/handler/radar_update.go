@@ -24,7 +24,7 @@ func (h *Handler) UpdateRadar(ctx context.Context, req openapi.UpdateRadarReques
 
 	return openapi.UpdateRadar200JSONResponse{
 		Title:     out.Title,
-		UniqId:    out.UniqID,
+		Id:        out.UniqID,
 		CreatedAt: out.CreatedAt,
 		UpdatedAt: out.UpdatedAt,
 	}, nil

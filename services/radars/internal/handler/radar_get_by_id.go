@@ -19,11 +19,12 @@ func (h *Handler) GetRadarById(ctx context.Context, req openapi.GetRadarByIdRequ
 	}
 
 	out := openapi.GetRadarById200JSONResponse{
-		UniqId:    r.UniqID,
+		Id:        r.UniqID,
 		Title:     r.Title,
 		CreatedAt: r.CreatedAt,
 		UpdatedAt: r.UpdatedAt,
-		Items:     &[]openapi.RadarItem{},
+		Items:     []openapi.RadarItem{},
+		Quadrants: []openapi.RadarQuadrant{},
 	}
 
 	ris, err := h.Repo.GetRadarItemsByRadarID(ctx, r.ID)
@@ -31,16 +32,27 @@ func (h *Handler) GetRadarById(ctx context.Context, req openapi.GetRadarByIdRequ
 		return nil, err
 	}
 	for _, ri := range ris {
-		*out.Items = append(*out.Items, openapi.RadarItem{
+		out.Items = append(out.Items, openapi.RadarItem{
 			CreatedAt:   ri.RadarItem.CreatedAt,
 			Description: ri.RadarItem.Description,
 			Name:        ri.RadarItem.Name,
-			UniqId:      ri.RadarItem.UniqID,
+			Id:          ri.RadarItem.UniqID,
 			UpdatedAt:   ri.RadarItem.UpdatedAt,
 			Quadrant: openapi.RadarQuadrant{
-				Name:   ri.RadarQuadrant.Name,
-				UniqId: ri.RadarQuadrant.UniqID,
+				Name: ri.RadarQuadrant.Name,
+				Id:   ri.RadarQuadrant.UniqID,
 			},
+		})
+	}
+
+	rqs, err := h.Repo.GetRadarQuadrantsByRadarID(ctx, r.ID)
+	if err != nil {
+		return nil, err
+	}
+	for _, rq := range rqs {
+		out.Quadrants = append(out.Quadrants, openapi.RadarQuadrant{
+			Id:   rq.UniqID,
+			Name: rq.Name,
 		})
 	}
 

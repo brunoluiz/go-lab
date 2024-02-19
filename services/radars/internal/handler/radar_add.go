@@ -21,7 +21,7 @@ func (h *Handler) AddRadar(ctx context.Context, req openapi.AddRadarRequestObjec
 		}
 		res = openapi.AddRadar201JSONResponse{
 			Title:     radar.Title,
-			UniqId:    radar.UniqID,
+			Id:        radar.UniqID,
 			CreatedAt: radar.CreatedAt,
 			UpdatedAt: radar.UpdatedAt,
 		}
