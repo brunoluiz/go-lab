@@ -2,6 +2,12 @@
 
 These are notes I am gathering from my experiments.
 
+# 2024-02-19
+
+- The nesting `oapi-codegen` anonymous struct issue is very annoying... It is not only on $ref, but on any nesting. Considering seriously using `kin` to generate the schema and sort this with Golang code instead.
+- I realised that potentially I need to think a bit on how the API design will fit here. Probably JSONApi is an overkill, but something like JSend https://github.com/omniti-labs/jsend seems okay-ish.
+  - It seems I can declare a common "API Envelope" and use that in my responses. **I just need to check how this looks like for clients / Swagger UI**, as I think it is not a good practice.
+
 # 2024-02-18
 
 - As the handlers start to grow, perhaps is better to keep each method in separate files, making it easier to fuzzy search. It might reach a point though where there are too many files.
