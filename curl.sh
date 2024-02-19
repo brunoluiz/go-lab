@@ -11,6 +11,11 @@ case $1 in
       -H "$content_type" \
       -d '{"title":"Hello World"}' \
        "$endpoint/radars" | jq;;
+  "add_radar_item")
+    curl -sS -X POST \
+      -H "$content_type" \
+      -d '{"name":"Hello World", "quadrant_id": "'$3'", "description": "Foo Bar"}' \
+       "$endpoint/radars/$2/items" | jq;;
   "get_radar")
     curl -sS -X GET \
       -H "$content_type" \

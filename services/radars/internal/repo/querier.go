@@ -14,6 +14,8 @@ type Querier interface {
 	DeleteRadarQuadrantByID(ctx context.Context, radarID int32) error
 	GetRadarByID(ctx context.Context, uniqID string) (Radar, error)
 	GetRadarItemsByRadarID(ctx context.Context, radarID int32) ([]GetRadarItemsByRadarIDRow, error)
+	GetRadarQuadrantByUniqID(ctx context.Context, uniqID string) (RadarQuadrant, error)
+	GetRadarQuadrantsByRadarID(ctx context.Context, radarID int32) ([]RadarQuadrant, error)
 	GetRadars(ctx context.Context) ([]GetRadarsRow, error)
 	SaveRadar(ctx context.Context, arg SaveRadarParams) (Radar, error)
 	SaveRadarItem(ctx context.Context, arg SaveRadarItemParams) (RadarItem, error)

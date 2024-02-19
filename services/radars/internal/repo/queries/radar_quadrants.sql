@@ -12,3 +12,13 @@ RETURNING *;
 -- name: DeleteRadarQuadrantByID :exec
 DELETE FROM radar_quadrants
 WHERE radar_id = $1;
+
+-- name: GetRadarQuadrantByUniqID :one
+SELECT *
+FROM radar_quadrants
+WHERE uniq_id = $1;
+
+-- name: GetRadarQuadrantsByRadarID :many
+SELECT *
+FROM radar_quadrants
+WHERE radar_id = $1;
