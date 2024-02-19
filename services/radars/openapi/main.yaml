@@ -14,7 +14,7 @@ paths:
         $ref: './components/requestBodies/RadarAddRequest.yaml'
       responses:
         '201':
-          $ref: './components/responses/RadarAddResponse.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
         '400':
           $ref: './components/responses/CoreBadRequest.yaml'
   /api/v1/radars/{radar_id}:
@@ -189,3 +189,15 @@ components:
           example: 0ujsswThIGTUYm2K8FjOOfXtY1K
         name:
           type: string
+    DataResponse:
+      type: object
+      properties:
+        radar:
+          type: object
+          $ref: '#/components/schemas/Radar'
+        radar_item:
+          type: object
+          $ref: '#/components/schemas/RadarItem'
+        radar_quadrant:
+          type: object
+          $ref: '#/components/schemas/RadarItem'

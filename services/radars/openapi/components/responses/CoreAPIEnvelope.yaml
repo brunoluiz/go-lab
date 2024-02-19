@@ -1,4 +1,4 @@
-description: Success
+description: API JSend Response Wrapper
 content:
   application/json:
     schema:
