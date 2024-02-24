@@ -3,7 +3,7 @@
 set +xae
 
 content_type='Content-type: application/json'
-endpoint=http://localhost:8080/api/v1
+endpoint=http://localhost:8080/api
 
 case $1 in
   "add_radar")

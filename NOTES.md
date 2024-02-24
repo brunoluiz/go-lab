@@ -2,6 +2,11 @@
 
 These are notes I am gathering from my experiments.
 
+# 2024-02-24
+
+- Seems `kin-openapi@v0.122.0` broke the path's parsing, making quite hard to check the API Envelope suggested on the previous iteration to be checked. Need to open a GH issue surrounding it
+- Although the API Envelope idea works, it might be a bit confusing for client users... question is: do I care at this stage? I guess this can potentially be used til later notice. More specific modules that do not comply with it can have its own payloads.
+
 # 2024-02-19
 
 - The nesting `oapi-codegen` anonymous struct issue is very annoying... It is not only on $ref, but on any nesting. Considering seriously using `kin` to generate the schema and sort this with Golang code instead.
