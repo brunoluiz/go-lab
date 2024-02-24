@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"net/url"
 
 	"github.com/brunoluiz/go-lab/services/radars"
 	"github.com/brunoluiz/go-lab/services/radars/gen/openapi"
@@ -25,17 +24,7 @@ func RegisterRoutes(r *gin.Engine, h *handler.Handler) error {
 	loader.IsExternalRefsAllowed = true
 
 	// NOTE: delete once kin-openapi fixes behaviour that disappears with .paths (should be able to simply use the embedded openapi.GetSwagger() instead)
-	r.StaticFS("/fs", http.FS(radars.OpenAPIFS))
-	r.GET("/api/openapi.yaml", func(c *gin.Context) {
-		u, _ := url.Parse("http://localhost:8080/fs/openapi/main.yaml")
-		doc, err := loader.LoadFromURI(u)
-		if err != nil {
-			c.Error(err)
-			return
-		}
-
-		c.YAML(200, doc)
-	})
+	r.StaticFS("/__", http.FS(radars.OpenAPIFS))
 	// NOTE: end of temporary code
 
 	r.Use(
