@@ -31,7 +31,7 @@ func (h *Handler) AddRadarItem(ctx context.Context, req openapi.AddRadarItemRequ
 	}
 
 	return openapi.AddRadarItem201JSONResponse{
-		Status: StatusSuccess,
+		Status: openapi.StatusSuccess,
 		Data: &openapi.DataResponse{
 			RadarItem: &openapi.RadarItem{
 				Id:          ri.UniqID,

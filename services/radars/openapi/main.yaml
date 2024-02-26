@@ -16,7 +16,7 @@ paths:
         '201':
           $ref: './components/responses/CoreAPIEnvelope.yaml'
         '400':
-          $ref: './components/responses/CoreBadRequest.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
   /api/radars/{radar_id}:
     get:
       tags: [radar]

@@ -27,10 +27,20 @@ func RegisterRoutes(r *gin.Engine, h *handler.Handler) error {
 	r.StaticFS("/__", http.FS(radars.OpenAPIFS))
 	// NOTE: end of temporary code
 
-	r.Use(
-		ginmiddleware.OapiRequestValidator(schema),
-	)
-	openapi.RegisterHandlers(r, openapi.NewStrictHandler(h, []openapi.StrictMiddlewareFunc{}))
+	openapi.RegisterHandlersWithOptions(r,
+		openapi.NewStrictHandler(h, []openapi.StrictMiddlewareFunc{}),
+		openapi.GinServerOptions{
+			Middlewares: []openapi.MiddlewareFunc{
+				openapi.MiddlewareFunc(ginmiddleware.OapiRequestValidatorWithOptions(schema, &ginmiddleware.Options{
+					ErrorHandler: func(c *gin.Context, message string, statusCode int) {
+						c.JSON(statusCode, map[string]string{
+							"status":  "fail",
+							"message": message,
+						})
+					},
+				})),
+			},
+		})
 	return nil
 }
 
