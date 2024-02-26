@@ -6,7 +6,7 @@ info:
     email: contact@brunoluiz.net
   version: 1.0.0
 paths:
-  /api/v1/radars:
+  /api/radars:
     post:
       tags: [radars]
       operationId: addRadar
@@ -17,7 +17,7 @@ paths:
           $ref: './components/responses/CoreAPIEnvelope.yaml'
         '400':
           $ref: './components/responses/CoreBadRequest.yaml'
-  /api/v1/radars/{radar_id}:
+  /api/radars/{radar_id}:
     get:
       tags: [radar]
       operationId: getRadarById
@@ -29,11 +29,11 @@ paths:
             type: string
       responses:
         '200':
-          $ref: './components/responses/RadarGetByIDResponse.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
         '400':
-          $ref: './components/responses/CoreBadRequest.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
         '404':
-          $ref: './components/responses/CoreNotFound.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
     delete:
       tags: [radar]
       operationId: deleteRadar
@@ -45,9 +45,9 @@ paths:
             type: string
       responses:
         '200':
-          $ref: './components/responses/CoreSuccess.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
         '404':
-          $ref: './components/responses/CoreNotFound.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
     put:
       tags: [radar]
       operationId: updateRadar
@@ -61,12 +61,12 @@ paths:
         $ref: './components/requestBodies/RadarUpdateRequest.yaml'
       responses:
         '200':
-          $ref: './components/responses/RadarUpdateResponse.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
         '400':
-          $ref: './components/responses/CoreBadRequest.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
         '404':
-          $ref: './components/responses/CoreNotFound.yaml'
-  /api/v1/radars/{radar_id}/items:
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
+  /api/radars/{radar_id}/items:
     get:
       tags: [radars]
       operationId: getRadarItems
@@ -78,9 +78,9 @@ paths:
             type: string
       responses:
         '200':
-          $ref: './components/responses/RadarItemGetByIDResponse.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
         '400':
-          $ref: './components/responses/CoreBadRequest.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
     post:
       tags: [radars]
       operationId: addRadarItem
@@ -94,10 +94,10 @@ paths:
         $ref: './components/requestBodies/RadarItemAddRequest.yaml'
       responses:
         '201':
-          $ref: './components/responses/RadarItemAddResponse.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
         '400':
-          $ref: './components/responses/CoreBadRequest.yaml'
-  /api/v1/radars/{radar_id}/items/{radar_item_id}:
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
+  /api/radars/{radar_id}/items/{radar_item_id}:
     put:
       tags: [radar]
       operationId: updateRadarItem
@@ -116,11 +116,11 @@ paths:
         $ref: './components/requestBodies/RadarItemUpdateRequest.yaml'
       responses:
         '200':
-          $ref: './components/responses/RadarItemUpdateResponse.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
         '400':
-          $ref: './components/responses/CoreBadRequest.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
         '404':
-          $ref: './components/responses/CoreNotFound.yaml'
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
 components:
   schemas:
     Radar:

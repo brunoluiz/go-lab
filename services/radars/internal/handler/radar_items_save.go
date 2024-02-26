@@ -31,14 +31,19 @@ func (h *Handler) AddRadarItem(ctx context.Context, req openapi.AddRadarItemRequ
 	}
 
 	return openapi.AddRadarItem201JSONResponse{
-		Id:          ri.UniqID,
-		Name:        ri.Name,
-		Description: ri.Description,
-		UpdatedAt:   ri.UpdatedAt,
-		CreatedAt:   ri.CreatedAt,
-		Quadrant: openapi.RadarQuadrant{
-			Id:   rq.UniqID,
-			Name: rq.Name,
+		Status: StatusSuccess,
+		Data: &openapi.DataResponse{
+			RadarItem: &openapi.RadarItem{
+				Id:          ri.UniqID,
+				Name:        ri.Name,
+				Description: ri.Description,
+				UpdatedAt:   ri.UpdatedAt,
+				CreatedAt:   ri.CreatedAt,
+				Quadrant: openapi.RadarQuadrant{
+					Id:   rq.UniqID,
+					Name: rq.Name,
+				},
+			},
 		},
 	}, nil
 }

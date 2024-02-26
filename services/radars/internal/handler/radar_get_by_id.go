@@ -18,7 +18,7 @@ func (h *Handler) GetRadarById(ctx context.Context, req openapi.GetRadarByIdRequ
 		return nil, err
 	}
 
-	out := openapi.GetRadarById200JSONResponse{
+	out := &openapi.Radar{
 		Id:        r.UniqID,
 		Title:     r.Title,
 		CreatedAt: r.CreatedAt,
@@ -56,5 +56,10 @@ func (h *Handler) GetRadarById(ctx context.Context, req openapi.GetRadarByIdRequ
 		})
 	}
 
-	return out, nil
+	return openapi.GetRadarById200JSONResponse{
+		Status: StatusSuccess,
+		Data: &openapi.DataResponse{
+			Radar: out,
+		},
+	}, nil
 }

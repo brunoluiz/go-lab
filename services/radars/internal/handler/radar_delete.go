@@ -19,6 +19,6 @@ func (h *Handler) DeleteRadar(ctx context.Context, req openapi.DeleteRadarReques
 	}
 
 	return openapi.DeleteRadar200JSONResponse{
-		Success: true,
+		Status: StatusSuccess,
 	}, nil
 }

@@ -5,6 +5,12 @@ import (
 	"github.com/brunoluiz/go-lab/services/radars/internal/repo"
 )
 
+const (
+	StatusSuccess = "success"
+	StatusFail    = "fail"
+	StatusError   = "error"
+)
+
 type Handler struct {
 	openapi.StrictServerInterface
 	Repo repo.Querier

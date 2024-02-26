@@ -94,25 +94,25 @@ type UpdateRadarItemJSONRequestBody UpdateRadarItemJSONBody
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (POST /api/v1/radars)
+	// (POST /api/radars)
 	AddRadar(c *gin.Context)
 
-	// (DELETE /api/v1/radars/{radar_id})
+	// (DELETE /api/radars/{radar_id})
 	DeleteRadar(c *gin.Context, radarId string)
 
-	// (GET /api/v1/radars/{radar_id})
+	// (GET /api/radars/{radar_id})
 	GetRadarById(c *gin.Context, radarId string)
 
-	// (PUT /api/v1/radars/{radar_id})
+	// (PUT /api/radars/{radar_id})
 	UpdateRadar(c *gin.Context, radarId string)
 
-	// (GET /api/v1/radars/{radar_id}/items)
+	// (GET /api/radars/{radar_id}/items)
 	GetRadarItems(c *gin.Context, radarId string)
 
-	// (POST /api/v1/radars/{radar_id}/items)
+	// (POST /api/radars/{radar_id}/items)
 	AddRadarItem(c *gin.Context, radarId string)
 
-	// (PUT /api/v1/radars/{radar_id}/items/{radar_item_id})
+	// (PUT /api/radars/{radar_id}/items/{radar_item_id})
 	UpdateRadarItem(c *gin.Context, radarId string, radarItemId string)
 }
 
@@ -318,13 +318,13 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		ErrorHandler:       errorHandler,
 	}
 
-	router.POST(options.BaseURL+"/api/v1/radars", wrapper.AddRadar)
-	router.DELETE(options.BaseURL+"/api/v1/radars/:radar_id", wrapper.DeleteRadar)
-	router.GET(options.BaseURL+"/api/v1/radars/:radar_id", wrapper.GetRadarById)
-	router.PUT(options.BaseURL+"/api/v1/radars/:radar_id", wrapper.UpdateRadar)
-	router.GET(options.BaseURL+"/api/v1/radars/:radar_id/items", wrapper.GetRadarItems)
-	router.POST(options.BaseURL+"/api/v1/radars/:radar_id/items", wrapper.AddRadarItem)
-	router.PUT(options.BaseURL+"/api/v1/radars/:radar_id/items/:radar_item_id", wrapper.UpdateRadarItem)
+	router.POST(options.BaseURL+"/api/radars", wrapper.AddRadar)
+	router.DELETE(options.BaseURL+"/api/radars/:radar_id", wrapper.DeleteRadar)
+	router.GET(options.BaseURL+"/api/radars/:radar_id", wrapper.GetRadarById)
+	router.PUT(options.BaseURL+"/api/radars/:radar_id", wrapper.UpdateRadar)
+	router.GET(options.BaseURL+"/api/radars/:radar_id/items", wrapper.GetRadarItems)
+	router.POST(options.BaseURL+"/api/radars/:radar_id/items", wrapper.AddRadarItem)
+	router.PUT(options.BaseURL+"/api/radars/:radar_id/items/:radar_item_id", wrapper.UpdateRadarItem)
 }
 
 type AddRadarRequestObject struct {
@@ -369,7 +369,9 @@ type DeleteRadarResponseObject interface {
 }
 
 type DeleteRadar200JSONResponse struct {
-	Success bool `json:"success"`
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
 }
 
 func (response DeleteRadar200JSONResponse) VisitDeleteRadarResponse(w http.ResponseWriter) error {
@@ -380,8 +382,9 @@ func (response DeleteRadar200JSONResponse) VisitDeleteRadarResponse(w http.Respo
 }
 
 type DeleteRadar404JSONResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
 }
 
 func (response DeleteRadar404JSONResponse) VisitDeleteRadarResponse(w http.ResponseWriter) error {
@@ -399,7 +402,11 @@ type GetRadarByIdResponseObject interface {
 	VisitGetRadarByIdResponse(w http.ResponseWriter) error
 }
 
-type GetRadarById200JSONResponse Radar
+type GetRadarById200JSONResponse struct {
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
+}
 
 func (response GetRadarById200JSONResponse) VisitGetRadarByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -409,8 +416,9 @@ func (response GetRadarById200JSONResponse) VisitGetRadarByIdResponse(w http.Res
 }
 
 type GetRadarById400JSONResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
 }
 
 func (response GetRadarById400JSONResponse) VisitGetRadarByIdResponse(w http.ResponseWriter) error {
@@ -421,8 +429,9 @@ func (response GetRadarById400JSONResponse) VisitGetRadarByIdResponse(w http.Res
 }
 
 type GetRadarById404JSONResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
 }
 
 func (response GetRadarById404JSONResponse) VisitGetRadarByIdResponse(w http.ResponseWriter) error {
@@ -441,7 +450,11 @@ type UpdateRadarResponseObject interface {
 	VisitUpdateRadarResponse(w http.ResponseWriter) error
 }
 
-type UpdateRadar200JSONResponse Radar
+type UpdateRadar200JSONResponse struct {
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
+}
 
 func (response UpdateRadar200JSONResponse) VisitUpdateRadarResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -451,8 +464,9 @@ func (response UpdateRadar200JSONResponse) VisitUpdateRadarResponse(w http.Respo
 }
 
 type UpdateRadar400JSONResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
 }
 
 func (response UpdateRadar400JSONResponse) VisitUpdateRadarResponse(w http.ResponseWriter) error {
@@ -463,8 +477,9 @@ func (response UpdateRadar400JSONResponse) VisitUpdateRadarResponse(w http.Respo
 }
 
 type UpdateRadar404JSONResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
 }
 
 func (response UpdateRadar404JSONResponse) VisitUpdateRadarResponse(w http.ResponseWriter) error {
@@ -482,7 +497,11 @@ type GetRadarItemsResponseObject interface {
 	VisitGetRadarItemsResponse(w http.ResponseWriter) error
 }
 
-type GetRadarItems200JSONResponse RadarItem
+type GetRadarItems200JSONResponse struct {
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
+}
 
 func (response GetRadarItems200JSONResponse) VisitGetRadarItemsResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -492,8 +511,9 @@ func (response GetRadarItems200JSONResponse) VisitGetRadarItemsResponse(w http.R
 }
 
 type GetRadarItems400JSONResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
 }
 
 func (response GetRadarItems400JSONResponse) VisitGetRadarItemsResponse(w http.ResponseWriter) error {
@@ -512,7 +532,11 @@ type AddRadarItemResponseObject interface {
 	VisitAddRadarItemResponse(w http.ResponseWriter) error
 }
 
-type AddRadarItem201JSONResponse RadarItem
+type AddRadarItem201JSONResponse struct {
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
+}
 
 func (response AddRadarItem201JSONResponse) VisitAddRadarItemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -522,8 +546,9 @@ func (response AddRadarItem201JSONResponse) VisitAddRadarItemResponse(w http.Res
 }
 
 type AddRadarItem400JSONResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
 }
 
 func (response AddRadarItem400JSONResponse) VisitAddRadarItemResponse(w http.ResponseWriter) error {
@@ -543,7 +568,11 @@ type UpdateRadarItemResponseObject interface {
 	VisitUpdateRadarItemResponse(w http.ResponseWriter) error
 }
 
-type UpdateRadarItem200JSONResponse RadarItem
+type UpdateRadarItem200JSONResponse struct {
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
+}
 
 func (response UpdateRadarItem200JSONResponse) VisitUpdateRadarItemResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
@@ -553,8 +582,9 @@ func (response UpdateRadarItem200JSONResponse) VisitUpdateRadarItemResponse(w ht
 }
 
 type UpdateRadarItem400JSONResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
 }
 
 func (response UpdateRadarItem400JSONResponse) VisitUpdateRadarItemResponse(w http.ResponseWriter) error {
@@ -565,8 +595,9 @@ func (response UpdateRadarItem400JSONResponse) VisitUpdateRadarItemResponse(w ht
 }
 
 type UpdateRadarItem404JSONResponse struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
 }
 
 func (response UpdateRadarItem404JSONResponse) VisitUpdateRadarItemResponse(w http.ResponseWriter) error {
@@ -579,25 +610,25 @@ func (response UpdateRadarItem404JSONResponse) VisitUpdateRadarItemResponse(w ht
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
-	// (POST /api/v1/radars)
+	// (POST /api/radars)
 	AddRadar(ctx context.Context, request AddRadarRequestObject) (AddRadarResponseObject, error)
 
-	// (DELETE /api/v1/radars/{radar_id})
+	// (DELETE /api/radars/{radar_id})
 	DeleteRadar(ctx context.Context, request DeleteRadarRequestObject) (DeleteRadarResponseObject, error)
 
-	// (GET /api/v1/radars/{radar_id})
+	// (GET /api/radars/{radar_id})
 	GetRadarById(ctx context.Context, request GetRadarByIdRequestObject) (GetRadarByIdResponseObject, error)
 
-	// (PUT /api/v1/radars/{radar_id})
+	// (PUT /api/radars/{radar_id})
 	UpdateRadar(ctx context.Context, request UpdateRadarRequestObject) (UpdateRadarResponseObject, error)
 
-	// (GET /api/v1/radars/{radar_id}/items)
+	// (GET /api/radars/{radar_id}/items)
 	GetRadarItems(ctx context.Context, request GetRadarItemsRequestObject) (GetRadarItemsResponseObject, error)
 
-	// (POST /api/v1/radars/{radar_id}/items)
+	// (POST /api/radars/{radar_id}/items)
 	AddRadarItem(ctx context.Context, request AddRadarItemRequestObject) (AddRadarItemResponseObject, error)
 
-	// (PUT /api/v1/radars/{radar_id}/items/{radar_item_id})
+	// (PUT /api/radars/{radar_id}/items/{radar_item_id})
 	UpdateRadarItem(ctx context.Context, request UpdateRadarItemRequestObject) (UpdateRadarItemResponseObject, error)
 }
 
@@ -836,24 +867,21 @@ func (sh *strictHandler) UpdateRadarItem(ctx *gin.Context, radarId string, radar
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/+RYW2/bthf/KgT//4cN0CynzcPgpyVLG3jFltZNsRWFEZyIxzYDi2RJKpkX6LsPpETH",
-	"uvga2wmwN4Iiz+X3OzfqkSYyVVKgsIb2HqnG7xkaey4ZR78xAAb6jLFB8cFtJVJYFH4JSk15ApZLEd8Z",
-	"KdyeSSaYglspLRVqW0qy3E7RLfBvSJVb0t9nRDv5NKJ2ptyOsZqLMc3zyJvCNTLa+1beHc6Pyds7TCzN",
-	"q+eszjCPCpP7FtO9mM3QJJord9Z7UbUzogJSbP3wPQOmQdgbzlq+1xz0UqKKsqqEbX3/ohhY/E+6vy/X",
-	"jxSwfscoKUyh9lep8exj/524x6lU+BzuwPrd/2sc0R79X/yU63Fxx8QXYGFQqne0pWgMjNspNRZsZtaz",
-	"WZ5r974SUPTsY5/89hkFI8EI8qcGpVA7hQ6Kc9gpiVf5/E5rqdusuZ4gKSsgcZqAC0O4uIcpZ4QLlVkT",
-	"zPpD2vcyE+w4RhmFCR9xZESjkZlOkDyAIUJaMvJWlFZ9zpIEjXlGzJgnCavC/lbKKYJoUl9e34T7K4Xa",
-	"G0VGXHAzQUYeuJ2QUgb5QUhSevEjDcl9ifZ81r+Yh+y+4PfC26wMkDYayyEMcMI3NeKgSGxjSKi3L2nH",
-	"IW1Yqd+VxeKwk1Wppo3cKnJoM5VRcfqGOwA2RypcC71zG5AbKRvRoig1HEkka+8Qy7tHrU6Eg1Eha9ii",
-	"exDQqunWCBbZDXjfRlKnbuV6Hf5kuR8jGmYVI8hTPetmd8Y8XE/6l9dfvqZvPvz8/u7qavSX/XryofW6",
-	"xdTrni82ZqOUBVrDbHEq2lLcp0Bni8itxpSIZj5TtsGvRh1nNCiNFtmoiF70NAC4lOR+GePPJ3rdtPrM",
-	"QFg77G5N5n7YWDk+r2BpKSOfFvypsnIYBNufA0vnfi5GMtR4SLyVmAKf0l7Y+uVWZ0JOM/5PR6ClzaEK",
-	"k0mRIyQFAWNM0SNVJlPxfVDm0D1qU1w76XQ7XSdNKhSgOO3Rt51u5y2NqAI78QjFoHh8fxJ76X5HyWJ4",
-	"lWHg6TM3+jIWFDy9umfLIqjyMI/rr/L6G+JN92S5oPJcXH9o5BE97XY3u7cwlfvGAWPjiCt9Hrq9Kg7x",
-	"Y9nPWF48K6dosQnKhd8PuCjQkKJFB+O3R8odBQ7nEPK90CQZrT+rooUOXw+2YQOtDb1emDpOu6eb3Zk/",
-	"FBo40WEe0TG2hMYlWg/B+azPXhkMrUP4rpGzPxhV1gJjORQeIZh2Sd/qb4p8ZzJqo+9Lc7Eq8+P5xLMy",
-	"7Pv+1CuM+7Zn1z6rZrSmVfhB6fVFcu1f607NqPVtfayOVMTlfMNiGvrUurpyWEaiVaIKK4/H8L7qVcsv",
-	"gxevWXn+bwAAAP//lT+0CgkZAAA=",
+	"H4sIAAAAAAAC/+RY3U/rNhT/VyJvj1kTPh6mPg0GQxmagA60IVShQ3zaumpsYztsXZX/fbKTtE2aNrRA",
+	"773cN3Nin4/f73zRGYlFIgVHbjTpzojC5xS1ORWUoRP0gII6obSXf7CiWHCD3B1BygmLwTDBg7EW3Mp0",
+	"PMIE7EkqIVGZQpNhZoL2gP9CIu2R/DH1lNVPfGKm0kq0UYwPSZb5zhWmkJLuQ/G2P78mnsYYG5JV7xmV",
+	"YubnLkcGk3dxm6KOFZP2roui6qdPOCTY+OE5BaqAm0dGG77XAnRa/IqxqoZtY7+TFAx+l+G/V+h7Slgn",
+	"0VJwnZv9VSg8uY7O+QtOhMS3cAfGSX9UOCBd8kOwqPUgf6ODMzDQK8xb2hLUGobNlGoDJtXtbBb3mqOv",
+	"JBQ5uY683/9ETr3SCe8vBVKisgYtFKewUxFvivlcKaGavLkdoVd0QM9aAsa1x/gLTBj1GJep0S7YQpG1",
+	"U8FvhYE8WVrccUlrw3W3H5nB5FVPbJkvnpXVssXTbIUgn+TYrAQSC9qcE+vzpZYU5UU/19VvsN0r0arZ",
+	"VggG6SO42AZCJfZksxt/Msw1jhW38qazKNwwHWv9z+0ouri9u08OL3/+bXx1Nfjb3B9cNj43mDjb88Or",
+	"2Sh0gVIwXe6DW6q7KelsULlVY/JJ6vrhNvjVqGOUlEb9ZTYqqpcjLQFcS3JU5PjbiW6bT29MhNbxtjWZ",
+	"78PGxoG5gaW1jNwsxVNl5WMQbF4A1k56xgei7P8QOy8xATYh3VL0y5NKuZik7L8OR0NWezvGo7xGvAQ4",
+	"DDFBh1RRTPn3XlFDL6h0/uygE3ZCq01I5CAZ6ZKjTtg5Ij6RYEYOoQAkC5xq96cU+ayyILrxFFE76Sgt",
+	"tS+W7Om69Kns4UF9Ca+vDIfhwXpFxb2gvldkPjkOw9e9WxrCbmrAUFvWipj7VrYEQjArJhnN8hVyggZX",
+	"ETlz8hIUCQoSNGgxfJgRZsG3CJfJ3i3HIyX1Fcpfmvv1NOuvQBXuCNXxDu/qWJF+5pMhNqTHBRqHxOk0",
+	"ot8CGl8cRZk2oFis/ntIqV0quPqPSfZZuFhb/MF83dmY8pG79Ulzvqlb+i0jwm1HX1/61n5S2fsQasW1",
+	"JRHnAoNJOZvausjHUuFvUpV7uT9qP2t3yrL/AwAA///4PaKo5RQAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

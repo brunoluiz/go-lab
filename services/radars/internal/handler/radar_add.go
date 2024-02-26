@@ -30,7 +30,7 @@ func (h *Handler) AddRadar(ctx context.Context, req openapi.AddRadarRequestObjec
 		}
 
 		res = openapi.AddRadar201JSONResponse{
-			Status: "success",
+			Status: StatusSuccess,
 			Data: &openapi.DataResponse{
 				Radar: radar,
 			},
