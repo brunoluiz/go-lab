@@ -26,16 +26,19 @@ func ErrorHandler(log *slog.Logger) gin.HandlerFunc {
 				switch appErr.Code() {
 				case app.ErrCodeNotFound:
 					l.Warn(appErr.Error())
-					c.JSON(404, map[string]string{"message": appErr.Error()})
+					c.JSON(404, map[string]string{
+						"status":  "error",
+						"message": appErr.Error(),
+					})
 					return
 				}
 			}
 		}
 
-		l.ErrorContext(c.Request.Context(),
-			"Unknown unmapped error",
-			"error", c.Errors,
-		)
-		c.JSON(500, map[string]string{"message": "Internal error"})
+		l.ErrorContext(c.Request.Context(), "Unknown unmapped error", "error", c.Errors)
+		c.JSON(500, map[string]string{
+			"status":  "fail",
+			"message": "Internal error",
+		})
 	}
 }

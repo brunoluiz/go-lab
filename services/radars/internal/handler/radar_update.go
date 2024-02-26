@@ -23,7 +23,7 @@ func (h *Handler) UpdateRadar(ctx context.Context, req openapi.UpdateRadarReques
 	}
 
 	return openapi.UpdateRadar200JSONResponse{
-		Status: StatusSuccess,
+		Status: openapi.StatusSuccess,
 		Data: &openapi.DataResponse{
 			Radar: &openapi.Radar{
 				Title:     out.Title,

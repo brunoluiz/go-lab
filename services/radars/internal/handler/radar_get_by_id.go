@@ -57,7 +57,7 @@ func (h *Handler) GetRadarById(ctx context.Context, req openapi.GetRadarByIdRequ
 	}
 
 	return openapi.GetRadarById200JSONResponse{
-		Status: StatusSuccess,
+		Status: openapi.StatusSuccess,
 		Data: &openapi.DataResponse{
 			Radar: out,
 		},
