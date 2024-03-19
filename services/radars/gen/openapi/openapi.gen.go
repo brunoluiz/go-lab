@@ -112,6 +112,9 @@ type ServerInterface interface {
 	// (POST /api/radars/{radar_id}/items)
 	AddRadarItem(c *gin.Context, radarId string)
 
+	// (DELETE /api/radars/{radar_id}/items/{radar_item_id})
+	DeleteRadarItem(c *gin.Context, radarId string, radarItemId string)
+
 	// (PUT /api/radars/{radar_id}/items/{radar_item_id})
 	UpdateRadarItem(c *gin.Context, radarId string, radarItemId string)
 }
@@ -258,6 +261,39 @@ func (siw *ServerInterfaceWrapper) AddRadarItem(c *gin.Context) {
 	siw.Handler.AddRadarItem(c, radarId)
 }
 
+// DeleteRadarItem operation middleware
+func (siw *ServerInterfaceWrapper) DeleteRadarItem(c *gin.Context) {
+
+	var err error
+
+	// ------------- Path parameter "radar_id" -------------
+	var radarId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "radar_id", c.Param("radar_id"), &radarId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter radar_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Path parameter "radar_item_id" -------------
+	var radarItemId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "radar_item_id", c.Param("radar_item_id"), &radarItemId, runtime.BindStyledParameterOptions{Explode: false, Required: true})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter radar_item_id: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.DeleteRadarItem(c, radarId, radarItemId)
+}
+
 // UpdateRadarItem operation middleware
 func (siw *ServerInterfaceWrapper) UpdateRadarItem(c *gin.Context) {
 
@@ -324,6 +360,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/api/radars/:radar_id", wrapper.UpdateRadar)
 	router.GET(options.BaseURL+"/api/radars/:radar_id/items", wrapper.GetRadarItems)
 	router.POST(options.BaseURL+"/api/radars/:radar_id/items", wrapper.AddRadarItem)
+	router.DELETE(options.BaseURL+"/api/radars/:radar_id/items/:radar_item_id", wrapper.DeleteRadarItem)
 	router.PUT(options.BaseURL+"/api/radars/:radar_id/items/:radar_item_id", wrapper.UpdateRadarItem)
 }
 
@@ -559,6 +596,41 @@ func (response AddRadarItem400JSONResponse) VisitAddRadarItemResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type DeleteRadarItemRequestObject struct {
+	RadarId     string `json:"radar_id"`
+	RadarItemId string `json:"radar_item_id"`
+}
+
+type DeleteRadarItemResponseObject interface {
+	VisitDeleteRadarItemResponse(w http.ResponseWriter) error
+}
+
+type DeleteRadarItem200JSONResponse struct {
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
+}
+
+func (response DeleteRadarItem200JSONResponse) VisitDeleteRadarItemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type DeleteRadarItem404JSONResponse struct {
+	Data    *DataResponse `json:"data,omitempty"`
+	Message *string       `json:"message,omitempty"`
+	Status  string        `json:"status"`
+}
+
+func (response DeleteRadarItem404JSONResponse) VisitDeleteRadarItemResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type UpdateRadarItemRequestObject struct {
 	RadarId     string `json:"radar_id"`
 	RadarItemId string `json:"radar_item_id"`
@@ -628,6 +700,9 @@ type StrictServerInterface interface {
 
 	// (POST /api/radars/{radar_id}/items)
 	AddRadarItem(ctx context.Context, request AddRadarItemRequestObject) (AddRadarItemResponseObject, error)
+
+	// (DELETE /api/radars/{radar_id}/items/{radar_item_id})
+	DeleteRadarItem(ctx context.Context, request DeleteRadarItemRequestObject) (DeleteRadarItemResponseObject, error)
 
 	// (PUT /api/radars/{radar_id}/items/{radar_item_id})
 	UpdateRadarItem(ctx context.Context, request UpdateRadarItemRequestObject) (UpdateRadarItemResponseObject, error)
@@ -829,6 +904,34 @@ func (sh *strictHandler) AddRadarItem(ctx *gin.Context, radarId string) {
 	}
 }
 
+// DeleteRadarItem operation middleware
+func (sh *strictHandler) DeleteRadarItem(ctx *gin.Context, radarId string, radarItemId string) {
+	var request DeleteRadarItemRequestObject
+
+	request.RadarId = radarId
+	request.RadarItemId = radarItemId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.DeleteRadarItem(ctx, request.(DeleteRadarItemRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "DeleteRadarItem")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(DeleteRadarItemResponseObject); ok {
+		if err := validResponse.VisitDeleteRadarItemResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // UpdateRadarItem operation middleware
 func (sh *strictHandler) UpdateRadarItem(ctx *gin.Context, radarId string, radarItemId string) {
 	var request UpdateRadarItemRequestObject
@@ -868,20 +971,20 @@ func (sh *strictHandler) UpdateRadarItem(ctx *gin.Context, radarId string, radar
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
