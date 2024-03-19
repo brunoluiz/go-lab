@@ -2,6 +2,14 @@
 
 These are notes I am gathering from my experiments.
 
+# 2024-02-46
+
+- Added all missing radar items + radar endpoints and adapted all payloads do use the data response object
+- Error middlewares probably need some love, as they are doing some map[string]string magic
+- Probably the support to update quadrants here is not super important for now, as it would require thinking if a rename means deleting all previous ones or not
+
+- Next items: add tests using `test-containers`
+
 # 2024-02-24
 
 - Seems `kin-openapi@v0.122.0` broke the path's parsing, making quite hard to check the API Envelope suggested on the previous iteration to be checked. Need to open a GH issue surrounding it

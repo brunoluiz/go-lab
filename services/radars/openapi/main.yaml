@@ -121,6 +121,25 @@ paths:
           $ref: './components/responses/CoreAPIEnvelope.yaml'
         '404':
           $ref: './components/responses/CoreAPIEnvelope.yaml'
+    delete:
+      tags: [radar]
+      operationId: deleteRadarItem
+      parameters:
+        - name: radar_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: radar_item_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
+        '404':
+          $ref: './components/responses/CoreAPIEnvelope.yaml'
 components:
   schemas:
     Radar:
