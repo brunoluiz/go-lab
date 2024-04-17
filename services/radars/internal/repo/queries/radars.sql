@@ -2,12 +2,16 @@
 SELECT sqlc.embed(r), sqlc.embed(ri), sqlc.embed(rq)
 FROM radars r
 JOIN radar_items ri ON ri.radar_id = r.id
-JOIN radar_quadrants rq ON ri.quadrant_id = rq.id;
+JOIN radar_quadrants rq ON ri.quadrant_id = rq.id
+WHERE r.deleted_at IS NULL;
 
 -- name: GetRadarByID :one
 SELECT *
 FROM radars r
-WHERE r.uniq_id = $1 LIMIT 1;
+WHERE
+  1 = 1
+  AND r.uniq_id = $1
+  AND deleted_at IS NULL LIMIT 1;
 
 -- name: SaveRadar :one
 INSERT INTO radars (
@@ -20,5 +24,5 @@ SET
 RETURNING *;
 
 -- name: DeleteRadar :exec
-DELETE FROM radars
+UPDATE radars SET deleted_at = NOW()
 WHERE uniq_id = $1;

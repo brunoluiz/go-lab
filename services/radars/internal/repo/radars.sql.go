@@ -10,7 +10,7 @@ import (
 )
 
 const deleteRadar = `-- name: DeleteRadar :exec
-DELETE FROM radars
+UPDATE radars SET deleted_at = NOW()
 WHERE uniq_id = $1
 `
 
@@ -20,9 +20,12 @@ func (q *Queries) DeleteRadar(ctx context.Context, uniqID string) error {
 }
 
 const getRadarByID = `-- name: GetRadarByID :one
-SELECT id, uniq_id, title, updated_at, created_at
+SELECT id, uniq_id, title, updated_at, created_at, deleted_at
 FROM radars r
-WHERE r.uniq_id = $1 LIMIT 1
+WHERE
+  1 = 1
+  AND r.uniq_id = $1
+  AND deleted_at IS NULL LIMIT 1
 `
 
 func (q *Queries) GetRadarByID(ctx context.Context, uniqID string) (Radar, error) {
@@ -34,15 +37,17 @@ func (q *Queries) GetRadarByID(ctx context.Context, uniqID string) (Radar, error
 		&i.Title,
 		&i.UpdatedAt,
 		&i.CreatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }
 
 const getRadars = `-- name: GetRadars :many
-SELECT r.id, r.uniq_id, r.title, r.updated_at, r.created_at, ri.id, ri.uniq_id, ri.radar_id, ri.quadrant_id, ri.name, ri.description, ri.updated_at, ri.created_at, rq.id, rq.uniq_id, rq.radar_id, rq.name
+SELECT r.id, r.uniq_id, r.title, r.updated_at, r.created_at, r.deleted_at, ri.id, ri.uniq_id, ri.radar_id, ri.quadrant_id, ri.name, ri.description, ri.updated_at, ri.created_at, rq.id, rq.uniq_id, rq.radar_id, rq.name
 FROM radars r
 JOIN radar_items ri ON ri.radar_id = r.id
 JOIN radar_quadrants rq ON ri.quadrant_id = rq.id
+WHERE r.deleted_at IS NULL
 `
 
 type GetRadarsRow struct {
@@ -66,6 +71,7 @@ func (q *Queries) GetRadars(ctx context.Context) ([]GetRadarsRow, error) {
 			&i.Radar.Title,
 			&i.Radar.UpdatedAt,
 			&i.Radar.CreatedAt,
+			&i.Radar.DeletedAt,
 			&i.RadarItem.ID,
 			&i.RadarItem.UniqID,
 			&i.RadarItem.RadarID,
@@ -100,7 +106,7 @@ INSERT INTO radars (
 ON CONFLICT (uniq_id) DO UPDATE
 SET
   title = EXCLUDED.title
-RETURNING id, uniq_id, title, updated_at, created_at
+RETURNING id, uniq_id, title, updated_at, created_at, deleted_at
 `
 
 type SaveRadarParams struct {
@@ -117,6 +123,7 @@ func (q *Queries) SaveRadar(ctx context.Context, arg SaveRadarParams) (Radar, er
 		&i.Title,
 		&i.UpdatedAt,
 		&i.CreatedAt,
+		&i.DeletedAt,
 	)
 	return i, err
 }

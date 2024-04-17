@@ -5,6 +5,7 @@
 package repo
 
 import (
+	"database/sql"
 	"time"
 )
 
@@ -17,11 +18,12 @@ type Org struct {
 }
 
 type Radar struct {
-	ID        int32     `json:"id"`
-	UniqID    string    `json:"uniq_id"`
-	Title     string    `json:"title"`
-	UpdatedAt time.Time `json:"updated_at"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        int32        `json:"id"`
+	UniqID    string       `json:"uniq_id"`
+	Title     string       `json:"title"`
+	UpdatedAt time.Time    `json:"updated_at"`
+	CreatedAt time.Time    `json:"created_at"`
+	DeletedAt sql.NullTime `json:"deleted_at"`
 }
 
 type RadarItem struct {

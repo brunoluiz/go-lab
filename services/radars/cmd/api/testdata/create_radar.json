@@ -1,0 +1,8 @@
+{
+  "name": "{{ if .name }}{{ .name }}{{ else }}Create a radar{{ end }}",
+  "method": "POST",
+  "url": "http://127.0.0.1:6666/api/radars",
+  "body": {
+    "title":"Hello World"
+  }
+}

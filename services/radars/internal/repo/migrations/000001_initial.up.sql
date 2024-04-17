@@ -27,7 +27,8 @@ CREATE TABLE radars (
   title TEXT NOT NULL,
 
   updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-  created_at TIMESTAMP NOT NULL DEFAULT NOW()
+  created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+  deleted_at TIMESTAMP NULL
 );
 
 CREATE TABLE radar_quadrants (
