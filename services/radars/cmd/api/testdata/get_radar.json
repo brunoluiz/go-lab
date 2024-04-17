@@ -1,0 +1,5 @@
+{
+  "name": "Get a radar",
+  "method": "GET",
+  "url": "http://127.0.0.1:6666/api/radars/{{ .radar_id }}"
+}
