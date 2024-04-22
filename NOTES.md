@@ -2,6 +2,12 @@
 
 These are notes I am gathering from my experiments.
 
+# 2024-04-17
+
+- Added tests using test-containers... Seems to work ok
+- Need to understand a bit how to improve the tests when wanting to leverage fx... Seems a bit dirty
+- `httpjson` package (needs to be renamed) allows easy step-by-step integration test
+
 # 2024-02-46
 
 - Added all missing radar items + radar endpoints and adapted all payloads do use the data response object
