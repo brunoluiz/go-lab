@@ -5,6 +5,14 @@ import (
 	"github.com/brunoluiz/go-lab/services/radars/internal/repo"
 )
 
+type Entity string
+
+const (
+	EntityRadar         Entity = "rad"
+	EntityRadarItem     Entity = "rad_itm"
+	EntityRadarQuadrant Entity = "rad_qdt"
+)
+
 type Handler struct {
 	openapi.StrictServerInterface
 	Repo repo.Querier

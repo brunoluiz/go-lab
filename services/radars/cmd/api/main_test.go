@@ -9,7 +9,7 @@ import (
 
 	"github.com/brunoluiz/go-lab/core/app"
 	"github.com/brunoluiz/go-lab/core/storage/postgres"
-	"github.com/brunoluiz/go-lab/core/tester/httpjson"
+	"github.com/brunoluiz/go-lab/core/tester/httpsuite"
 	"github.com/brunoluiz/go-lab/core/xgin"
 	"github.com/brunoluiz/go-lab/services/radars/cmd/api/provider"
 	"github.com/brunoluiz/go-lab/services/radars/internal/config"
@@ -66,52 +66,52 @@ func TestGolden(t *testing.T) {
 		provider.InjectApp(),
 	)
 
-	steps := []httpjson.Step{
+	steps := []httpsuite.Step{
 		{
 			RequestTemplatePath: "./testdata/create_radar.json",
-			PreHook: func(t *testing.T, kv *httpjson.KV) map[string]any {
+			PreHook: func(t *testing.T, kv *httpsuite.KV) map[string]any {
 				return map[string]any{
 					"name": "Create first radar",
 				}
 			},
-			PostHook: func(t *testing.T, kv *httpjson.KV, w *httptest.ResponseRecorder) {
+			PostHook: func(t *testing.T, kv *httpsuite.KV, w *httptest.ResponseRecorder) {
 				require.Equal(t, 201, w.Code)
 				kv.Set("first.radar_id", gjson.Get(w.Body.String(), "data.radar.id").String())
 			},
 		},
 		{
 			RequestTemplatePath: "./testdata/create_radar.json",
-			PreHook: func(t *testing.T, kv *httpjson.KV) map[string]any {
+			PreHook: func(t *testing.T, kv *httpsuite.KV) map[string]any {
 				return map[string]any{
 					"name": "Create second radar",
 				}
 			},
-			PostHook: func(t *testing.T, kv *httpjson.KV, w *httptest.ResponseRecorder) {
+			PostHook: func(t *testing.T, kv *httpsuite.KV, w *httptest.ResponseRecorder) {
 				require.Equal(t, 201, w.Code)
 				kv.Set("second.radar_id", gjson.Get(w.Body.String(), "data.radar.id").String())
 			},
 		},
 		{
 			RequestTemplatePath: "./testdata/get_radar.json",
-			PreHook: func(t *testing.T, kv *httpjson.KV) map[string]any {
+			PreHook: func(t *testing.T, kv *httpsuite.KV) map[string]any {
 				return map[string]any{
 					"radar_id": kv.Get("first.radar_id").(string),
 					"name":     "Get first radar",
 				}
 			},
-			PostHook: func(t *testing.T, kv *httpjson.KV, w *httptest.ResponseRecorder) {
+			PostHook: func(t *testing.T, kv *httpsuite.KV, w *httptest.ResponseRecorder) {
 				require.Equal(t, 200, w.Code)
 			},
 		},
 		{
 			RequestTemplatePath: "./testdata/delete_radar.json",
-			PreHook: func(t *testing.T, kv *httpjson.KV) map[string]any {
+			PreHook: func(t *testing.T, kv *httpsuite.KV) map[string]any {
 				return map[string]any{
 					"radar_id": kv.Get("second.radar_id").(string),
 					"name":     "Delete second radar",
 				}
 			},
-			PostHook: func(t *testing.T, kv *httpjson.KV, w *httptest.ResponseRecorder) {
+			PostHook: func(t *testing.T, kv *httpsuite.KV, w *httptest.ResponseRecorder) {
 				require.Equal(t, 200, w.Code)
 			},
 		},
@@ -122,7 +122,7 @@ func TestGolden(t *testing.T) {
 			return []any{}
 		}),
 		fx.Invoke(func(r *gin.Engine) {
-			httpjson.RunSequence(ctx, t, r, steps)
+			httpsuite.RunSequence(ctx, t, r, steps)
 		}),
 	)
 	defer appTest.RequireStop()

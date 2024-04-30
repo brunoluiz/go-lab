@@ -20,7 +20,7 @@ func (h *Handler) AddRadarItem(ctx context.Context, req openapi.AddRadarItemRequ
 	}
 
 	ri, err := h.Repo.SaveRadarItem(ctx, repo.SaveRadarItemParams{
-		UniqID:      genid.New(genid.EntityRadarItem),
+		UniqID:      genid.New(EntityRadarItem),
 		RadarID:     r.ID,
 		QuadrantID:  rq.ID,
 		Name:        req.Body.Name,
