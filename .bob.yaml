@@ -1,0 +1,14 @@
+docker:
+  registry: ghcr.io
+
+# All below uses the same structure from ko.build
+builds:
+- id: brunoluiz/go-lab/services/radars/api
+  main: ./services/radars/cmd/api
+  env:
+  flags:
+  ldflags:
+  - -s -w
+
+defaultPlatforms:
+- linux/amd64

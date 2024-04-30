@@ -1,4 +1,4 @@
-package httpjson
+package httpsuite
 
 import (
 	"bytes"

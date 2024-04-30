@@ -13,7 +13,7 @@ func (h *Handler) AddRadar(ctx context.Context, req openapi.AddRadarRequestObjec
 
 	err := h.Tx.Run(func(tx repo.Querier) error {
 		r, err := tx.SaveRadar(ctx, repo.SaveRadarParams{
-			UniqID: genid.New(genid.EntityRadar),
+			UniqID: genid.New(EntityRadar),
 			Title:  req.Body.Title,
 		})
 		if err != nil {
@@ -37,10 +37,10 @@ func (h *Handler) AddRadar(ctx context.Context, req openapi.AddRadarRequestObjec
 		}
 
 		quadrantParams := []repo.SaveRadarQuadrantParams{
-			{UniqID: genid.New(genid.EntityRadarItem), Name: "Techniques"},
-			{UniqID: genid.New(genid.EntityRadarItem), Name: "Platforms"},
-			{UniqID: genid.New(genid.EntityRadarItem), Name: "Tools"},
-			{UniqID: genid.New(genid.EntityRadarItem), Name: "Languages & Frameworks"},
+			{UniqID: genid.New(EntityRadarItem), Name: "Techniques"},
+			{UniqID: genid.New(EntityRadarItem), Name: "Platforms"},
+			{UniqID: genid.New(EntityRadarItem), Name: "Tools"},
+			{UniqID: genid.New(EntityRadarItem), Name: "Languages & Frameworks"},
 		}
 		for _, params := range quadrantParams {
 			params.RadarID = r.ID
