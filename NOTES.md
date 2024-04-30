@@ -2,6 +2,12 @@
 
 These are notes I am gathering from my experiments.
 
+# 2024-04-30
+
+- Some work has been done in another repo (argocd-lab), but I got a basic deployment working in a k3d cluster
+- The same k3d cluster has a few deployments running, but the setup is not perfect + require some manual setup
+- Building with `ko.build` although simple is very constrained... I will need to create a CLI to allow me build this in a more suitable way (see `bob`)
+
 # 2024-04-17
 
 - Added tests using test-containers... Seems to work ok
