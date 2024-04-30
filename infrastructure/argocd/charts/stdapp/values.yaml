@@ -1,0 +1,27 @@
+name: hello-world
+version: 0.0.0
+
+serviceAccount:
+  create: false
+  # Allow injection annotations required for the vendor to allow API usage (eg: AWS tokens)
+  annotations: {}
+
+service:
+  create: true
+
+image:
+  registry: ghcr.io
+  repository: brunoluiz/go-lab/services/hello-world
+  # The preference is to always use digest, but tag can still be used if required
+  digest:
+  tag:
+
+deployment:
+  ports:
+    - 3000
+  resources:
+  env: []
+  # TODO: enforce default values which users can opt-out, instead of being opt-in
+  readinessProbe:
+  livenessProbe:
+  startupProbe:
