@@ -46,5 +46,4 @@ jobs:
           # needs package read/write/delete + repo
           echo ${{ secrets.KO_GITHUB_TOKEN }} | ko login ghcr.io -u brunoluiz --password-stdin
           export KO_DOCKER_REPO=ghcr.io/${{ matrix.config.id }}
-          echo ${{ steps.meta.outputs.json }}
           ko build ${{ matrix.config.main }} --bare --tags '${{ steps.meta.outputs.tags }}' --image-label '${{ steps.meta.outputs.labels }}'
