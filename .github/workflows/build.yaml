@@ -26,6 +26,10 @@ jobs:
     strategy:
       matrix:
         config: ${{ fromJSON(needs.prepare.outputs.build).builds }}
+    permissions:
+      id-token: read
+      contents: write
+      packages: write
     env:
       KO_DOCKER_REPO: ghcr.io/${{ matrix.config.id }}
     steps:
