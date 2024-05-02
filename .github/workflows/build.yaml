@@ -33,8 +33,8 @@ jobs:
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          sep-tags: ,
-          sep-labels: ,
+          sep-tags: ","
+          sep-labels: ","
           tags: |
             type=sha
             type=sha,format=long
