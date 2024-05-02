@@ -27,12 +27,8 @@ jobs:
     strategy:
       matrix:
         config: ${{ fromJSON(needs.prepare.outputs.build).builds }}
-    permissions:
-      contents: write
-      packages: write
     steps:
       - uses: actions/checkout@v4
       - uses: ko-build/setup-ko@v0.6
       - run: |
-          export KO_DOCKER_REPO=ghcr.io/${{ matrix.config.id }}
           ko build ${{ matrix.config.main }} --bare
