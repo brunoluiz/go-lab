@@ -42,7 +42,7 @@ jobs:
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.KO_GITHUB_TOKEN }}
 
       - name: 'docker: prepare image metadata'
         uses: docker/metadata-action@v5
