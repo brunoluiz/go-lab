@@ -30,8 +30,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ko-build/setup-ko@v0.6
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ matrix.config.id }}
+          tags: |
+            type=edge
+            type=sha
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
       - run: |
-          export KO_DOCKER_REPO=ghcr.io/${{ matrix.config.id }}
           # needs package read/write/delete + repo
           echo ${{ secrets.KO_GITHUB_TOKEN }} | ko login ghcr.io -u brunoluiz --password-stdin
-          ko build ${{ matrix.config.main }} --bare
+          export KO_DOCKER_REPO=ghcr.io/${{ matrix.config.id }}
+          ko build ${{ matrix.config.main }} --bare --tags ${{ steps.meta.outputs.tags }} --image-labels ${{ steps.meta.outputs.labels }}
