@@ -11,6 +11,7 @@ jobs:
   prepare:
     name: Prepare
     runs-on: ubuntu-latest
+    timeout-minutes: 1
     outputs:
       build: ${{ steps.build.outputs.config }}
     steps:
@@ -23,6 +24,7 @@ jobs:
   build:
     name: Build (${{ matrix.config.id }})
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     needs: [prepare]
     strategy:
       matrix:
@@ -55,6 +57,12 @@ jobs:
           digest=$(ko build ${{ matrix.config.main }} --bare --tags '${{ steps.meta.outputs.tags }}' --image-label '${{ steps.meta.outputs.labels }}')
           echo "digest=$digest" >> $GITHUB_OUTPUT
 
-      # signing images
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v2.1.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Sign the images with GitHub OIDC Token
-        run: cosign sign -y '${{ steps.ko.outputs.digest }}'
+        run: cosign sign --yes '${{ steps.ko.outputs.digest }}'
