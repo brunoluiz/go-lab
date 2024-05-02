@@ -37,7 +37,7 @@ jobs:
       - uses: ko-build/setup-ko@v0.6
       - uses: sigstore/cosign-installer@v3.5.0
 
-      - name: docker: prepare image metadata
+      - name: 'docker: prepare image metadata'
         uses: docker/metadata-action@v5
         id: meta
         with:
