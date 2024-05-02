@@ -1,11 +1,11 @@
-# builds:
-# - id: brunoluiz/go-lab/services/radars/api
-#   dir: .  # default is .
-#   main: ./services/radars/cmd/api
-#   env:
-#   flags:
-#   ldflags:
-#   - -s -w
-# defaultPlatforms:
-# - darwin/amd64
-# - linux/amd64
+builds:
+- id: brunoluiz/go-lab/services/radars/api
+  dir: .  # default is .
+  main: ./services/radars/cmd/api
+  env:
+  flags:
+  ldflags:
+  - -s -w
+defaultPlatforms:
+- darwin/amd64
+- linux/amd64
