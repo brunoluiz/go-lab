@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      build: ${{ steps.build.outputs.config }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: build
+        run: |
+          config=$(cat .ko.yaml | yq -o json | jq -c)
+          echo "config=$config" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build (${{ matrix.config.id }})
+    runs-on: ubuntu-latest
+    needs: [prepare]
+    strategy:
+      matrix:
+        config: ${{ fromJSON(needs.prepare.outputs.build).builds }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          echo ${{ matrix.config }}
