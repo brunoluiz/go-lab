@@ -70,7 +70,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'ghcr.io/${{ matrix.config.id }}:sha-${{ github.sha }}'
-          image-ref: ${{ steps.ko.outputs.digest }}
+          # image-ref: ${{ steps.ko.outputs.digest }}
           format: 'sarif'
           output: 'trivy-results.sarif'
 
