@@ -27,11 +27,13 @@ jobs:
     strategy:
       matrix:
         config: ${{ fromJSON(needs.prepare.outputs.build).builds }}
+    permissions:
+      packages: write
     steps:
       - uses: actions/checkout@v4
       - uses: ko-build/setup-ko@v0.6
       - run: |
           export KO_DOCKER_REPO=ghcr.io/${{ matrix.config.id }}
           # needs package read/write/delete + repo
-          echo ${{ secrets.KO_GITHUB_TOKEN }} | ko login ghcr.io -u brunoluiz --password-stdin
+          echo ${{ secrets.GITHUB_TOKEN }} | ko login ghcr.io -u brunoluiz --password-stdin
           ko build ${{ matrix.config.main }} --bare
