@@ -7,7 +7,7 @@ require (
 	github.com/chrismellard/docker-credential-acr-env v0.0.0-20230304212654-82a0ddb27589
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/deepmap/oapi-codegen/v2 v2.0.0
-	github.com/getkin/kin-openapi v0.121.0
+	github.com/getkin/kin-openapi v0.124.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
 	github.com/google/go-containerregistry v0.19.0
