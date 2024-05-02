@@ -30,7 +30,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ko-build/setup-ko@v0.6
-      - uses: docker/metadata-action@v5
+      - uses: sigstore/cosign-installer@v3.5.0
+
+      - name: Prepare image metadata
+        uses: docker/metadata-action@v5
         id: meta
         with:
           sep-tags: ","
@@ -42,9 +45,16 @@ jobs:
             type=ref,event=pr
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
-      - name: ko build
+
+      - name: Build with ko.build
+        id: ko
         run: |
           # needs package read/write/delete + repo
           echo ${{ secrets.KO_GITHUB_TOKEN }} | ko login ghcr.io -u brunoluiz --password-stdin
           export KO_DOCKER_REPO=ghcr.io/${{ matrix.config.id }}
-          ko build ${{ matrix.config.main }} --bare --tags '${{ steps.meta.outputs.tags }}' --image-label '${{ steps.meta.outputs.labels }}'
+          digest=$(ko build ${{ matrix.config.main }} --bare --tags '${{ steps.meta.outputs.tags }}' --image-label '${{ steps.meta.outputs.labels }}')
+          echo "digest=$digest" >> $GITHUB_OUTPUT
+
+      # signing images
+      - name: Sign the images with GitHub OIDC Token
+        run: cosign sign -y '${{ steps.ko.outputs.digest }}'
