@@ -73,6 +73,9 @@ jobs:
           # image-ref: ${{ steps.ko.outputs.digest }}
           format: 'sarif'
           output: 'trivy-results.sarif'
+        env:
+          TRIVY_USERNAME: ${{ github.actor }}
+          TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 'trivy: upload scan results to github security tab'
         uses: github/codeql-action/upload-sarif@v2
