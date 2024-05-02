@@ -27,7 +27,6 @@ jobs:
       matrix:
         config: ${{ fromJSON(needs.prepare.outputs.build).builds }}
     permissions:
-      id-token: read
       contents: write
       packages: write
     env:
