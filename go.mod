@@ -10,7 +10,7 @@ require (
 	github.com/getkin/kin-openapi v0.121.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
-	github.com/google/go-containerregistry v0.19.0
+	github.com/google/go-containerregistry v0.19.1
 	github.com/google/ko v0.15.2
 	github.com/jackc/pgx v3.6.2+incompatible
 	github.com/joho/godotenv v1.5.1
