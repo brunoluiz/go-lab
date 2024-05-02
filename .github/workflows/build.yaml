@@ -9,6 +9,7 @@ on:
 
 jobs:
   prepare:
+    name: Prepare
     runs-on: ubuntu-latest
     outputs:
       build: ${{ steps.build.outputs.config }}
@@ -35,4 +36,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: ko-build/setup-ko@v0.6
       - run: |
+          echo ${{ secrets.GITHUB_TOKEN }} >> ko login ghcr.io -u brunoluiz
           ko build ${{ matrix.config.main }} --bare
