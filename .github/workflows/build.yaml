@@ -27,8 +27,8 @@ jobs:
     timeout-minutes: 10
     needs: [prepare]
     permissions:
-      contents: read
-      packages: write
+      contents: write # required for trivy
+      packages: write # required for docker
       attestations: write
     strategy:
       matrix:
