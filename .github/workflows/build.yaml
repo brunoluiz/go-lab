@@ -27,7 +27,7 @@ jobs:
       matrix:
         config: ${{ fromJSON(needs.prepare.outputs.build).builds }}
     env:
-      KO_DOCKER_REPO=ghcr.io/${{ matrix.config.id }}
+      KO_DOCKER_REPO: ghcr.io/${{ matrix.config.id }}
     steps:
       - uses: actions/checkout@v4
       - uses: ko-build/setup-ko@v0.6
