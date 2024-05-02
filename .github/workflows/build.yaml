@@ -28,6 +28,7 @@ jobs:
     needs: [prepare]
     permissions:
       contents: write # required for trivy
+      security-events: write # required for trivy
       packages: write # required for docker
       attestations: write
     strategy:
@@ -69,10 +70,11 @@ jobs:
       - name: 'trivy: run vulnerability scanner'
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: 'ghcr.io/${{ matrix.config.id }}:sha-${{ github.sha }}'
-          # image-ref: ${{ steps.ko.outputs.digest }}
+          # image-ref: 'ghcr.io/${{ matrix.config.id }}:sha-${{ github.sha }}'
+          image-ref: ${{ steps.ko.outputs.digest }}
           format: 'sarif'
           output: 'trivy-results.sarif'
+        # Yeah, it is a bit ridiculous, but trivy ignores contents from docker login :)
         env:
           TRIVY_USERNAME: ${{ github.actor }}
           TRIVY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
