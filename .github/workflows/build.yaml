@@ -67,6 +67,9 @@ jobs:
           digest=$(ko build ${{ matrix.config.main }} --bare --tags '${{ steps.meta.outputs.tags }}' --image-label '${{ steps.meta.outputs.labels }}')
           echo "digest=$digest" >> $GITHUB_OUTPUT
 
+      - name: 'cosign: sign the images with github oidc token'
+        run: cosign sign --yes '${{ steps.ko.outputs.digest }}' --registry-username ${{ github.actor }} --registry-token ${{ secrets.GITHUB_TOKEN }}
+
       - name: 'trivy: run vulnerability scanner'
         uses: aquasecurity/trivy-action@master
         with:
@@ -84,5 +87,3 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
-      - name: 'cosign: sign the images with github oidc token'
-        run: cosign sign --yes '${{ steps.ko.outputs.digest }}'
