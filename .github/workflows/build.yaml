@@ -26,6 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [prepare]
+    permissions:
+      packages: write
+      id-token: write
     strategy:
       matrix:
         config: ${{ fromJSON(needs.prepare.outputs.build).builds }}
