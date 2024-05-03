@@ -66,7 +66,8 @@ jobs:
         id: ko
         run: |
           export KO_DOCKER_REPO=ghcr.io/${{ matrix.config.id }}
-          digest=$(ko build ${{ matrix.config.main }} --bare --tags '${{ steps.meta.outputs.tags }}' --image-label '${{ steps.meta.outputs.labels }}')
+          digest=$(ko build ${{ matrix.config.main }} --bare --tags '${{ steps.meta.outputs.tags }}' --image-label '${{ steps.meta.outputs.labels }}' --sbom-dir ./sbom)
+          mv sbom/*.json sbom.cdx.json
           echo "digest=$digest" >> $GITHUB_OUTPUT
 
       - name: 'cosign: sign the images with github oidc token'
