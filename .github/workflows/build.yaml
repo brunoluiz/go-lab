@@ -73,7 +73,7 @@ jobs:
         run: cosign sign --yes '${{ steps.ko.outputs.digest }}'
 
       - name: 'cosign: attest the image sbom'
-        run: cosign attest --type spdx '${{ steps.ko.outputs.digest }}'
+        run: cosign attest --type spdx --predicate sbom.cdx.json '${{ steps.ko.outputs.digest }}'
 
       - name: 'trivy: run vulnerability scanner'
         uses: aquasecurity/trivy-action@master
