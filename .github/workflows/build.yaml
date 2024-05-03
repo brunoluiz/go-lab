@@ -40,7 +40,7 @@ jobs:
       - uses: ko-build/setup-ko@v0.6
       - uses: sigstore/cosign-installer@v3.5.0
 
-      # NOTE: these details will not be used by either trivy or cosign
+      # NOTE: used for ko.build and cosign, but NOT trivy
       - name: 'docker: login to github container registry'
         uses: docker/login-action@v2.1.0
         with:
@@ -71,6 +71,9 @@ jobs:
 
       - name: 'cosign: sign the images with github oidc token'
         run: cosign sign --yes '${{ steps.ko.outputs.digest }}'
+
+      - name: 'cosign: attest the image sbom'
+        run: cosign attest --type spdx '${{ steps.ko.outputs.digest }}'
 
       - name: 'trivy: run vulnerability scanner'
         uses: aquasecurity/trivy-action@master
