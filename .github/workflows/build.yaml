@@ -29,6 +29,7 @@ jobs:
     outputs:
       id: ${{ matrix.config.id }}
       helm: ${{ steps.ko.outputs.helm }}
+      image: ${{ steps.ko.outputs.image }}
     permissions:
       contents: write # required for trivy
       security-events: write # required for trivy
@@ -103,7 +104,8 @@ jobs:
     needs: [build]
     steps:
       - run: |-
-          echo {{ fromJSON({{ needs.build }}) }}
+          echo ${{ toJSON(needs.build) }}
+          echo ${{ toJSON(needs.build.outputs) }}
 
 
   # deploy:
