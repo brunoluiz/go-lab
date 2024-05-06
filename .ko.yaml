@@ -2,9 +2,9 @@ builds:
 - id: brunoluiz/go-lab/services/radars/api
   main: ./services/radars/cmd/api
 
-- id: brunoluiz/go-lab/services/hello-world/api
-  main: ./services/hello-world/cmd/api
-  helm: helm-hello-world-api.yaml
+# - id: brunoluiz/go-lab/services/hello-world/api
+#   main: ./services/hello-world/cmd/api
+#   helm: helm-hello-world-api.yaml
 
 defaultPlatforms:
 - darwin/amd64
