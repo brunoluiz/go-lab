@@ -26,6 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [prepare]
+    outputs:
+      id: ${{ matrix.config.id }}
+      helm: ${{ steps.ko.outputs.helm }}
     permissions:
       contents: write # required for trivy
       security-events: write # required for trivy
@@ -66,21 +69,22 @@ jobs:
         id: ko
         run: |
           export KO_DOCKER_REPO=ghcr.io/${{ matrix.config.id }}
-          digest=$(ko build ${{ matrix.config.main }} --bare --tags '${{ steps.meta.outputs.tags }}' --image-label '${{ steps.meta.outputs.labels }}' --sbom-dir ./sbom)
+          image=$(ko build ${{ matrix.config.main }} --bare --tags '${{ steps.meta.outputs.tags }}' --image-label '${{ steps.meta.outputs.labels }}' --sbom-dir ./sbom)
           mv sbom/*.json sbom.cdx.json
-          echo "digest=$digest" >> $GITHUB_OUTPUT
+          echo "image=$image" >> $GITHUB_OUTPUT
+          echo "helm=${{ matrix.config.helm }}" >> $GITHUB_OUTPUT
 
       - name: 'cosign: sign the images with github oidc token'
-        run: cosign sign --yes '${{ steps.ko.outputs.digest }}'
+        run: cosign sign --yes '${{ steps.ko.outputs.image }}'
 
       - name: 'cosign: attest the image sbom'
-        run: cosign attest --type spdx --predicate sbom.cdx.json '${{ steps.ko.outputs.digest }}'
+        run: cosign attest --type spdx --predicate sbom.cdx.json '${{ steps.ko.outputs.image }}'
 
       - name: 'trivy: run vulnerability scanner'
         uses: aquasecurity/trivy-action@master
         with:
           # image-ref: 'ghcr.io/${{ matrix.config.id }}:sha-${{ github.sha }}'
-          image-ref: ${{ steps.ko.outputs.digest }}
+          image-ref: ${{ steps.ko.outputs.image }}
           format: 'sarif'
           output: 'trivy-results.sarif'
         env:
@@ -92,3 +96,24 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
+  deploy:
+    name: Deploy (${{ matrix.config.id }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build]
+    permissions:
+      contents: write # required for trivy
+      security-events: write # required for trivy
+      packages: write # required for docker
+      attestations: write
+      id-token: write # required for cosign??
+    strategy:
+      matrix:
+        config: {{ fromJSON(needs.build.outputs) }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: |-
+          sh .github/scripts/deploy-digest.sh ${{ matrix.config.image }} ${{ matrix.config.helm }}
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "ci: deploy {{ matrix.config.image }}"
