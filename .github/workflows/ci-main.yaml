@@ -1,0 +1,40 @@
+name: CI (main)
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      build: ${{ steps.build.outputs.config }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: build
+        run: |
+          config=$(cat .ko.yaml | yq -o json | jq -c)
+          echo "config=$config" >> $GITHUB_OUTPUT
+
+  release:
+    name: Release (${{ matrix.config.id }})
+    uses: ./.github/workflows/release.yaml
+    needs: [prepare]
+    permissions:
+      contents: write # required for trivy
+      security-events: write # required for trivy
+      packages: write # required for docker
+      attestations: write
+      id-token: write # required for cosign??
+    secrets: inherit
+    with:
+      id: ${{ matrix.config.id }}
+      main: ${{ matrix.config.main }}
+      helm: ${{ matrix.config.helm }}
+    strategy:
+      matrix:
+        config: ${{ fromJSON(needs.prepare.outputs.build).builds }}

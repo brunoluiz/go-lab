@@ -1,4 +1,4 @@
-name: Build
+name: Release
 
 on:
   workflow_call:
@@ -6,6 +6,8 @@ on:
       id:
         type: string
       helm:
+        type: string
+      main:
         type: string
 
 jobs:
@@ -79,3 +81,26 @@ jobs:
         uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: 'trivy-results.sarif'
+
+  # deploy:
+  #   name: Deploy (${{ matrix.config.id }})
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   needs: [build]
+  #   permissions:
+  #     contents: write # required for trivy
+  #     security-events: write # required for trivy
+  #     packages: write # required for docker
+  #     attestations: write
+  #     id-token: write # required for cosign??
+  #   strategy:
+  #     matrix:
+  #       config: {{ fromJSON(needs.build.outputs) }}
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - run: |-
+  #         sh .github/scripts/deploy-digest.sh ${{ matrix.config.image }} ${{ matrix.config.helm }}
+  #     - uses: stefanzweifel/git-auto-commit-action@v5
+  #       with:
+  #         commit_message: "ci: deploy {{ matrix.config.image }}"
+
