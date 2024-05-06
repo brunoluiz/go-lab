@@ -27,25 +27,22 @@ jobs:
       attestations: write
       id-token: write # required for cosign??
 
-  # deploy:
-  #   name: Deploy (${{ matrix.config.id }})
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 10
-  #   needs: [build]
-  #   permissions:
-  #     contents: write # required for trivy
-  #     security-events: write # required for trivy
-  #     packages: write # required for docker
-  #     attestations: write
-  #     id-token: write # required for cosign??
-  #   strategy:
-  #     matrix:
-  #       config: {{ fromJSON(needs.build.outputs) }}
-  #   steps:
-  #     - uses: actions/checkout@v4
-  #     - run: |-
-  #         sh .github/scripts/deploy-digest.sh ${{ matrix.config.image }} ${{ matrix.config.helm }}
-  #     - uses: stefanzweifel/git-auto-commit-action@v5
-  #       with:
-  #         commit_message: "ci: deploy {{ matrix.config.image }}"
+  deploy:
+    name: Deploy (${{ needs.build.outputs.id }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build]
+    permissions:
+      contents: write # required for trivy
+      security-events: write # required for trivy
+      packages: write # required for docker
+      attestations: write
+      id-token: write # required for cosign??
+    steps:
+      - uses: actions/checkout@v4
+      - run: |-
+          sh .github/scripts/deploy-digest.sh ${{ needs.build.outputs.image }} ${{ needs.build.outputs.helm }}
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "ci: deploy {{ matrix.config.image }}"
 
