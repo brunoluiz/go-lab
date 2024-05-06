@@ -5,9 +5,11 @@ on:
     inputs:
       id:
         type: string
-      helm:
-        type: string
+        required: true
       main:
+        type: string
+        required: true
+      helm:
         type: string
     outputs:
       id:

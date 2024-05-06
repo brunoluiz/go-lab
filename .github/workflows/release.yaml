@@ -5,15 +5,21 @@ on:
     inputs:
       id:
         type: string
-      helm:
-        type: string
+        required: true
       main:
+        type: string
+        required: true
+      helm:
         type: string
 
 jobs:
   build:
     name: Build (${{ inputs.id }})
     uses: ./.github/workflows/go-build.yaml
+    with:
+      id: ${{ inputs.id }}
+      helm: ${{ inputs.helm }}
+      main: ${{ inputs.main }}
     permissions:
       contents: write # required for trivy
       security-events: write # required for trivy
