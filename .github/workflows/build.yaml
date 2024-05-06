@@ -97,15 +97,36 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
 
-  debug:
-    name: Debug
+  hello:
+    name: Hello (${{ matrix.config.id }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    needs: [build]
+    needs: [prepare]
+    outputs:
+      id: ${{ matrix.config.id }}
+      helm: "hello"
+      image: "world"
+    permissions:
+      contents: write # required for trivy
+      security-events: write # required for trivy
+      packages: write # required for docker
+      attestations: write
+      id-token: write # required for cosign??
+    strategy:
+      matrix:
+        config: ${{ fromJSON(needs.prepare.outputs.build).builds }}
+    steps:
+      - uses: actions/checkout@v4
+
+  debug:
+    name: Debug ({{ toJSON(needs.hello.outputs.id) }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [hello]
     steps:
       - run: |-
-          echo ${{ toJSON(needs.build) }}
-          echo ${{ toJSON(needs.build.outputs) }}
+          echo ${{ toJSON(needs.hello.outputs.id) }}
+          echo ${{ toJSON(needs.hello.outputs) }}
 
 
   # deploy:
