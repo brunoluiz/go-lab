@@ -15,6 +15,11 @@ run:
 	-@docker compose -f ./$(service_path)/docker-compose.yaml up -d
 	air --build.cmd "go build -o $(project_out_dir)/app ./$(service_path_cmd)" --build.bin "./$(project_out_dir)/app"
 
+.PHONY: format
+format:
+	golangci-lint fmt --enable gofumpt,goimports ./...
+	prettier --write .
+
 .PHONY: lint
 lint:
 	golangci-lint run --timeout 5m --color always ./...

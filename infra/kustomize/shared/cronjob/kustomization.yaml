@@ -1,2 +1,2 @@
 resources:
-- cronjob.yaml
+  - cronjob.yaml
