@@ -82,10 +82,9 @@ jobs:
       - uses: ./.github/actions/cache-go-build
         with:
           restore-only: "true"
-      - run: |
+      - shell: bash
+        run: |
           sh ./scripts/service-info-from-path.sh ${{ matrix.entrypoint.path }}
-          export service=$service
-          export cmd=$cmd
           make docker-login
           make docker-build
           make docker-scan
