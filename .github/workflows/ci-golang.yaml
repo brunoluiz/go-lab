@@ -56,6 +56,7 @@ jobs:
 
   build:
     # if: github.ref == 'refs/heads/main'
+    if: ${{ fromJSON(needs.prepare.outputs.monogo).changed == true }}
     name: Build (${{ matrix.entrypoint.path }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
