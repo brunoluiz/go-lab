@@ -16,8 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
 
   lint:
@@ -26,8 +26,8 @@ jobs:
     timeout-minutes: 5
     needs: [prepare]
     steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-golangci-lint
       - uses: ./.github/actions/cache-go-modules
         with:
@@ -40,8 +40,8 @@ jobs:
     timeout-minutes: 10
     needs: [prepare]
     steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-build
       - uses: ./.github/actions/cache-go-modules
         with:
@@ -67,8 +67,8 @@ jobs:
       service: hello-world
       cmd: api
     steps:
-      - uses: actions/checkout@v4
-      - uses: jdx/mise-action@v2
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
         with:
           restore-only: "true"
