@@ -17,12 +17,12 @@ run:
 
 .PHONY: format
 format:
-	golangci-lint fmt --enable gofumpt,goimports ./...
-	prettier --write .
+	golangci-lint fmt --enable gofumpt,goimports $(staged_files)
+	prettier --write $(staged_files)
 
 .PHONY: lint
 lint:
-	golangci-lint run --timeout 5m --color always ./...
+	golangci-lint run --timeout 5m --color always --new-from-merge-base=main --whole-files ./...
 
 .PHONY: scan
 scan:

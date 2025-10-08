@@ -15,3 +15,7 @@ An example implementation for the `hello-world` service can be found in `service
 # Commands
 
 - `make run service=... cmd=...`: runs a binary with hot-reloading
+
+# Wish list
+
+- Format and linting should only take changed files
