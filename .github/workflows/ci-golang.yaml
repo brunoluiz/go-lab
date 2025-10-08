@@ -82,4 +82,5 @@ jobs:
       - uses: ./.github/actions/cache-go-build
         with:
           restore-only: "true"
-      - run: make docker-monogo entrypoint=${{ matrix.entrypoint.path }}
+      - shell: bash
+        run: make docker-monogo entrypoint=${{ matrix.entrypoint.path }}
