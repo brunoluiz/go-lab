@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: app
+spec:
+  activeDeadlineSeconds: 600 # Example: Job will be terminated after 10 minutes
+  ttlSecondsAfterFinished: 3600 # Example: Job will be cleaned up 1 hour after completion
+  template:
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      serviceAccountName: default
+      automountServiceAccountToken: false
+      containers:
+      - name: app
+        image: image
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          readOnlyRootFilesystem: true
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      restartPolicy: Never
+  backoffLimit: 4
