@@ -55,7 +55,7 @@ jobs:
       - run: make test
 
   build:
-    if: github.ref == 'refs/heads/main' && ${{ matrix.entrypoint.changed }}
+    if: github.ref == 'refs/heads/main' && matrix.entrypoint.changed
     name: Build & Push (${{ matrix.entrypoint.path }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
