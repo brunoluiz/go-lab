@@ -63,6 +63,7 @@ jobs:
     env:
       docker_registry: ghcr.io
       docker_user: ${{ github.actor }}
+      docker_password: ${{ secrets.GITHUB_TOKEN }}
       service: hello-world
       cmd: api
     steps:
@@ -74,7 +75,7 @@ jobs:
       - uses: ./.github/actions/cache-go-build
         with:
           restore-only: "true"
-      - run: make docker-login docker_password=${{ secrets.GITHUB_TOKEN }}
-      - run: make docker-build
+      - run: make docker-login
+      - run: make docker-build docker_password=${{ secrets.GITHUB_TOKEN }}
       - run: make docker-scan
       - run: make docker-sign
