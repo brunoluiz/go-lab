@@ -76,6 +76,6 @@ jobs:
         with:
           restore-only: "true"
       - run: make docker-login
-      - run: make docker-build docker_password=${{ secrets.GITHUB_TOKEN }}
+      - run: make docker-build
       - run: make docker-scan
       - run: make docker-sign
