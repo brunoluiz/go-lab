@@ -55,7 +55,7 @@ jobs:
       - run: make test
 
   build:
-    if: github.ref == 'refs/heads/main'
+    # if: github.ref == 'refs/heads/main'
     name: Build (${{ matrix.entrypoint.path }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
