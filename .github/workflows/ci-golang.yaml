@@ -56,7 +56,7 @@ jobs:
 
   build:
     if: github.ref == 'refs/heads/main'
-    name: Build & Push
+    name: Build & Push (${{ matrix.entrypoint.path }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -84,6 +84,5 @@ jobs:
           restore-only: "true"
       - shell: bash
         run: |
-          set -eux -o pipefail
           . ./scripts/service-info-from-path.sh ${{ matrix.entrypoint.path }}
           make docker-all

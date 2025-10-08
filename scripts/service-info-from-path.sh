@@ -1,5 +1,4 @@
 #!/bin/bash
-set -eux -o pipefail
 
 FULL_PATH="$1"
 PATH_WITHOUT_PREFIX="${FULL_PATH#services/}"
