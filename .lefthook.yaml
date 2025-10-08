@@ -7,6 +7,6 @@ pre-push:
   parallel: true
   commands:
     lint:
-      run: make test
+      run: make lint
     test:
       run: make test
