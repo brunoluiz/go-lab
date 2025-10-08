@@ -84,8 +84,6 @@ jobs:
           restore-only: "true"
       - shell: bash
         run: |
-          sh ./scripts/service-info-from-path.sh ${{ matrix.entrypoint.path }}
-          make docker-login
-          make docker-build
-          make docker-scan
-          make docker-sign
+          set -eux -o pipefail
+          . ./scripts/service-info-from-path.sh ${{ matrix.entrypoint.path }}
+          make docker-all
