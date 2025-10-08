@@ -27,7 +27,9 @@ func New(log *slog.Logger) *gin.Engine {
 		gin.Recovery(),
 		xmiddleware.ErrorHandler(log),
 	)
-	r.SetTrustedProxies(nil)
+	if err := r.SetTrustedProxies(nil); err != nil {
+		log.Warn("failed to set trusted proxies", "error", err)
+	}
 
 	return r
 }

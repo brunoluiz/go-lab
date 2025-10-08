@@ -6,6 +6,6 @@ import (
 	"github.com/segmentio/ksuid"
 )
 
-func New[T comparable](e T) string {
+func New(e string) string {
 	return fmt.Sprintf("%s_%s", e, ksuid.New().String())
 }

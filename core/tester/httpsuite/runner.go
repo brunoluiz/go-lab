@@ -19,7 +19,7 @@ func RunSequence(ctx context.Context, t *testing.T, h http.Handler, steps []Step
 
 		payload, err := FromJSON(s.RequestTemplatePath, vars)
 		require.NoError(t, err)
-		t.Run(payload.Name, func(tt *testing.T) {
+		t.Run(payload.Name, func(_ *testing.T) {
 			req, err := payload.Request(ctx)
 			require.NoError(t, err)
 

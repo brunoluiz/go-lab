@@ -1,16 +1,43 @@
 package main
 
 import (
-	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
+	"os"
+	"time"
+
+	"github.com/brunoluiz/go-lab/services/hello-world/internal/service/greet"
 )
 
 func main() {
+	greeter := greet.New()
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintf(w, "hello world")
+		lang := r.URL.Query().Get("lang")
+		if lang == "" {
+			lang = "en"
+		}
+
+		helloMsg, err := greeter.Hello(lang)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			logger.Error("unable to greet", slog.String("error", err.Error()))
+		}
+
+		if _, err := w.Write([]byte(helloMsg)); err != nil {
+			logger.Error("unable to write response", slog.String("error", err.Error()))
+		}
 	})
 
 	log.Println("running server at :3000")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	server := &http.Server{
+		Addr:         ":3000",
+		Handler:      nil,
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
+		IdleTimeout:  60 * time.Second,
+	}
+	log.Fatal(server.ListenAndServe())
 }

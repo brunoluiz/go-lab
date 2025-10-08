@@ -23,8 +23,7 @@ func ErrorHandler(log *slog.Logger) gin.HandlerFunc {
 		for _, gerr := range c.Errors {
 			var appErr app.Err
 			if ok := errors.As(gerr, &appErr); ok {
-				switch appErr.Code() {
-				case app.ErrCodeNotFound:
+				if appErr.Code() == app.ErrCodeNotFound {
 					l.Warn(appErr.Error())
 					c.JSON(404, map[string]string{
 						"status":  "error",

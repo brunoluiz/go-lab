@@ -1,0 +1,57 @@
+comma := ,
+project ?= go-lab
+project_out_dir ?= out/$(service)/$(cmd)
+service_path ?= services/$(service)
+service_path_cmd ?= $(service_path)/cmd/$(cmd)
+build_platforms ?= linux/arm64,linux/amd64
+docker_registry ?= ko.local# replace with ghcr.io/brunoluiz/dev/ to push to the registry
+docker_namespace ?= brunoluiz/$(project)
+docker_repository ?= $(docker_registry)/$(docker_namespace)/dev/services/$(service)
+docker_tag ?= $(shell git rev-parse HEAD)
+docker_image ?= $(docker_repository)/$(cmd):$(docker_tag)
+
+.PHONY: run
+run:
+	-@docker compose -f ./$(service_path)/docker-compose.yaml up -d
+	air --build.cmd "go build -o $(project_out_dir)/app ./$(service_path_cmd)" --build.bin "./$(project_out_dir)/app"
+
+.PHONY: lint
+lint:
+	golangci-lint run --timeout 5m --color always ./...
+
+.PHONY: scan
+scan:
+	trivy fs --exit-code 1 --no-progress --scanners vuln,misconfig,license .
+
+.PHONY: test
+test:
+	go test -race ./...
+
+.PHONY: docker-all
+docker-all: docker-login docker-build docker-sign docker-scan
+
+.PHONY: docker-login
+docker-login:
+	@echo $(docker_password) | docker login $(docker_registry) -u $(docker_user) --password-stdin
+
+.PHONY: docker-build
+docker-build:
+	KO_DOCKER_REPO=$(docker_repository) \
+	ko build ./$(service_path_cmd) \
+		--base-import-paths \
+		--tags $(docker_tag) \
+		--platform $(build_platforms) \
+		--sbom-dir $(project_out_dir) \
+		--push
+
+.PHONY: docker-sign
+docker-sign:
+	cosign sign --yes $(docker_image)
+
+.PHONY: docker-scan
+docker-scan:
+	$(foreach platform,$(subst $(comma), ,$(build_platforms)),$(MAKE) docker-scan-platform platform=$(platform);)
+
+.PHONY: docker-scan-platform
+docker-scan-platform:
+	trivy image --format sarif --platform $(platform) -o "$(project_out_dir)/$(cmd)-$(subst /,-,$(platform)).sarif" --scanners vuln,misconfig,license $(docker_image)

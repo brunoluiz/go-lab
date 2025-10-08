@@ -1,0 +1,8 @@
+[tools]
+air = "1.63.0"
+cosign = "v2.6.1"
+docker-cli = "28.4.0"
+go = "1.25"
+golangci-lint = "2.5"
+ko = "0.18.0"
+trivy = "0.67.0"

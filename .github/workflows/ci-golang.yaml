@@ -1,0 +1,81 @@
+name: CI (golang)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  prepare:
+    name: Prepare
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - uses: ./.github/actions/cache-go-modules
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    needs: [prepare]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - uses: ./.github/actions/cache-golangci-lint
+      - uses: ./.github/actions/cache-go-modules
+        with:
+          restore-only: "true"
+      - run: make lint
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [prepare]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - uses: ./.github/actions/cache-go-build
+      - uses: ./.github/actions/cache-go-modules
+        with:
+          restore-only: "true"
+      - run: make test
+
+  build:
+    if: github.ref == 'refs/heads/main'
+    name: Build & Push
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write # required for trivy
+      security-events: write # required for trivy
+      packages: write # required for docker
+      attestations: write # required for cosign
+      id-token: write
+    needs: [lint, test]
+    env:
+      docker_registry: ghcr.io
+      docker_user: ${{ github.actor }}
+      docker_password: ${{ secrets.GITHUB_TOKEN }}
+      service: hello-world
+      cmd: api
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jdx/mise-action@v2
+      - uses: ./.github/actions/cache-go-modules
+        with:
+          restore-only: "true"
+      - uses: ./.github/actions/cache-go-build
+        with:
+          restore-only: "true"
+      - run: make docker-login
+      - run: make docker-build
+      - run: make docker-scan
+      - run: make docker-sign

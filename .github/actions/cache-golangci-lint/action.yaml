@@ -1,0 +1,11 @@
+name: Cache golangci-lint
+description: Cache golangci-lint to speed up linting
+runs:
+  using: composite
+  steps:
+    - name: Cache golangci-lint
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/golangci-lint
+        key: ${{ runner.os }}-golangci-lint-${{ hashFiles('**/.golangci.yaml') }}
+        restore-keys: ${{ runner.os }}-golangci-lint-
