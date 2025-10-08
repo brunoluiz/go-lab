@@ -83,4 +83,4 @@ jobs:
         with:
           restore-only: "true"
       - shell: bash
-        run: make docker-monogo entrypoint=${{ matrix.entrypoint.path }}
+        run: . ./scripts/monogo-entrypoint-path.sh ${{ matrix.entrypoint.path }} && make docker-all
