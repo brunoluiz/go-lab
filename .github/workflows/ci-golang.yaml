@@ -65,7 +65,7 @@ jobs:
       packages: write # required for docker
       attestations: write # required for cosign
       id-token: write
-    needs: [prepare, lint, test]
+    needs: [prepare, test]
     strategy:
       matrix:
         entrypoint: ${{ fromJSON(needs.prepare.outputs.monogo).entrypoints }}
@@ -84,7 +84,8 @@ jobs:
           restore-only: "true"
       - run: |
           sh ./scripts/service-info-from-path.sh ${{ matrix.entrypoint.path }}
-          echo $service
+          export service=$service
+          export cmd=$cmd
           make docker-login
           make docker-build
           make docker-scan
