@@ -17,8 +17,8 @@ run:
 
 .PHONY: format
 format:
-	golangci-lint fmt --enable gofumpt,goimports $(staged_files)
-	prettier --write $(staged_files)
+	golangci-lint fmt --enable gofumpt,goimports ./...
+	prettier --write .
 
 .PHONY: lint
 lint:
@@ -31,6 +31,12 @@ scan:
 .PHONY: test
 test:
 	go test -race ./...
+
+.PHONY: monogo
+monogo:
+	-@monogo detect --entrypoints $(shell find services -type d -name cmd -print0 \
+	| xargs -0 -I {} find {} -maxdepth 1 -mindepth 1 -type d \
+	| paste -sd ',' -)
 
 .PHONY: docker-all
 docker-all: docker-login docker-build docker-sign docker-scan
