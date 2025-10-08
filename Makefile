@@ -38,6 +38,10 @@ monogo:
 	| xargs -0 -I {} find {} -maxdepth 1 -mindepth 1 -type d \
 	| paste -sd ',' -)
 
+.PHONY: docker-monogo
+docker-monogo:
+	. ./scripts/monogo-entrypoint-path.sh $(entrypoint) && echo $$service && $(MAKE) docker-all
+
 .PHONY: docker-all
 docker-all: docker-login docker-build docker-sign docker-scan
 
