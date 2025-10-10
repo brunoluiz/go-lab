@@ -2,7 +2,9 @@ package greet
 
 import (
 	"errors"
+	"fmt"
 
+	"github.com/brunoluiz/go-lab/core/app/happy"
 	"golang.org/x/text/language"
 )
 
@@ -20,6 +22,7 @@ func (g *Greeter) Hello(l string) (string, error) {
 		return "", err
 	}
 
+	fmt.Println(happy.SayHappy())
 	switch lang {
 	case language.English:
 		return "hello", nil
