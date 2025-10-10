@@ -1,16 +1,19 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/brunoluiz/go-lab/core/app/happy"
 	"github.com/brunoluiz/go-lab/services/hello-world/internal/service/greet"
 )
 
 func main() {
+	fmt.Println(happy.SayHappy())
 	greeter := greet.New()
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
