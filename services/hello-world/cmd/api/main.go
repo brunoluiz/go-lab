@@ -1,18 +1,21 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/brunoluiz/go-lab/core/app/happy"
 	"github.com/brunoluiz/go-lab/services/hello-world/internal/service/greet"
 )
 
 func main() {
 	greeter := greet.New()
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	fmt.Println(happy.SayHappy())
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		lang := r.URL.Query().Get("lang")
