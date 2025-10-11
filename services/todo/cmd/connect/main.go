@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -47,18 +46,18 @@ func main() {
 	}
 
 	go func() {
-		log.Println("Starting server on :4000")
+		logger.InfoContext(ctx, "Starting server", slog.String("address", cli.Address), slog.Int("port", cli.Port))
 		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatal(err)
+			logger.ErrorContext(ctx, "Failure to serve", "error", err)
 		}
 	}()
 
 	<-ctx.Done()
-	log.Println("Shutting down server...")
+	logger.InfoContext(ctx, "Shutting down server...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Printf("Server shutdown error: %v", err)
+		logger.ErrorContext(ctx, "Failure to shutdown", "error", err)
 	}
-	log.Println("Server stopped")
+	logger.InfoContext(ctx, "Shutdown complete")
 }
