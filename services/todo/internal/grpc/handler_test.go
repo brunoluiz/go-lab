@@ -1,4 +1,4 @@
-package grpc
+package grpc_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	v1 "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
+	"github.com/brunoluiz/go-lab/services/todo/internal/grpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -20,7 +21,7 @@ func TestHandler(t *testing.T) {
 	kv := database.NewKVStore()
 	repo := repository.NewTaskRepository(kv, logger)
 	service := todo.NewService(repo, logger)
-	handler := NewHandler(service)
+	handler := grpc.NewHandler(service)
 	ctx := context.Background()
 
 	tests := []struct {

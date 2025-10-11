@@ -12,6 +12,7 @@ import (
 
 type Handler struct {
 	todov1connect.UnimplementedTodoServiceHandler
+
 	service *todo.Service
 }
 

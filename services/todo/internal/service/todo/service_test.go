@@ -1,4 +1,4 @@
-package todo
+package todo_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/database"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/brunoluiz/go-lab/services/todo/internal/dto"
+	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -18,7 +19,7 @@ func TestTodoService(t *testing.T) {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	kv := database.NewKVStore()
 	repo := repository.NewTaskRepository(kv, logger)
-	service := NewService(repo, logger)
+	service := todo.NewService(repo, logger)
 	ctx := context.Background()
 
 	tests := []struct {

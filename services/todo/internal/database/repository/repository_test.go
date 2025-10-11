@@ -1,4 +1,4 @@
-package repository
+package repository_test
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/brunoluiz/go-lab/services/todo/internal/database"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
+	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -18,7 +19,7 @@ func TestTaskRepository(t *testing.T) {
 	t.Parallel()
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	kv := database.NewKVStore()
-	repo := NewTaskRepository(kv, logger)
+	repo := repository.NewTaskRepository(kv, logger)
 	ctx := context.Background()
 
 	tests := []struct {
