@@ -22,15 +22,11 @@ The below libraries must be used for the respective purposes and alternatives sh
 
 ## Best practices
 
-- Do not use `fmt.Println`
 - Apps must handle `SIGTERM` and `SIGINT` gracefully using `signal.NotifyContext`
 - Packages must never be plural
 - When implementing a method, it should always support `context.Context` as the first parameter
-- Do not use `http.DefaultClient`: always create a custom `*http.Client` with sensible timeouts
-- When logging, always pass the `context.Context` via the `*Context` variants in `slog`
 - Always inject dependencies via constructors, even for things such as loggers.
 - When input arguments are not used, replace the name with `_`, for example `(_ context.Context, input Bla)`
-- Never use `reflect.DeepEqual`, instead use `github.com/google/go-cmp`
 - When `go build` is trigged, always delete after finishing any tests
 
 ## Error handling

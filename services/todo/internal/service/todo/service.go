@@ -137,3 +137,7 @@ func (s *Service) DeleteTask(ctx context.Context, req dto.DeleteTaskRequest) (dt
 	}
 	return dto.DeleteTaskResponse{}, nil
 }
+
+func (s *Service) Hello() string {
+	return "oi"
+}

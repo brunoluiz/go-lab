@@ -2,6 +2,13 @@
 
 These are notes I am gathering from my experiments.
 
+# 2025-10-11
+
+- I am trialling adding mono-repository tooling via `monogo`, a separate project... main challenge seems to be not the build steps anymore, but linting or testing, since at the moment it runs for all and counts on the cache solely to skip
+- I am trialling `opencode` to create a service from scratch based on guidelines (see docs/golang-guidelines.md)
+- `core` needs to be re-thought
+- Perhaps `go.work` can help on creating mono repositories, but `monogo` must support
+
 # 2024-04-30
 
 - Some work has been done in another repo (argocd-lab), but I got a basic deployment working in a k3d cluster
@@ -30,7 +37,7 @@ These are notes I am gathering from my experiments.
 # 2024-02-19
 
 - The nesting `oapi-codegen` anonymous struct issue is very annoying... It is not only on $ref, but on any nesting. Considering seriously using `kin` to generate the schema and sort this with Golang code instead.
-- I realised that potentially I need to think a bit on how the API design will fit here. Probably JSONApi is an overkill, but something like JSend https://github.com/omniti-labs/jsend seems okay-ish.
+- I realised that potentially I need to think a bit on how the API design will fit here. Probably JSONApi is an overkill, but something like JSend <https://github.com/omniti-labs/jsend> seems okay-ish.
   - It seems I can declare a common "API Envelope" and use that in my responses. **I just need to check how this looks like for clients / Swagger UI**, as I think it is not a good practice.
 
 # 2024-02-18

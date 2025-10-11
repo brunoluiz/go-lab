@@ -70,10 +70,6 @@ linters:
       settings:
         shadow:
           strict: true
-    revive:
-      rules:
-        - name: context-as-argument
-          disabled: false
     sloglint:
       # Enforce not using global loggers.
       no-global: all
@@ -104,6 +100,8 @@ linters:
           msg: Do not commit dump statements.
         - pattern: ^reflect.DeepEqual$
           msg: Do not use reflect.DeepEqual, use github.com/google/go-cmp instead.
+        - pattern: ^http.DefaultClient$
+          msg: Do not use http.DefaultClient, create a custom `*http.Client` with sensible timeouts
   exclusions:
     generated: lax
     presets:
