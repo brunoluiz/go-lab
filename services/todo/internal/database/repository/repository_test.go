@@ -139,6 +139,7 @@ func TestTaskRepository(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			task, err := tt.prepare()
 			require.NoError(t, err)
 			tt.run(t, task)
