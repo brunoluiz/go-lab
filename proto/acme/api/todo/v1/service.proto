@@ -16,7 +16,7 @@ service TodoService {
 // -------------------------------------------------------------------
 
 message Task {
-  int32 id = 1;
+  string id = 1;
   string title = 2;
   bool is_completed = 3;
   google.protobuf.Timestamp created_at = 4;
@@ -40,7 +40,7 @@ message CreateTaskResponse {
 }
 
 message GetTaskRequest {
-  int32 task_id = 1;
+  string task_id = 1;
 }
 
 message GetTaskResponse {
@@ -67,7 +67,7 @@ message UpdateTaskResponse {
 }
 
 message DeleteTaskRequest {
-  int32 task_id = 1;
+  string task_id = 1;
 }
 
 message DeleteTaskResponse {}
