@@ -11,10 +11,11 @@
 
 The below libraries must be used for the respective purposes and alternatives should not be added
 
+- Entrypoint flags and environment variables management: `github.com/alecthomas/kong`
 - Logging: `log/slog`
 - HTTP REST: `github.com/go-resty/resty`
 - JSON: `encoding/json/v2`
-- YAML: `yaml/go-yaml`
+- YAML: `github.com/yaml/go-yaml`
 
 ## Best practices
 
@@ -27,6 +28,7 @@ The below libraries must be used for the respective purposes and alternatives sh
 - Always inject dependencies via constructors, even for things such as loggers.
 - When input arguments are not used, replace the name with `_`, for example `(_ context.Context, input Bla)`
 - Never use `reflect.DeepEqual`, instead use `github.com/google/go-cmp`
+- When `go build` is trigged, always delete after finishing any tests
 
 ## Error handling
 

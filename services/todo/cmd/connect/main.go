@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"log/slog"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/alecthomas/kong"
 	todov1connect "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1/todov1connect"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
@@ -17,7 +19,15 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 )
 
+type CLI struct {
+	Address string `kong:"default=0.0.0.0,env=ADDRESS"`
+	Port    int    `kong:"default=4000,env=PORT"`
+}
+
 func main() {
+	var cli CLI
+	kong.Parse(&cli)
+
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	kv := database.NewKVStore()
 	repo := repository.NewTaskRepository(kv, logger)
@@ -31,7 +41,7 @@ func main() {
 	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
 	server := &http.Server{
-		Addr:              ":4000",
+		Addr:              fmt.Sprintf("%s:%d", cli.Address, cli.Port),
 		Handler:           mux,
 		ReadHeaderTimeout: 10 * time.Second,
 	}
