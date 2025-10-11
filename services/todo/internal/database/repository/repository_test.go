@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/brunoluiz/go-lab/services/todo/internal/database"
-	"github.com/brunoluiz/go-lab/services/todo/internal/models"
+	"github.com/brunoluiz/go-lab/services/todo/internal/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -16,7 +16,7 @@ func TestTaskRepository(t *testing.T) {
 	ctx := context.Background()
 
 	t.Run("CreateTask", func(t *testing.T) {
-		req := models.CreateTaskRequest{Title: "Test Task"}
+		req := model.CreateTaskRequest{Title: "Test Task"}
 		resp, err := repo.CreateTask(ctx, req)
 		require.NoError(t, err)
 		assert.NotEmpty(t, resp.Task.ID)
@@ -26,11 +26,11 @@ func TestTaskRepository(t *testing.T) {
 	})
 
 	t.Run("GetTask", func(t *testing.T) {
-		req := models.CreateTaskRequest{Title: "Get Test"}
+		req := model.CreateTaskRequest{Title: "Get Test"}
 		createResp, err := repo.CreateTask(ctx, req)
 		require.NoError(t, err)
 
-		getReq := models.GetTaskRequest{TaskID: createResp.Task.ID}
+		getReq := model.GetTaskRequest{TaskID: createResp.Task.ID}
 		getResp, err := repo.GetTask(ctx, getReq)
 		require.NoError(t, err)
 		assert.Equal(t, createResp.Task.ID, getResp.Task.ID)
@@ -40,7 +40,7 @@ func TestTaskRepository(t *testing.T) {
 	})
 
 	t.Run("ListTasks", func(t *testing.T) {
-		req := models.ListTasksRequest{}
+		req := model.ListTasksRequest{}
 		resp, err := repo.ListTasks(ctx, req)
 		require.NoError(t, err)
 		assert.Equal(t, "default", resp.TodoList.Name)
@@ -48,14 +48,14 @@ func TestTaskRepository(t *testing.T) {
 	})
 
 	t.Run("UpdateTask", func(t *testing.T) {
-		req := models.CreateTaskRequest{Title: "Update Test"}
+		req := model.CreateTaskRequest{Title: "Update Test"}
 		createResp, err := repo.CreateTask(ctx, req)
 		require.NoError(t, err)
 
 		task := createResp.Task
 		task.Title = "Updated Title"
 		task.IsCompleted = true
-		updateReq := models.UpdateTaskRequest{Task: task}
+		updateReq := model.UpdateTaskRequest{Task: task}
 		updateResp, err := repo.UpdateTask(ctx, updateReq)
 		require.NoError(t, err)
 		assert.Equal(t, "Updated Title", updateResp.Task.Title)
@@ -63,15 +63,15 @@ func TestTaskRepository(t *testing.T) {
 	})
 
 	t.Run("DeleteTask", func(t *testing.T) {
-		req := models.CreateTaskRequest{Title: "Delete Test"}
+		req := model.CreateTaskRequest{Title: "Delete Test"}
 		createResp, err := repo.CreateTask(ctx, req)
 		require.NoError(t, err)
 
-		deleteReq := models.DeleteTaskRequest{TaskID: createResp.Task.ID}
+		deleteReq := model.DeleteTaskRequest{TaskID: createResp.Task.ID}
 		_, err = repo.DeleteTask(ctx, deleteReq)
 		require.NoError(t, err)
 
-		getReq := models.GetTaskRequest{TaskID: createResp.Task.ID}
+		getReq := model.GetTaskRequest{TaskID: createResp.Task.ID}
 		_, err = repo.GetTask(ctx, getReq)
 		assert.Error(t, err)
 	})
