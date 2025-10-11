@@ -63,9 +63,13 @@ func TestHandler(t *testing.T) {
 		{
 			name: "ListTasks",
 			prepare: func() string {
-				return ""
+				return "List Handler Test"
 			},
 			run: func(t *testing.T, title string) {
+				createReq := &v1.CreateTaskRequest{Title: title}
+				_, err := handler.CreateTask(ctx, createReq)
+				require.NoError(t, err)
+
 				req := &v1.ListTasksRequest{}
 				resp, err := handler.ListTasks(ctx, req)
 				require.NoError(t, err)

@@ -77,9 +77,21 @@ func TestTaskRepository(t *testing.T) {
 		{
 			name: "ListTasks",
 			prepare: func() (model.Task, error) {
-				return model.Task{}, nil
+				id, err := uuid.NewV7()
+				if err != nil {
+					return model.Task{}, err
+				}
+				return model.Task{
+					ID:          id.String(),
+					Title:       "List Test",
+					IsCompleted: false,
+					CreatedAt:   time.Now(),
+				}, nil
 			},
 			run: func(t *testing.T, task model.Task) {
+				_, err := repo.CreateTask(ctx, task)
+				require.NoError(t, err)
+
 				resp, err := repo.ListTasks(ctx)
 				require.NoError(t, err)
 				assert.GreaterOrEqual(t, len(resp), 1)
