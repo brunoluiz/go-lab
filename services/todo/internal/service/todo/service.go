@@ -17,6 +17,7 @@ var (
 	ErrTitleRequired    = errors.New("title is required")
 	ErrTaskNotFound     = errors.New("task not found")
 	ErrValidationFailed = errors.New("validation failed")
+	ErrInternal         = errors.New("internal error")
 )
 
 func toDtoTask(t model.Task) dto.Task {
@@ -53,7 +54,7 @@ func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dt
 	}
 	id, err := uuid.NewV7()
 	if err != nil {
-		return dto.CreateTaskResponse{}, fmt.Errorf("failed to generate UUID: %w", err)
+		return dto.CreateTaskResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 	task := model.Task{
 		ID:          id.String(),
@@ -63,7 +64,7 @@ func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dt
 	}
 	created, err := s.repo.CreateTask(ctx, task)
 	if err != nil {
-		return dto.CreateTaskResponse{}, fmt.Errorf("failed to create task: %w", err)
+		return dto.CreateTaskResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 	return dto.CreateTaskResponse{Task: toDtoTask(created)}, nil
 }
@@ -79,7 +80,7 @@ func (s *Service) GetTask(ctx context.Context, req dto.GetTaskRequest) (dto.GetT
 		if errors.Is(err, repository.ErrTaskNotFound) {
 			return dto.GetTaskResponse{}, ErrTaskNotFound
 		}
-		return dto.GetTaskResponse{}, fmt.Errorf("failed to get task: %w", err)
+		return dto.GetTaskResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 	return dto.GetTaskResponse{Task: toDtoTask(task)}, nil
 }
@@ -87,7 +88,7 @@ func (s *Service) GetTask(ctx context.Context, req dto.GetTaskRequest) (dto.GetT
 func (s *Service) ListTasks(ctx context.Context, _ dto.ListTasksRequest) (dto.ListTasksResponse, error) {
 	tasks, err := s.repo.ListTasks(ctx)
 	if err != nil {
-		return dto.ListTasksResponse{}, fmt.Errorf("failed to list tasks: %w", err)
+		return dto.ListTasksResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 	dtoTasks := make([]dto.Task, len(tasks))
 	for i, t := range tasks {
@@ -116,7 +117,7 @@ func (s *Service) UpdateTask(ctx context.Context, req dto.UpdateTaskRequest) (dt
 		if errors.Is(err, repository.ErrTaskNotFound) {
 			return dto.UpdateTaskResponse{}, ErrTaskNotFound
 		}
-		return dto.UpdateTaskResponse{}, fmt.Errorf("failed to update task: %w", err)
+		return dto.UpdateTaskResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 	return dto.UpdateTaskResponse{Task: toDtoTask(updated)}, nil
 }
@@ -132,7 +133,7 @@ func (s *Service) DeleteTask(ctx context.Context, req dto.DeleteTaskRequest) (dt
 		if errors.Is(err, repository.ErrTaskNotFound) {
 			return dto.DeleteTaskResponse{}, ErrTaskNotFound
 		}
-		return dto.DeleteTaskResponse{}, fmt.Errorf("failed to delete task: %w", err)
+		return dto.DeleteTaskResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 	return dto.DeleteTaskResponse{}, nil
 }

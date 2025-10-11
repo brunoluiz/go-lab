@@ -45,7 +45,7 @@ func TestTaskRepository(t *testing.T) {
 			IsCompleted: false,
 			CreatedAt:   time.Now(),
 		}
-		_, err := repo.CreateTask(ctx, task)
+		_, err = repo.CreateTask(ctx, task)
 		require.NoError(t, err)
 
 		getResp, err := repo.GetTask(ctx, task.ID)
@@ -70,7 +70,7 @@ func TestTaskRepository(t *testing.T) {
 			IsCompleted: false,
 			CreatedAt:   time.Now(),
 		}
-		_, err := repo.CreateTask(ctx, task)
+		_, err = repo.CreateTask(ctx, task)
 		require.NoError(t, err)
 
 		task.Title = "Updated Title"
@@ -90,7 +90,7 @@ func TestTaskRepository(t *testing.T) {
 			IsCompleted: false,
 			CreatedAt:   time.Now(),
 		}
-		_, err := repo.CreateTask(ctx, task)
+		_, err = repo.CreateTask(ctx, task)
 		require.NoError(t, err)
 
 		err = repo.DeleteTask(ctx, task.ID)

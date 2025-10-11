@@ -30,7 +30,7 @@ The below libraries must be used for the respective purposes and alternatives sh
 ## Error handling
 
 - Each layer should define its own sentinel error types (eg: `var ErrNotFound = errors.New("not found")`)
-- Errors must be wrapped into the layer's sentinel errors
+- Errors must be wrapped into the layer's sentinel errors, meaning it should usually end up with `fmt.Errorf("%w: %w")` instead of `fmt.Errorf("bla bla: %w")`
 
 ## Service structure
 
