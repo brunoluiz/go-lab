@@ -58,9 +58,9 @@ func (r *taskRepository) GetTask(ctx context.Context, id string) (model.Task, er
 		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 	var task model.Task
-	if err := json.Unmarshal(data, &task); err != nil {
-		r.logger.ErrorContext(ctx, "failed to unmarshal task", "error", err, "task_id", id)
-		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, err)
+	if unmarshalErr := json.Unmarshal(data, &task); unmarshalErr != nil {
+		r.logger.ErrorContext(ctx, "failed to unmarshal task", "error", unmarshalErr, "task_id", id)
+		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, unmarshalErr)
 	}
 	return task, nil
 }
@@ -74,9 +74,9 @@ func (r *taskRepository) ListTasks(ctx context.Context) ([]model.Task, error) {
 	var tasks []model.Task
 	for _, data := range tasksMap {
 		var task model.Task
-		if err := json.Unmarshal(data, &task); err != nil {
-			r.logger.ErrorContext(ctx, "failed to unmarshal task in list", "error", err)
-			return nil, fmt.Errorf("%w: %w", ErrInternal, err)
+		if unmarshalErr := json.Unmarshal(data, &task); unmarshalErr != nil {
+			r.logger.ErrorContext(ctx, "failed to unmarshal task in list", "error", unmarshalErr)
+			return nil, fmt.Errorf("%w: %w", ErrInternal, unmarshalErr)
 		}
 		tasks = append(tasks, task)
 	}

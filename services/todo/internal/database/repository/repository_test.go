@@ -23,19 +23,22 @@ func TestTaskRepository(t *testing.T) {
 
 	tests := []struct {
 		name    string
-		prepare func() model.Task
+		prepare func() (model.Task, error)
 		run     func(t *testing.T, task model.Task)
 	}{
 		{
 			name: "CreateTask",
-			prepare: func() model.Task {
-				id1, _ := uuid.NewV7()
+			prepare: func() (model.Task, error) {
+				id1, err := uuid.NewV7()
+				if err != nil {
+					return model.Task{}, err
+				}
 				return model.Task{
 					ID:          id1.String(),
 					Title:       "Test Task",
 					IsCompleted: false,
 					CreatedAt:   time.Now(),
-				}
+				}, nil
 			},
 			run: func(t *testing.T, task model.Task) {
 				resp, err := repo.CreateTask(ctx, task)
@@ -47,14 +50,17 @@ func TestTaskRepository(t *testing.T) {
 		},
 		{
 			name: "GetTask",
-			prepare: func() model.Task {
-				id1, _ := uuid.NewV7()
+			prepare: func() (model.Task, error) {
+				id1, err := uuid.NewV7()
+				if err != nil {
+					return model.Task{}, err
+				}
 				return model.Task{
 					ID:          id1.String(),
 					Title:       "Get Test",
 					IsCompleted: false,
 					CreatedAt:   time.Now(),
-				}
+				}, nil
 			},
 			run: func(t *testing.T, task model.Task) {
 				_, err := repo.CreateTask(ctx, task)
@@ -69,8 +75,8 @@ func TestTaskRepository(t *testing.T) {
 		},
 		{
 			name: "ListTasks",
-			prepare: func() model.Task {
-				return model.Task{}
+			prepare: func() (model.Task, error) {
+				return model.Task{}, nil
 			},
 			run: func(t *testing.T, task model.Task) {
 				resp, err := repo.ListTasks(ctx)
@@ -80,14 +86,17 @@ func TestTaskRepository(t *testing.T) {
 		},
 		{
 			name: "UpdateTask",
-			prepare: func() model.Task {
-				id2, _ := uuid.NewV7()
+			prepare: func() (model.Task, error) {
+				id2, err := uuid.NewV7()
+				if err != nil {
+					return model.Task{}, err
+				}
 				return model.Task{
 					ID:          id2.String(),
 					Title:       "Update Test",
 					IsCompleted: false,
 					CreatedAt:   time.Now(),
-				}
+				}, nil
 			},
 			run: func(t *testing.T, task model.Task) {
 				_, err := repo.CreateTask(ctx, task)
@@ -103,14 +112,17 @@ func TestTaskRepository(t *testing.T) {
 		},
 		{
 			name: "DeleteTask",
-			prepare: func() model.Task {
-				id, _ := uuid.NewV7()
+			prepare: func() (model.Task, error) {
+				id, err := uuid.NewV7()
+				if err != nil {
+					return model.Task{}, err
+				}
 				return model.Task{
 					ID:          id.String(),
 					Title:       "Delete Test",
 					IsCompleted: false,
 					CreatedAt:   time.Now(),
-				}
+				}, nil
 			},
 			run: func(t *testing.T, task model.Task) {
 				_, err := repo.CreateTask(ctx, task)
@@ -127,7 +139,8 @@ func TestTaskRepository(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			task := tt.prepare()
+			task, err := tt.prepare()
+			require.NoError(t, err)
 			tt.run(t, task)
 		})
 	}
