@@ -16,6 +16,7 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/brunoluiz/go-lab/services/todo/internal/grpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type CLI struct {
