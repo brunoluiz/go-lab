@@ -16,6 +16,9 @@ The below libraries must be used for the respective purposes and alternatives sh
 - HTTP REST: `github.com/go-resty/resty`
 - JSON: `encoding/json/v2`
 - YAML: `github.com/yaml/go-yaml`
+- Test (assertions): `github.com/stretchr/testify` (might change in the future, is just quite convenient for now... could be using `matryer/is` in the future)
+- Test (containers): `github.com/testcontainers/testcontainers-go`
+- Test (mocks): `github.com/uber/mock`
 
 ## Best practices
 
@@ -34,6 +37,11 @@ The below libraries must be used for the respective purposes and alternatives sh
 
 - Each layer should define its own sentinel error types (eg: `var ErrNotFound = errors.New("not found")`)
 - Errors must be wrapped into the layer's sentinel errors, meaning it should usually end up with `fmt.Errorf("%w: %w")` instead of `fmt.Errorf("bla bla: %w")`
+
+## Testing
+
+- Table-driven tests must be used whenever possible
+- Tests must be done so they can run using `t.Parallel()`, with exception to integration tests which should be on best-effort basis
 
 ## Service structure
 
