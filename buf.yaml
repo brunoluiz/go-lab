@@ -1,0 +1,12 @@
+# For details on buf.yaml configuration, visit https://buf.build/docs/configuration/v2/buf-yaml
+version: v2
+# Defines the directory where .proto files are located
+modules:
+  - path: proto
+# Enforces best practices (e.g., resource naming, snake_case)
+lint:
+  use:
+    - STANDARD
+breaking:
+  use:
+    - FILE

@@ -3,6 +3,7 @@ module github.com/brunoluiz/go-lab
 go 1.25
 
 require (
+	connectrpc.com/connect v1.19.1
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/gin-gonic/gin v1.9.1
 	github.com/golang-migrate/migrate/v4 v4.15.2
@@ -11,6 +12,7 @@ require (
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/fx v1.20.1
 	golang.org/x/text v0.14.0
+	google.golang.org/protobuf v1.36.9
 )
 
 require (
@@ -63,6 +65,5 @@ require (
 	golang.org/x/net v0.21.0 // indirect
 	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/tools v0.18.0 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
