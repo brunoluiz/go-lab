@@ -6,24 +6,31 @@
   - `3000`: http
   - `4000`: grpc/connect
   - `9090`: operational (metrics, health, pprof)
-- `encoding/json/v2` should be used instead of `encoding/json`
-- Do not use `fmt.Println`
-- Apps must handle `SIGTERM` and `SIGINT` gracefully
-- Packages must never be plural
 
 ## Libraries
 
 The below libraries must be used for the respective purposes and alternatives should not be added
 
 - Logging: `log/slog`
-- HTTP Client: `github.com/go-resty/resty` (when integrating with HTTP APIs that do not have a Go SDK)
+- HTTP REST: `github.com/go-resty/resty`
+- JSON: `encoding/json/v2`
+- YAML: `yaml/go-yaml`
 
 ## Best practices
 
+- Do not use `fmt.Println`
+- Apps must handle `SIGTERM` and `SIGINT` gracefully using `signal.NotifyContext`
+- Packages must never be plural
 - When implementing a method, it should always support `context.Context` as the first parameter
 - Do not use `http.DefaultClient`: always create a custom `*http.Client` with sensible timeouts
 - When logging, always pass the `context.Context` via the `*Context` variants in `slog`
 - Always inject dependencies via constructors, even for things such as loggers.
+- When input arguments are not used, replace the name with `_`, for example `(_ context.Context, input Bla)`
+
+## Error handling
+
+- Each layer should define its own sentinel error types (eg: `var ErrNotFound = errors.New("not found")`)
+- Errors must be wrapped into the layer's sentinel errors
 
 ## Service structure
 
