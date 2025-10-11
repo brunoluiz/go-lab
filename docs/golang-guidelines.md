@@ -50,6 +50,9 @@ The below libraries must be used for the respective purposes and alternatives sh
 │   ├── consumer
 │   └── cli
 │
+│   # Scripts related to this specific service/cmds (eg: clients)
+├── script
+│
 └── internal
     │ # Storage layer (eg: SQL, NoSQL, in-memory, etc)
     │ # NOTE: model differs than dto because it might have storage specific tags/details
