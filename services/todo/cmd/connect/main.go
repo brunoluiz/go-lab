@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,16 +18,17 @@ import (
 )
 
 func main() {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	kv := database.NewKVStore()
-	repo := repository.NewTaskRepository(kv)
-	service := todo.NewService(repo)
+	repo := repository.NewTaskRepository(kv, logger)
+	service := todo.NewService(repo, logger)
 	handler := grpc.NewHandler(service)
 
 	mux := http.NewServeMux()
 	path, h := todov1connect.NewTodoServiceHandler(handler)
 	mux.Handle(path, h)
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
 	server := &http.Server{
 		Addr:              ":4000",
@@ -35,19 +37,18 @@ func main() {
 	}
 
 	go func() {
-		sigChan := make(chan os.Signal, 1)
-		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-		<-sigChan
-		log.Println("Shutting down server...")
-		cancel()
-		if err := server.Shutdown(ctx); err != nil {
-			log.Printf("Server shutdown error: %v", err)
+		log.Println("Starting server on :4000")
+		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatal(err)
 		}
 	}()
 
-	log.Println("Starting server on :4000")
-	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		log.Fatal(err)
+	<-ctx.Done()
+	log.Println("Shutting down server...")
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Printf("Server shutdown error: %v", err)
 	}
 	log.Println("Server stopped")
 }

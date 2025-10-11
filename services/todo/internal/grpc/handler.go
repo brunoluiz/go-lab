@@ -5,7 +5,7 @@ import (
 
 	v1 "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1"
 	todov1connect "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1/todov1connect"
-	"github.com/brunoluiz/go-lab/services/todo/internal/model"
+	"github.com/brunoluiz/go-lab/services/todo/internal/dto"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -20,7 +20,7 @@ func NewHandler(service *todo.Service) *Handler {
 }
 
 func (h *Handler) CreateTask(ctx context.Context, req *v1.CreateTaskRequest) (*v1.CreateTaskResponse, error) {
-	internalReq := model.CreateTaskRequest{Title: req.Title}
+	internalReq := dto.CreateTaskRequest{Title: req.Title}
 	resp, err := h.service.CreateTask(ctx, internalReq)
 	if err != nil {
 		return nil, err
@@ -29,7 +29,7 @@ func (h *Handler) CreateTask(ctx context.Context, req *v1.CreateTaskRequest) (*v
 }
 
 func (h *Handler) GetTask(ctx context.Context, req *v1.GetTaskRequest) (*v1.GetTaskResponse, error) {
-	internalReq := model.GetTaskRequest{TaskID: req.TaskId}
+	internalReq := dto.GetTaskRequest{TaskID: req.TaskId}
 	resp, err := h.service.GetTask(ctx, internalReq)
 	if err != nil {
 		return nil, err
@@ -39,7 +39,7 @@ func (h *Handler) GetTask(ctx context.Context, req *v1.GetTaskRequest) (*v1.GetT
 
 func (h *Handler) ListTasks(ctx context.Context, req *v1.ListTasksRequest) (*v1.ListTasksResponse, error) {
 	_ = req
-	internalReq := model.ListTasksRequest{}
+	internalReq := dto.ListTasksRequest{}
 	resp, err := h.service.ListTasks(ctx, internalReq)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (h *Handler) ListTasks(ctx context.Context, req *v1.ListTasksRequest) (*v1.
 }
 
 func (h *Handler) UpdateTask(ctx context.Context, req *v1.UpdateTaskRequest) (*v1.UpdateTaskResponse, error) {
-	internalReq := model.UpdateTaskRequest{Task: fromProtoTask(req.Task)}
+	internalReq := dto.UpdateTaskRequest{Task: fromProtoTask(req.Task)}
 	resp, err := h.service.UpdateTask(ctx, internalReq)
 	if err != nil {
 		return nil, err
@@ -61,7 +61,7 @@ func (h *Handler) UpdateTask(ctx context.Context, req *v1.UpdateTaskRequest) (*v
 }
 
 func (h *Handler) DeleteTask(ctx context.Context, req *v1.DeleteTaskRequest) (*v1.DeleteTaskResponse, error) {
-	internalReq := model.DeleteTaskRequest{TaskID: req.TaskId}
+	internalReq := dto.DeleteTaskRequest{TaskID: req.TaskId}
 	_, err := h.service.DeleteTask(ctx, internalReq)
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (h *Handler) DeleteTask(ctx context.Context, req *v1.DeleteTaskRequest) (*v
 	return &v1.DeleteTaskResponse{}, nil
 }
 
-func toProtoTask(t model.Task) *v1.Task {
+func toProtoTask(t dto.Task) *v1.Task {
 	return &v1.Task{
 		Id:          t.ID,
 		Title:       t.Title,
@@ -78,8 +78,8 @@ func toProtoTask(t model.Task) *v1.Task {
 	}
 }
 
-func fromProtoTask(t *v1.Task) model.Task {
-	return model.Task{
+func fromProtoTask(t *v1.Task) dto.Task {
+	return dto.Task{
 		ID:          t.Id,
 		Title:       t.Title,
 		IsCompleted: t.IsCompleted,

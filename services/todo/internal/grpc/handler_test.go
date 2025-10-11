@@ -2,6 +2,8 @@ package grpc
 
 import (
 	"context"
+	"log/slog"
+	"os"
 	"testing"
 
 	v1 "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1"
@@ -13,9 +15,10 @@ import (
 )
 
 func TestHandler(t *testing.T) {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	kv := database.NewKVStore()
-	repo := repository.NewTaskRepository(kv)
-	service := todo.NewService(repo)
+	repo := repository.NewTaskRepository(kv, logger)
+	service := todo.NewService(repo, logger)
 	handler := NewHandler(service)
 	ctx := context.Background()
 
