@@ -33,9 +33,13 @@ func main() {
 	service := todo.NewService(repo, logger)
 	handler := grpc.NewHandler(service)
 
-	mux := http.NewServeMux()
 	path, h := todov1connect.NewTodoServiceHandler(handler)
+	mux := http.NewServeMux()
 	mux.Handle(path, h)
+	p := new(http.Protocols)
+	p.SetHTTP1(true)
+	// Use h2c so we can serve HTTP/2 without TLS.
+	p.SetUnencryptedHTTP2(true)
 
 	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 
@@ -43,6 +47,7 @@ func main() {
 		Addr:              fmt.Sprintf("%s:%d", cli.Address, cli.Port),
 		Handler:           mux,
 		ReadHeaderTimeout: 10 * time.Second,
+		Protocols:         p,
 	}
 
 	go func() {
