@@ -1,0 +1,73 @@
+syntax = "proto3";
+package acme.api.todo.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service TodoService {
+  rpc CreateTask (CreateTaskRequest) returns (CreateTaskResponse);
+  rpc GetTask (GetTaskRequest) returns (GetTaskResponse);
+  rpc ListTasks (ListTasksRequest) returns (ListTasksResponse);
+  rpc UpdateTask (UpdateTaskRequest) returns (UpdateTaskResponse);
+  rpc DeleteTask (DeleteTaskRequest) returns (DeleteTaskResponse);
+}
+
+// -------------------------------------------------------------------
+// 1. Core Data Messages (from the original definition)
+// -------------------------------------------------------------------
+
+message Task {
+  string id = 1;
+  string title = 2;
+  bool is_completed = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+message TodoList {
+  repeated Task tasks = 1;
+  string name = 2;
+}
+
+// -------------------------------------------------------------------
+// 2. Request and Response Wrapper Messages
+// -------------------------------------------------------------------
+
+message CreateTaskRequest {
+  string title = 1;
+}
+
+message CreateTaskResponse {
+  Task task = 1;
+}
+
+message GetTaskRequest {
+  string task_id = 1;
+}
+
+message GetTaskResponse {
+  Task task = 1;
+}
+
+message ListTasksRequest {
+  // TODO: Example future fields:
+  // int32 page_number = 1;
+  // int32 page_size = 2;
+}
+
+message ListTasksResponse {
+  TodoList todo_list = 1;
+}
+
+message UpdateTaskRequest {
+  // The full Task object with updated fields.
+  Task task = 1;
+}
+
+message UpdateTaskResponse {
+  Task task = 1;
+}
+
+message DeleteTaskRequest {
+  string task_id = 1;
+}
+
+message DeleteTaskResponse {}
