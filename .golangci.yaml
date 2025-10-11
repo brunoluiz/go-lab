@@ -15,15 +15,16 @@ linters:
     - contextcheck
     - durationcheck
     - errorlint
-    - funlen
     - gochecknoinits
     - goconst
     - gocritic
     - gocyclo
     - gosec
+    - govet
     - nakedret
     - nestif
     - revive
+    - staticcheck
     - unconvert
   settings:
     dupl:
@@ -31,9 +32,18 @@ linters:
     errcheck:
       check-type-assertions: true
       check-blank: true
-    funlen:
-      lines: 100
-      statements: 50
+    govet:
+      # Enable all analyzers.
+      enable-all: true
+      disable:
+        - fieldalignment # too strict
+      settings:
+        shadow:
+          strict: true
+    revive:
+      rules:
+        - name: context-as-argument
+          disabled: false
   exclusions:
     generated: lax
     presets:
@@ -42,7 +52,6 @@ linters:
       - legacy
       - std-error-handling
     paths:
-      - internal/bubbles/table
       - third_party$
       - builtin$
       - examples$
@@ -57,7 +66,6 @@ formatters:
   exclusions:
     generated: lax
     paths:
-      - internal/bubbles/table
       - third_party$
       - builtin$
       - examples$
