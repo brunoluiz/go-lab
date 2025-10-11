@@ -26,6 +26,7 @@ The below libraries must be used for the respective purposes and alternatives sh
 - When logging, always pass the `context.Context` via the `*Context` variants in `slog`
 - Always inject dependencies via constructors, even for things such as loggers.
 - When input arguments are not used, replace the name with `_`, for example `(_ context.Context, input Bla)`
+- Never use `reflect.DeepEqual`, instead use `github.com/google/go-cmp`
 
 ## Error handling
 
