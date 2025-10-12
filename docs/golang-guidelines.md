@@ -19,7 +19,9 @@ The below libraries must be used for the respective purposes and alternatives sh
 - YAML: `github.com/yaml/go-yaml`
 - Test (assertions): `github.com/stretchr/testify` (might change in the future, is just quite convenient for now... could be using `matryer/is` in the future)
 - Test (containers): `github.com/testcontainers/testcontainers-go`
-- Test (mocks): `github.com/uber/mock`
+- Test (mocks): `github.com/uber-go/mock`
+- SQL (query): `github.com/stephenafamo/bob`
+- SQL (migration): `github.com/golang-migrate/migrate`
 
 ## Best practices
 
@@ -29,6 +31,7 @@ The below libraries must be used for the respective purposes and alternatives sh
 - Always inject dependencies via constructors, even for things such as loggers.
 - When input arguments are not used, replace the name with `_`, for example `(_ context.Context, input Bla)`
 - When `go build` is trigged, always delete after finishing any tests
+- Migrations must not be done on application (human operator will do separate), unless in tests
 
 ## Error handling
 
@@ -40,10 +43,24 @@ The below libraries must be used for the respective purposes and alternatives sh
 - Table-driven tests must always be used.
   - Create a `prepare` and `assert` methods for all scenarios to keep a common structure
 - Tests must be done so they can run using `t.Parallel()`, with exception to integration tests which should be on best-effort basis
+- Mocks should be created as a `mock` package within the package being tested
+- Mock generation must be done using `go:generate` and `mockgen`
+
+## Flow of data
+
+```
+$request --> handler --> $dto --> service --> $model --> repository --> $db_model --> database
+```
+
+1. User command via HTTP/GRPC/CLI
+2. It gets converted into a DTO (data transfer object) and sent in the correct service
+3. Service executes business logic, potentially using repositories to fetch/store data
+4. When using repositories, data is converted from DTO to database/model and vice-versa
+5. Within the database/repository, it will do the required storage operations and convert to the required structures (eg: bob/model)
 
 ## Observability
 
-## Service structure
+## Folder and package structure
 
 - New services must be placed under `services/{name}`
 - Not every service needs to have all the below layers, but the structure should be followed as much as possible
@@ -66,7 +83,7 @@ The below libraries must be used for the respective purposes and alternatives sh
     │ # NOTE: model differs than dto because it might have storage specific tags/details
     ├── database
     │   ├── repository
-    │   ├── model
+    │   ├── model # used by calees, should be implementation (kv/sql) agnostic
     │   │ # (Only reqyuired if using SQL)
     │   └── migrations
     │

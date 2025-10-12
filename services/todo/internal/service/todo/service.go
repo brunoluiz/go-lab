@@ -49,7 +49,6 @@ func NewService(repo repository.TaskRepository, logger *slog.Logger) *Service {
 
 func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dto.CreateTaskResponse, error) {
 	if req.Title == "" {
-		s.logger.ErrorContext(ctx, "create task validation failed", "error", ErrTitleRequired)
 		return dto.CreateTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, ErrTitleRequired)
 	}
 	id, err := uuid.NewV7()
@@ -72,7 +71,6 @@ func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dt
 func (s *Service) GetTask(ctx context.Context, req dto.GetTaskRequest) (dto.GetTaskResponse, error) {
 	if req.TaskID == "" {
 		err := errors.New("task ID is required")
-		s.logger.ErrorContext(ctx, "get task validation failed", "error", err)
 		return dto.GetTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
 	}
 	task, err := s.repo.GetTask(ctx, req.TaskID)
@@ -104,11 +102,9 @@ func (s *Service) ListTasks(ctx context.Context, _ dto.ListTasksRequest) (dto.Li
 func (s *Service) UpdateTask(ctx context.Context, req dto.UpdateTaskRequest) (dto.UpdateTaskResponse, error) {
 	if req.Task.ID == "" {
 		err := errors.New("task ID is required")
-		s.logger.ErrorContext(ctx, "update task validation failed", "error", err)
 		return dto.UpdateTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
 	}
 	if req.Task.Title == "" {
-		s.logger.ErrorContext(ctx, "update task validation failed", "error", ErrTitleRequired)
 		return dto.UpdateTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, ErrTitleRequired)
 	}
 	task := fromDtoTask(req.Task)
@@ -125,7 +121,6 @@ func (s *Service) UpdateTask(ctx context.Context, req dto.UpdateTaskRequest) (dt
 func (s *Service) DeleteTask(ctx context.Context, req dto.DeleteTaskRequest) (dto.DeleteTaskResponse, error) {
 	if req.TaskID == "" {
 		err := errors.New("task ID is required")
-		s.logger.ErrorContext(ctx, "delete task validation failed", "error", err)
 		return dto.DeleteTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
 	}
 	err := s.repo.DeleteTask(ctx, req.TaskID)

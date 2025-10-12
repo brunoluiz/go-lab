@@ -2,13 +2,15 @@ package repository
 
 import (
 	"context"
-	"encoding/json"
+	"database/sql"
 	"errors"
 	"fmt"
 	"log/slog"
 
-	"github.com/brunoluiz/go-lab/services/todo/internal/database"
+	"github.com/aarondl/opt/omit"
+	"github.com/brunoluiz/go-lab/services/todo/internal/database/bob/models"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
+	"github.com/stephenafamo/bob"
 )
 
 var (
@@ -25,85 +27,101 @@ type TaskRepository interface {
 }
 
 type taskRepository struct {
-	kv     *database.KVStore
+	db     bob.Executor
 	logger *slog.Logger
 }
 
-func NewTaskRepository(kv *database.KVStore, logger *slog.Logger) TaskRepository {
-	return &taskRepository{kv: kv, logger: logger}
+func NewTaskRepository(db bob.Executor, logger *slog.Logger) TaskRepository {
+	return &taskRepository{db: db, logger: logger}
 }
 
 func (r *taskRepository) CreateTask(ctx context.Context, task model.Task) (model.Task, error) {
-	_ = ctx
-	data, err := json.Marshal(task)
+	setter := models.TaskSetter{
+		ID:          omit.From(task.ID),
+		Title:       omit.From(task.Title),
+		IsCompleted: omit.From(task.IsCompleted),
+		CreatedAt:   omit.From(task.CreatedAt),
+	}
+	created, err := models.Tasks.Insert(&setter).One(ctx, r.db)
 	if err != nil {
-		r.logger.ErrorContext(ctx, "failed to marshal task", "error", err)
 		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
-	key := fmt.Sprintf("task:%s", task.ID)
-	r.kv.Set(key, data)
-	return task, nil
+	return model.Task{
+		ID:          created.ID,
+		Title:       created.Title,
+		IsCompleted: created.IsCompleted,
+		CreatedAt:   created.CreatedAt,
+	}, nil
 }
 
 func (r *taskRepository) GetTask(ctx context.Context, id string) (model.Task, error) {
-	_ = ctx
-	key := fmt.Sprintf("task:%s", id)
-	data, err := r.kv.Get(key)
+	task, err := models.FindTask(ctx, r.db, id)
 	if err != nil {
-		if errors.Is(err, database.ErrKeyNotFound) {
-			r.logger.ErrorContext(ctx, "task not found", "task_id", id)
+		if errors.Is(err, sql.ErrNoRows) {
 			return model.Task{}, ErrTaskNotFound
 		}
-		r.logger.ErrorContext(ctx, "failed to get task", "error", err, "task_id", id)
 		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
-	var task model.Task
-	if unmarshalErr := json.Unmarshal(data, &task); unmarshalErr != nil {
-		r.logger.ErrorContext(ctx, "failed to unmarshal task", "error", unmarshalErr, "task_id", id)
-		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, unmarshalErr)
-	}
-	return task, nil
+	return model.Task{
+		ID:          task.ID,
+		Title:       task.Title,
+		IsCompleted: task.IsCompleted,
+		CreatedAt:   task.CreatedAt,
+	}, nil
 }
 
 func (r *taskRepository) ListTasks(ctx context.Context) ([]model.Task, error) {
-	_ = ctx
-	tasksMap, err := r.kv.List("task:")
+	tasks, err := models.Tasks.Query().All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
-	var tasks []model.Task
-	for _, data := range tasksMap {
-		var task model.Task
-		if unmarshalErr := json.Unmarshal(data, &task); unmarshalErr != nil {
-			r.logger.ErrorContext(ctx, "failed to unmarshal task in list", "error", unmarshalErr)
-			return nil, fmt.Errorf("%w: %w", ErrInternal, unmarshalErr)
-		}
-		tasks = append(tasks, task)
+	var result []model.Task
+	for _, task := range tasks {
+		result = append(result, model.Task{
+			ID:          task.ID,
+			Title:       task.Title,
+			IsCompleted: task.IsCompleted,
+			CreatedAt:   task.CreatedAt,
+		})
 	}
-	return tasks, nil
+	return result, nil
 }
 
 func (r *taskRepository) UpdateTask(ctx context.Context, task model.Task) (model.Task, error) {
-	_ = ctx
-	data, err := json.Marshal(task)
+	bobTask, err := models.FindTask(ctx, r.db, task.ID)
 	if err != nil {
-		r.logger.ErrorContext(ctx, "failed to marshal task for update", "error", err, "task_id", task.ID)
+		if errors.Is(err, sql.ErrNoRows) {
+			return model.Task{}, ErrTaskNotFound
+		}
 		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
-	key := fmt.Sprintf("task:%s", task.ID)
-	r.kv.Set(key, data)
-	return task, nil
+	setter := models.TaskSetter{
+		Title:       omit.From(task.Title),
+		IsCompleted: omit.From(task.IsCompleted),
+		CreatedAt:   omit.From(task.CreatedAt),
+	}
+	err = bobTask.Update(ctx, r.db, &setter)
+	if err != nil {
+		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, err)
+	}
+	return model.Task{
+		ID:          bobTask.ID,
+		Title:       bobTask.Title,
+		IsCompleted: bobTask.IsCompleted,
+		CreatedAt:   bobTask.CreatedAt,
+	}, nil
 }
 
 func (r *taskRepository) DeleteTask(ctx context.Context, id string) error {
-	_ = ctx
-	key := fmt.Sprintf("task:%s", id)
-	if err := r.kv.Delete(key); err != nil {
-		if errors.Is(err, database.ErrKeyNotFound) {
-			r.logger.ErrorContext(ctx, "task not found for deletion", "task_id", id)
+	bobTask, err := models.FindTask(ctx, r.db, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
 			return ErrTaskNotFound
 		}
-		r.logger.ErrorContext(ctx, "failed to delete task", "error", err, "task_id", id)
+		return fmt.Errorf("%w: %w", ErrInternal, err)
+	}
+	err = bobTask.Delete(ctx, r.db)
+	if err != nil {
 		return fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 	return nil
