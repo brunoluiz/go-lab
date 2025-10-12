@@ -17,6 +17,7 @@ The below libraries must be used for the respective purposes and alternatives sh
 - HTTP REST: `github.com/go-resty/resty`
 - JSON: `encoding/json/v2`
 - YAML: `github.com/yaml/go-yaml`
+- Validation: `github.com/go-playground/validator`
 - Test (assertions): `github.com/stretchr/testify` (might change in the future, is just quite convenient for now... could be using `matryer/is` in the future)
 - Test (containers): `github.com/testcontainers/testcontainers-go`
 - Test (mocks): `github.com/uber-go/mock`

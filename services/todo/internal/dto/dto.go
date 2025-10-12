@@ -3,7 +3,7 @@ package dto
 import "time"
 
 type CreateTaskRequest struct {
-	Title string
+	Title string `validate:"required"`
 }
 
 type CreateTaskResponse struct {
@@ -11,7 +11,7 @@ type CreateTaskResponse struct {
 }
 
 type GetTaskRequest struct {
-	TaskID string
+	TaskID string `validate:"required"`
 }
 
 type GetTaskResponse struct {
@@ -27,7 +27,7 @@ type ListTasksResponse struct {
 }
 
 type UpdateTaskRequest struct {
-	Task Task
+	Task Task `validate:"required"`
 }
 
 type UpdateTaskResponse struct {
@@ -35,7 +35,7 @@ type UpdateTaskResponse struct {
 }
 
 type DeleteTaskRequest struct {
-	TaskID string
+	TaskID string `validate:"required"`
 }
 
 type DeleteTaskResponse struct {
@@ -43,10 +43,10 @@ type DeleteTaskResponse struct {
 }
 
 type Task struct {
-	ID          string
-	Title       string
-	IsCompleted bool
-	CreatedAt   time.Time
+	ID          string    `validate:"required"`
+	Title       string    `validate:"required"`
+	IsCompleted bool      `validate:"-"`
+	CreatedAt   time.Time `validate:"-"`
 }
 
 type TodoList struct {

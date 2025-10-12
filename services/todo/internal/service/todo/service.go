@@ -10,6 +10,7 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/brunoluiz/go-lab/services/todo/internal/dto"
+	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
@@ -39,17 +40,22 @@ func fromDtoTask(t dto.Task) model.Task {
 }
 
 type Service struct {
-	repo   repository.TaskRepository
-	logger *slog.Logger
+	repo      repository.TaskRepository
+	logger    *slog.Logger
+	validator *validator.Validate
 }
 
 func NewService(repo repository.TaskRepository, logger *slog.Logger) *Service {
-	return &Service{repo: repo, logger: logger}
+	return &Service{
+		repo:      repo,
+		logger:    logger,
+		validator: validator.New(),
+	}
 }
 
 func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dto.CreateTaskResponse, error) {
-	if req.Title == "" {
-		return dto.CreateTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, ErrTitleRequired)
+	if err := s.validator.Struct(req); err != nil {
+		return dto.CreateTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
 	}
 	id, err := uuid.NewV7()
 	if err != nil {
@@ -69,8 +75,7 @@ func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dt
 }
 
 func (s *Service) GetTask(ctx context.Context, req dto.GetTaskRequest) (dto.GetTaskResponse, error) {
-	if req.TaskID == "" {
-		err := errors.New("task ID is required")
+	if err := s.validator.Struct(req); err != nil {
 		return dto.GetTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
 	}
 	task, err := s.repo.GetTask(ctx, req.TaskID)
@@ -100,12 +105,8 @@ func (s *Service) ListTasks(ctx context.Context, _ dto.ListTasksRequest) (dto.Li
 }
 
 func (s *Service) UpdateTask(ctx context.Context, req dto.UpdateTaskRequest) (dto.UpdateTaskResponse, error) {
-	if req.Task.ID == "" {
-		err := errors.New("task ID is required")
+	if err := s.validator.Struct(req); err != nil {
 		return dto.UpdateTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
-	}
-	if req.Task.Title == "" {
-		return dto.UpdateTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, ErrTitleRequired)
 	}
 	task := fromDtoTask(req.Task)
 	updated, err := s.repo.UpdateTask(ctx, task)
@@ -119,8 +120,7 @@ func (s *Service) UpdateTask(ctx context.Context, req dto.UpdateTaskRequest) (dt
 }
 
 func (s *Service) DeleteTask(ctx context.Context, req dto.DeleteTaskRequest) (dto.DeleteTaskResponse, error) {
-	if req.TaskID == "" {
-		err := errors.New("task ID is required")
+	if err := s.validator.Struct(req); err != nil {
 		return dto.DeleteTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
 	}
 	err := s.repo.DeleteTask(ctx, req.TaskID)
@@ -131,8 +131,4 @@ func (s *Service) DeleteTask(ctx context.Context, req dto.DeleteTaskRequest) (dt
 		return dto.DeleteTaskResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
 	return dto.DeleteTaskResponse{}, nil
-}
-
-func (s *Service) Hello() string {
-	return "oi"
 }
