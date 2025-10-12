@@ -17,7 +17,7 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/segmentio/ksuid v1.0.4
 	github.com/stephenafamo/bob v0.41.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.1
 	github.com/testcontainers/testcontainers-go/modules/postgres v0.38.0
 	go.uber.org/mock v0.6.0
 	golang.org/x/text v0.24.0
