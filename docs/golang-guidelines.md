@@ -2,6 +2,7 @@
 
 ## Standards
 
+- `mise` is used for tooling
 - Default ports for external services:
   - `3000`: http
   - `4000`: grpc/connect
