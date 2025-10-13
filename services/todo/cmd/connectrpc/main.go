@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"connectrpc.com/connect"
+	"connectrpc.com/otelconnect"
 	"github.com/alecthomas/kong"
 	"github.com/brunoluiz/go-lab/core/storage/postgres"
 	todov1connect "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1/todov1connect"
@@ -36,9 +37,15 @@ func run(cli *CLI, logger *slog.Logger) error {
 		DSN: os.Getenv("DB_DSN"),
 	}, postgres.WithLiveCheck())
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 	defer sqlDB.Close()
+
+	otelInterceptor, err := otelconnect.NewInterceptor()
+	if err != nil {
+		return fmt.Errorf("failed to create otel interceptor: %w", err)
+	}
+
 	db := bob.NewDB(sqlDB)
 	taskRepo := repository.NewTaskRepository(db, logger)
 	listRepo := repository.NewListRepository(db, logger)
@@ -49,6 +56,7 @@ func run(cli *CLI, logger *slog.Logger) error {
 	grpcHandler := connectrpc.NewHandler(service, listService)
 	path, h := todov1connect.NewTodoServiceHandler(grpcHandler, connect.WithInterceptors(
 		interceptor.Error(logger),
+		otelInterceptor,
 	))
 	mux := http.NewServeMux()
 	mux.Handle(path, h)
