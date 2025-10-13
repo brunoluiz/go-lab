@@ -22,19 +22,80 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type List struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *List) Reset() {
+	*x = List{}
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[0]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *List) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*List) ProtoMessage() {}
+
+func (x *List) ProtoReflect() protoreflect.Message {
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[0]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use List.ProtoReflect.Descriptor instead.
+func (*List) Descriptor() ([]byte, []int) {
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *List) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *List) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *List) GetCreatedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CreatedAt
+	}
+	return nil
+}
+
 type Task struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Title         string                 `protobuf:"bytes,2,opt,name=title,proto3" json:"title,omitempty"`
 	IsCompleted   bool                   `protobuf:"varint,3,opt,name=is_completed,json=isCompleted,proto3" json:"is_completed,omitempty"`
 	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
+	ListId        string                 `protobuf:"bytes,5,opt,name=list_id,json=listId,proto3" json:"list_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *Task) Reset() {
 	*x = Task{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[0]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -46,7 +107,7 @@ func (x *Task) String() string {
 func (*Task) ProtoMessage() {}
 
 func (x *Task) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[0]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -59,7 +120,7 @@ func (x *Task) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Task.ProtoReflect.Descriptor instead.
 func (*Task) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{0}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *Task) GetId() string {
@@ -90,17 +151,25 @@ func (x *Task) GetCreatedAt() *timestamppb.Timestamp {
 	return nil
 }
 
+func (x *Task) GetListId() string {
+	if x != nil {
+		return x.ListId
+	}
+	return ""
+}
+
 type TodoList struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Tasks         []*Task                `protobuf:"bytes,1,rep,name=tasks,proto3" json:"tasks,omitempty"`
 	Name          string                 `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Id            string                 `protobuf:"bytes,3,opt,name=id,proto3" json:"id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *TodoList) Reset() {
 	*x = TodoList{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[1]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -112,7 +181,7 @@ func (x *TodoList) String() string {
 func (*TodoList) ProtoMessage() {}
 
 func (x *TodoList) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[1]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -125,7 +194,7 @@ func (x *TodoList) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use TodoList.ProtoReflect.Descriptor instead.
 func (*TodoList) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{1}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *TodoList) GetTasks() []*Task {
@@ -142,16 +211,448 @@ func (x *TodoList) GetName() string {
 	return ""
 }
 
+func (x *TodoList) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+type CreateListRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateListRequest) Reset() {
+	*x = CreateListRequest{}
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[3]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateListRequest) ProtoMessage() {}
+
+func (x *CreateListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[3]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateListRequest.ProtoReflect.Descriptor instead.
+func (*CreateListRequest) Descriptor() ([]byte, []int) {
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *CreateListRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+type CreateListResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	List          *List                  `protobuf:"bytes,1,opt,name=list,proto3" json:"list,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateListResponse) Reset() {
+	*x = CreateListResponse{}
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[4]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateListResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateListResponse) ProtoMessage() {}
+
+func (x *CreateListResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[4]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateListResponse.ProtoReflect.Descriptor instead.
+func (*CreateListResponse) Descriptor() ([]byte, []int) {
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *CreateListResponse) GetList() *List {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+type GetListRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ListId        string                 `protobuf:"bytes,1,opt,name=list_id,json=listId,proto3" json:"list_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetListRequest) Reset() {
+	*x = GetListRequest{}
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetListRequest) ProtoMessage() {}
+
+func (x *GetListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetListRequest.ProtoReflect.Descriptor instead.
+func (*GetListRequest) Descriptor() ([]byte, []int) {
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *GetListRequest) GetListId() string {
+	if x != nil {
+		return x.ListId
+	}
+	return ""
+}
+
+type GetListResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	List          *List                  `protobuf:"bytes,1,opt,name=list,proto3" json:"list,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetListResponse) Reset() {
+	*x = GetListResponse{}
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetListResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetListResponse) ProtoMessage() {}
+
+func (x *GetListResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetListResponse.ProtoReflect.Descriptor instead.
+func (*GetListResponse) Descriptor() ([]byte, []int) {
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetListResponse) GetList() *List {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+type ListListsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListListsRequest) Reset() {
+	*x = ListListsRequest{}
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListListsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListListsRequest) ProtoMessage() {}
+
+func (x *ListListsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListListsRequest.ProtoReflect.Descriptor instead.
+func (*ListListsRequest) Descriptor() ([]byte, []int) {
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{7}
+}
+
+type ListListsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Lists         []*List                `protobuf:"bytes,1,rep,name=lists,proto3" json:"lists,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListListsResponse) Reset() {
+	*x = ListListsResponse{}
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[8]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListListsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListListsResponse) ProtoMessage() {}
+
+func (x *ListListsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[8]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListListsResponse.ProtoReflect.Descriptor instead.
+func (*ListListsResponse) Descriptor() ([]byte, []int) {
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{8}
+}
+
+func (x *ListListsResponse) GetLists() []*List {
+	if x != nil {
+		return x.Lists
+	}
+	return nil
+}
+
+type UpdateListRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	List          *List                  `protobuf:"bytes,1,opt,name=list,proto3" json:"list,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateListRequest) Reset() {
+	*x = UpdateListRequest{}
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateListRequest) ProtoMessage() {}
+
+func (x *UpdateListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateListRequest.ProtoReflect.Descriptor instead.
+func (*UpdateListRequest) Descriptor() ([]byte, []int) {
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *UpdateListRequest) GetList() *List {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+type UpdateListResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	List          *List                  `protobuf:"bytes,1,opt,name=list,proto3" json:"list,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateListResponse) Reset() {
+	*x = UpdateListResponse{}
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateListResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateListResponse) ProtoMessage() {}
+
+func (x *UpdateListResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateListResponse.ProtoReflect.Descriptor instead.
+func (*UpdateListResponse) Descriptor() ([]byte, []int) {
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *UpdateListResponse) GetList() *List {
+	if x != nil {
+		return x.List
+	}
+	return nil
+}
+
+type DeleteListRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	ListId        string                 `protobuf:"bytes,1,opt,name=list_id,json=listId,proto3" json:"list_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteListRequest) Reset() {
+	*x = DeleteListRequest{}
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteListRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteListRequest) ProtoMessage() {}
+
+func (x *DeleteListRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteListRequest.ProtoReflect.Descriptor instead.
+func (*DeleteListRequest) Descriptor() ([]byte, []int) {
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *DeleteListRequest) GetListId() string {
+	if x != nil {
+		return x.ListId
+	}
+	return ""
+}
+
+type DeleteListResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeleteListResponse) Reset() {
+	*x = DeleteListResponse{}
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeleteListResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeleteListResponse) ProtoMessage() {}
+
+func (x *DeleteListResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeleteListResponse.ProtoReflect.Descriptor instead.
+func (*DeleteListResponse) Descriptor() ([]byte, []int) {
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{12}
+}
+
 type CreateTaskRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Title         string                 `protobuf:"bytes,1,opt,name=title,proto3" json:"title,omitempty"`
+	ListId        string                 `protobuf:"bytes,2,opt,name=list_id,json=listId,proto3" json:"list_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CreateTaskRequest) Reset() {
 	*x = CreateTaskRequest{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[2]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -163,7 +664,7 @@ func (x *CreateTaskRequest) String() string {
 func (*CreateTaskRequest) ProtoMessage() {}
 
 func (x *CreateTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[2]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -176,12 +677,19 @@ func (x *CreateTaskRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTaskRequest.ProtoReflect.Descriptor instead.
 func (*CreateTaskRequest) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{2}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *CreateTaskRequest) GetTitle() string {
 	if x != nil {
 		return x.Title
+	}
+	return ""
+}
+
+func (x *CreateTaskRequest) GetListId() string {
+	if x != nil {
+		return x.ListId
 	}
 	return ""
 }
@@ -195,7 +703,7 @@ type CreateTaskResponse struct {
 
 func (x *CreateTaskResponse) Reset() {
 	*x = CreateTaskResponse{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[3]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -207,7 +715,7 @@ func (x *CreateTaskResponse) String() string {
 func (*CreateTaskResponse) ProtoMessage() {}
 
 func (x *CreateTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[3]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -220,7 +728,7 @@ func (x *CreateTaskResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateTaskResponse.ProtoReflect.Descriptor instead.
 func (*CreateTaskResponse) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{3}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CreateTaskResponse) GetTask() *Task {
@@ -239,7 +747,7 @@ type GetTaskRequest struct {
 
 func (x *GetTaskRequest) Reset() {
 	*x = GetTaskRequest{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[4]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -251,7 +759,7 @@ func (x *GetTaskRequest) String() string {
 func (*GetTaskRequest) ProtoMessage() {}
 
 func (x *GetTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[4]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -264,7 +772,7 @@ func (x *GetTaskRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTaskRequest.ProtoReflect.Descriptor instead.
 func (*GetTaskRequest) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{4}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *GetTaskRequest) GetTaskId() string {
@@ -283,7 +791,7 @@ type GetTaskResponse struct {
 
 func (x *GetTaskResponse) Reset() {
 	*x = GetTaskResponse{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[5]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -295,7 +803,7 @@ func (x *GetTaskResponse) String() string {
 func (*GetTaskResponse) ProtoMessage() {}
 
 func (x *GetTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[5]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -308,7 +816,7 @@ func (x *GetTaskResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetTaskResponse.ProtoReflect.Descriptor instead.
 func (*GetTaskResponse) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{5}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *GetTaskResponse) GetTask() *Task {
@@ -320,13 +828,14 @@ func (x *GetTaskResponse) GetTask() *Task {
 
 type ListTasksRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
+	ListId        string                 `protobuf:"bytes,1,opt,name=list_id,json=listId,proto3" json:"list_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *ListTasksRequest) Reset() {
 	*x = ListTasksRequest{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[6]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -338,7 +847,7 @@ func (x *ListTasksRequest) String() string {
 func (*ListTasksRequest) ProtoMessage() {}
 
 func (x *ListTasksRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[6]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -351,7 +860,14 @@ func (x *ListTasksRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTasksRequest.ProtoReflect.Descriptor instead.
 func (*ListTasksRequest) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{6}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *ListTasksRequest) GetListId() string {
+	if x != nil {
+		return x.ListId
+	}
+	return ""
 }
 
 type ListTasksResponse struct {
@@ -363,7 +879,7 @@ type ListTasksResponse struct {
 
 func (x *ListTasksResponse) Reset() {
 	*x = ListTasksResponse{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[7]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -375,7 +891,7 @@ func (x *ListTasksResponse) String() string {
 func (*ListTasksResponse) ProtoMessage() {}
 
 func (x *ListTasksResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[7]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -388,7 +904,7 @@ func (x *ListTasksResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListTasksResponse.ProtoReflect.Descriptor instead.
 func (*ListTasksResponse) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{7}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *ListTasksResponse) GetTodoList() *TodoList {
@@ -408,7 +924,7 @@ type UpdateTaskRequest struct {
 
 func (x *UpdateTaskRequest) Reset() {
 	*x = UpdateTaskRequest{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[8]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -420,7 +936,7 @@ func (x *UpdateTaskRequest) String() string {
 func (*UpdateTaskRequest) ProtoMessage() {}
 
 func (x *UpdateTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[8]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -433,7 +949,7 @@ func (x *UpdateTaskRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTaskRequest.ProtoReflect.Descriptor instead.
 func (*UpdateTaskRequest) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{8}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *UpdateTaskRequest) GetTask() *Task {
@@ -452,7 +968,7 @@ type UpdateTaskResponse struct {
 
 func (x *UpdateTaskResponse) Reset() {
 	*x = UpdateTaskResponse{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[9]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -464,7 +980,7 @@ func (x *UpdateTaskResponse) String() string {
 func (*UpdateTaskResponse) ProtoMessage() {}
 
 func (x *UpdateTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[9]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -477,7 +993,7 @@ func (x *UpdateTaskResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateTaskResponse.ProtoReflect.Descriptor instead.
 func (*UpdateTaskResponse) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{9}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *UpdateTaskResponse) GetTask() *Task {
@@ -496,7 +1012,7 @@ type DeleteTaskRequest struct {
 
 func (x *DeleteTaskRequest) Reset() {
 	*x = DeleteTaskRequest{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[10]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -508,7 +1024,7 @@ func (x *DeleteTaskRequest) String() string {
 func (*DeleteTaskRequest) ProtoMessage() {}
 
 func (x *DeleteTaskRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[10]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -521,7 +1037,7 @@ func (x *DeleteTaskRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTaskRequest.ProtoReflect.Descriptor instead.
 func (*DeleteTaskRequest) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{10}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *DeleteTaskRequest) GetTaskId() string {
@@ -539,7 +1055,7 @@ type DeleteTaskResponse struct {
 
 func (x *DeleteTaskResponse) Reset() {
 	*x = DeleteTaskResponse{}
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[11]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -551,7 +1067,7 @@ func (x *DeleteTaskResponse) String() string {
 func (*DeleteTaskResponse) ProtoMessage() {}
 
 func (x *DeleteTaskResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_acme_api_todo_v1_service_proto_msgTypes[11]
+	mi := &file_acme_api_todo_v1_service_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -564,32 +1080,59 @@ func (x *DeleteTaskResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteTaskResponse.ProtoReflect.Descriptor instead.
 func (*DeleteTaskResponse) Descriptor() ([]byte, []int) {
-	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{11}
+	return file_acme_api_todo_v1_service_proto_rawDescGZIP(), []int{22}
 }
 
 var File_acme_api_todo_v1_service_proto protoreflect.FileDescriptor
 
 const file_acme_api_todo_v1_service_proto_rawDesc = "" +
 	"\n" +
-	"\x1eacme/api/todo/v1/service.proto\x12\x10acme.api.todo.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\x8a\x01\n" +
+	"\x1eacme/api/todo/v1/service.proto\x12\x10acme.api.todo.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"e\n" +
+	"\x04List\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x129\n" +
+	"\n" +
+	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xa3\x01\n" +
 	"\x04Task\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x14\n" +
 	"\x05title\x18\x02 \x01(\tR\x05title\x12!\n" +
 	"\fis_completed\x18\x03 \x01(\bR\visCompleted\x129\n" +
 	"\n" +
-	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"L\n" +
+	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12\x17\n" +
+	"\alist_id\x18\x05 \x01(\tR\x06listId\"\\\n" +
 	"\bTodoList\x12,\n" +
 	"\x05tasks\x18\x01 \x03(\v2\x16.acme.api.todo.v1.TaskR\x05tasks\x12\x12\n" +
-	"\x04name\x18\x02 \x01(\tR\x04name\")\n" +
+	"\x04name\x18\x02 \x01(\tR\x04name\x12\x0e\n" +
+	"\x02id\x18\x03 \x01(\tR\x02id\"'\n" +
+	"\x11CreateListRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\"@\n" +
+	"\x12CreateListResponse\x12*\n" +
+	"\x04list\x18\x01 \x01(\v2\x16.acme.api.todo.v1.ListR\x04list\")\n" +
+	"\x0eGetListRequest\x12\x17\n" +
+	"\alist_id\x18\x01 \x01(\tR\x06listId\"=\n" +
+	"\x0fGetListResponse\x12*\n" +
+	"\x04list\x18\x01 \x01(\v2\x16.acme.api.todo.v1.ListR\x04list\"\x12\n" +
+	"\x10ListListsRequest\"A\n" +
+	"\x11ListListsResponse\x12,\n" +
+	"\x05lists\x18\x01 \x03(\v2\x16.acme.api.todo.v1.ListR\x05lists\"?\n" +
+	"\x11UpdateListRequest\x12*\n" +
+	"\x04list\x18\x01 \x01(\v2\x16.acme.api.todo.v1.ListR\x04list\"@\n" +
+	"\x12UpdateListResponse\x12*\n" +
+	"\x04list\x18\x01 \x01(\v2\x16.acme.api.todo.v1.ListR\x04list\",\n" +
+	"\x11DeleteListRequest\x12\x17\n" +
+	"\alist_id\x18\x01 \x01(\tR\x06listId\"\x14\n" +
+	"\x12DeleteListResponse\"B\n" +
 	"\x11CreateTaskRequest\x12\x14\n" +
-	"\x05title\x18\x01 \x01(\tR\x05title\"@\n" +
+	"\x05title\x18\x01 \x01(\tR\x05title\x12\x17\n" +
+	"\alist_id\x18\x02 \x01(\tR\x06listId\"@\n" +
 	"\x12CreateTaskResponse\x12*\n" +
 	"\x04task\x18\x01 \x01(\v2\x16.acme.api.todo.v1.TaskR\x04task\")\n" +
 	"\x0eGetTaskRequest\x12\x17\n" +
 	"\atask_id\x18\x01 \x01(\tR\x06taskId\"=\n" +
 	"\x0fGetTaskResponse\x12*\n" +
-	"\x04task\x18\x01 \x01(\v2\x16.acme.api.todo.v1.TaskR\x04task\"\x12\n" +
-	"\x10ListTasksRequest\"L\n" +
+	"\x04task\x18\x01 \x01(\v2\x16.acme.api.todo.v1.TaskR\x04task\"+\n" +
+	"\x10ListTasksRequest\x12\x17\n" +
+	"\alist_id\x18\x01 \x01(\tR\x06listId\"L\n" +
 	"\x11ListTasksResponse\x127\n" +
 	"\ttodo_list\x18\x01 \x01(\v2\x1a.acme.api.todo.v1.TodoListR\btodoList\"?\n" +
 	"\x11UpdateTaskRequest\x12*\n" +
@@ -598,8 +1141,16 @@ const file_acme_api_todo_v1_service_proto_rawDesc = "" +
 	"\x04task\x18\x01 \x01(\v2\x16.acme.api.todo.v1.TaskR\x04task\",\n" +
 	"\x11DeleteTaskRequest\x12\x17\n" +
 	"\atask_id\x18\x01 \x01(\tR\x06taskId\"\x14\n" +
-	"\x12DeleteTaskResponse2\xbe\x03\n" +
+	"\x12DeleteTaskResponse2\xef\x06\n" +
 	"\vTodoService\x12W\n" +
+	"\n" +
+	"CreateList\x12#.acme.api.todo.v1.CreateListRequest\x1a$.acme.api.todo.v1.CreateListResponse\x12N\n" +
+	"\aGetList\x12 .acme.api.todo.v1.GetListRequest\x1a!.acme.api.todo.v1.GetListResponse\x12T\n" +
+	"\tListLists\x12\".acme.api.todo.v1.ListListsRequest\x1a#.acme.api.todo.v1.ListListsResponse\x12W\n" +
+	"\n" +
+	"UpdateList\x12#.acme.api.todo.v1.UpdateListRequest\x1a$.acme.api.todo.v1.UpdateListResponse\x12W\n" +
+	"\n" +
+	"DeleteList\x12#.acme.api.todo.v1.DeleteListRequest\x1a$.acme.api.todo.v1.DeleteListResponse\x12W\n" +
 	"\n" +
 	"CreateTask\x12#.acme.api.todo.v1.CreateTaskRequest\x1a$.acme.api.todo.v1.CreateTaskResponse\x12N\n" +
 	"\aGetTask\x12 .acme.api.todo.v1.GetTaskRequest\x1a!.acme.api.todo.v1.GetTaskResponse\x12T\n" +
@@ -622,45 +1173,72 @@ func file_acme_api_todo_v1_service_proto_rawDescGZIP() []byte {
 	return file_acme_api_todo_v1_service_proto_rawDescData
 }
 
-var file_acme_api_todo_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 12)
+var file_acme_api_todo_v1_service_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_acme_api_todo_v1_service_proto_goTypes = []any{
-	(*Task)(nil),                  // 0: acme.api.todo.v1.Task
-	(*TodoList)(nil),              // 1: acme.api.todo.v1.TodoList
-	(*CreateTaskRequest)(nil),     // 2: acme.api.todo.v1.CreateTaskRequest
-	(*CreateTaskResponse)(nil),    // 3: acme.api.todo.v1.CreateTaskResponse
-	(*GetTaskRequest)(nil),        // 4: acme.api.todo.v1.GetTaskRequest
-	(*GetTaskResponse)(nil),       // 5: acme.api.todo.v1.GetTaskResponse
-	(*ListTasksRequest)(nil),      // 6: acme.api.todo.v1.ListTasksRequest
-	(*ListTasksResponse)(nil),     // 7: acme.api.todo.v1.ListTasksResponse
-	(*UpdateTaskRequest)(nil),     // 8: acme.api.todo.v1.UpdateTaskRequest
-	(*UpdateTaskResponse)(nil),    // 9: acme.api.todo.v1.UpdateTaskResponse
-	(*DeleteTaskRequest)(nil),     // 10: acme.api.todo.v1.DeleteTaskRequest
-	(*DeleteTaskResponse)(nil),    // 11: acme.api.todo.v1.DeleteTaskResponse
-	(*timestamppb.Timestamp)(nil), // 12: google.protobuf.Timestamp
+	(*List)(nil),                  // 0: acme.api.todo.v1.List
+	(*Task)(nil),                  // 1: acme.api.todo.v1.Task
+	(*TodoList)(nil),              // 2: acme.api.todo.v1.TodoList
+	(*CreateListRequest)(nil),     // 3: acme.api.todo.v1.CreateListRequest
+	(*CreateListResponse)(nil),    // 4: acme.api.todo.v1.CreateListResponse
+	(*GetListRequest)(nil),        // 5: acme.api.todo.v1.GetListRequest
+	(*GetListResponse)(nil),       // 6: acme.api.todo.v1.GetListResponse
+	(*ListListsRequest)(nil),      // 7: acme.api.todo.v1.ListListsRequest
+	(*ListListsResponse)(nil),     // 8: acme.api.todo.v1.ListListsResponse
+	(*UpdateListRequest)(nil),     // 9: acme.api.todo.v1.UpdateListRequest
+	(*UpdateListResponse)(nil),    // 10: acme.api.todo.v1.UpdateListResponse
+	(*DeleteListRequest)(nil),     // 11: acme.api.todo.v1.DeleteListRequest
+	(*DeleteListResponse)(nil),    // 12: acme.api.todo.v1.DeleteListResponse
+	(*CreateTaskRequest)(nil),     // 13: acme.api.todo.v1.CreateTaskRequest
+	(*CreateTaskResponse)(nil),    // 14: acme.api.todo.v1.CreateTaskResponse
+	(*GetTaskRequest)(nil),        // 15: acme.api.todo.v1.GetTaskRequest
+	(*GetTaskResponse)(nil),       // 16: acme.api.todo.v1.GetTaskResponse
+	(*ListTasksRequest)(nil),      // 17: acme.api.todo.v1.ListTasksRequest
+	(*ListTasksResponse)(nil),     // 18: acme.api.todo.v1.ListTasksResponse
+	(*UpdateTaskRequest)(nil),     // 19: acme.api.todo.v1.UpdateTaskRequest
+	(*UpdateTaskResponse)(nil),    // 20: acme.api.todo.v1.UpdateTaskResponse
+	(*DeleteTaskRequest)(nil),     // 21: acme.api.todo.v1.DeleteTaskRequest
+	(*DeleteTaskResponse)(nil),    // 22: acme.api.todo.v1.DeleteTaskResponse
+	(*timestamppb.Timestamp)(nil), // 23: google.protobuf.Timestamp
 }
 var file_acme_api_todo_v1_service_proto_depIdxs = []int32{
-	12, // 0: acme.api.todo.v1.Task.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 1: acme.api.todo.v1.TodoList.tasks:type_name -> acme.api.todo.v1.Task
-	0,  // 2: acme.api.todo.v1.CreateTaskResponse.task:type_name -> acme.api.todo.v1.Task
-	0,  // 3: acme.api.todo.v1.GetTaskResponse.task:type_name -> acme.api.todo.v1.Task
-	1,  // 4: acme.api.todo.v1.ListTasksResponse.todo_list:type_name -> acme.api.todo.v1.TodoList
-	0,  // 5: acme.api.todo.v1.UpdateTaskRequest.task:type_name -> acme.api.todo.v1.Task
-	0,  // 6: acme.api.todo.v1.UpdateTaskResponse.task:type_name -> acme.api.todo.v1.Task
-	2,  // 7: acme.api.todo.v1.TodoService.CreateTask:input_type -> acme.api.todo.v1.CreateTaskRequest
-	4,  // 8: acme.api.todo.v1.TodoService.GetTask:input_type -> acme.api.todo.v1.GetTaskRequest
-	6,  // 9: acme.api.todo.v1.TodoService.ListTasks:input_type -> acme.api.todo.v1.ListTasksRequest
-	8,  // 10: acme.api.todo.v1.TodoService.UpdateTask:input_type -> acme.api.todo.v1.UpdateTaskRequest
-	10, // 11: acme.api.todo.v1.TodoService.DeleteTask:input_type -> acme.api.todo.v1.DeleteTaskRequest
-	3,  // 12: acme.api.todo.v1.TodoService.CreateTask:output_type -> acme.api.todo.v1.CreateTaskResponse
-	5,  // 13: acme.api.todo.v1.TodoService.GetTask:output_type -> acme.api.todo.v1.GetTaskResponse
-	7,  // 14: acme.api.todo.v1.TodoService.ListTasks:output_type -> acme.api.todo.v1.ListTasksResponse
-	9,  // 15: acme.api.todo.v1.TodoService.UpdateTask:output_type -> acme.api.todo.v1.UpdateTaskResponse
-	11, // 16: acme.api.todo.v1.TodoService.DeleteTask:output_type -> acme.api.todo.v1.DeleteTaskResponse
-	12, // [12:17] is the sub-list for method output_type
-	7,  // [7:12] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	23, // 0: acme.api.todo.v1.List.created_at:type_name -> google.protobuf.Timestamp
+	23, // 1: acme.api.todo.v1.Task.created_at:type_name -> google.protobuf.Timestamp
+	1,  // 2: acme.api.todo.v1.TodoList.tasks:type_name -> acme.api.todo.v1.Task
+	0,  // 3: acme.api.todo.v1.CreateListResponse.list:type_name -> acme.api.todo.v1.List
+	0,  // 4: acme.api.todo.v1.GetListResponse.list:type_name -> acme.api.todo.v1.List
+	0,  // 5: acme.api.todo.v1.ListListsResponse.lists:type_name -> acme.api.todo.v1.List
+	0,  // 6: acme.api.todo.v1.UpdateListRequest.list:type_name -> acme.api.todo.v1.List
+	0,  // 7: acme.api.todo.v1.UpdateListResponse.list:type_name -> acme.api.todo.v1.List
+	1,  // 8: acme.api.todo.v1.CreateTaskResponse.task:type_name -> acme.api.todo.v1.Task
+	1,  // 9: acme.api.todo.v1.GetTaskResponse.task:type_name -> acme.api.todo.v1.Task
+	2,  // 10: acme.api.todo.v1.ListTasksResponse.todo_list:type_name -> acme.api.todo.v1.TodoList
+	1,  // 11: acme.api.todo.v1.UpdateTaskRequest.task:type_name -> acme.api.todo.v1.Task
+	1,  // 12: acme.api.todo.v1.UpdateTaskResponse.task:type_name -> acme.api.todo.v1.Task
+	3,  // 13: acme.api.todo.v1.TodoService.CreateList:input_type -> acme.api.todo.v1.CreateListRequest
+	5,  // 14: acme.api.todo.v1.TodoService.GetList:input_type -> acme.api.todo.v1.GetListRequest
+	7,  // 15: acme.api.todo.v1.TodoService.ListLists:input_type -> acme.api.todo.v1.ListListsRequest
+	9,  // 16: acme.api.todo.v1.TodoService.UpdateList:input_type -> acme.api.todo.v1.UpdateListRequest
+	11, // 17: acme.api.todo.v1.TodoService.DeleteList:input_type -> acme.api.todo.v1.DeleteListRequest
+	13, // 18: acme.api.todo.v1.TodoService.CreateTask:input_type -> acme.api.todo.v1.CreateTaskRequest
+	15, // 19: acme.api.todo.v1.TodoService.GetTask:input_type -> acme.api.todo.v1.GetTaskRequest
+	17, // 20: acme.api.todo.v1.TodoService.ListTasks:input_type -> acme.api.todo.v1.ListTasksRequest
+	19, // 21: acme.api.todo.v1.TodoService.UpdateTask:input_type -> acme.api.todo.v1.UpdateTaskRequest
+	21, // 22: acme.api.todo.v1.TodoService.DeleteTask:input_type -> acme.api.todo.v1.DeleteTaskRequest
+	4,  // 23: acme.api.todo.v1.TodoService.CreateList:output_type -> acme.api.todo.v1.CreateListResponse
+	6,  // 24: acme.api.todo.v1.TodoService.GetList:output_type -> acme.api.todo.v1.GetListResponse
+	8,  // 25: acme.api.todo.v1.TodoService.ListLists:output_type -> acme.api.todo.v1.ListListsResponse
+	10, // 26: acme.api.todo.v1.TodoService.UpdateList:output_type -> acme.api.todo.v1.UpdateListResponse
+	12, // 27: acme.api.todo.v1.TodoService.DeleteList:output_type -> acme.api.todo.v1.DeleteListResponse
+	14, // 28: acme.api.todo.v1.TodoService.CreateTask:output_type -> acme.api.todo.v1.CreateTaskResponse
+	16, // 29: acme.api.todo.v1.TodoService.GetTask:output_type -> acme.api.todo.v1.GetTaskResponse
+	18, // 30: acme.api.todo.v1.TodoService.ListTasks:output_type -> acme.api.todo.v1.ListTasksResponse
+	20, // 31: acme.api.todo.v1.TodoService.UpdateTask:output_type -> acme.api.todo.v1.UpdateTaskResponse
+	22, // 32: acme.api.todo.v1.TodoService.DeleteTask:output_type -> acme.api.todo.v1.DeleteTaskResponse
+	23, // [23:33] is the sub-list for method output_type
+	13, // [13:23] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_acme_api_todo_v1_service_proto_init() }
@@ -674,7 +1252,7 @@ func file_acme_api_todo_v1_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_acme_api_todo_v1_service_proto_rawDesc), len(file_acme_api_todo_v1_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   12,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -11,6 +11,8 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/bob/models"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
 	"github.com/stephenafamo/bob"
+	"github.com/stephenafamo/bob/dialect/psql"
+	"github.com/stephenafamo/bob/dialect/psql/sm"
 )
 
 var (
@@ -21,7 +23,7 @@ var (
 type TaskRepository interface {
 	CreateTask(ctx context.Context, req model.Task) (model.Task, error)
 	GetTask(ctx context.Context, id string) (model.Task, error)
-	ListTasks(ctx context.Context) ([]model.Task, error)
+	ListTasks(ctx context.Context, listID string) ([]model.Task, error)
 	UpdateTask(ctx context.Context, task model.Task) (model.Task, error)
 	DeleteTask(ctx context.Context, id string) error
 }
@@ -41,6 +43,7 @@ func (r *taskRepository) CreateTask(ctx context.Context, task model.Task) (model
 		Title:       omit.From(task.Title),
 		IsCompleted: omit.From(task.IsCompleted),
 		CreatedAt:   omit.From(task.CreatedAt),
+		ListID:      omit.From(task.ListID),
 	}
 	created, err := models.Tasks.Insert(&setter).One(ctx, r.db)
 	if err != nil {
@@ -51,6 +54,7 @@ func (r *taskRepository) CreateTask(ctx context.Context, task model.Task) (model
 		Title:       created.Title,
 		IsCompleted: created.IsCompleted,
 		CreatedAt:   created.CreatedAt,
+		ListID:      created.ListID,
 	}, nil
 }
 
@@ -67,11 +71,14 @@ func (r *taskRepository) GetTask(ctx context.Context, id string) (model.Task, er
 		Title:       task.Title,
 		IsCompleted: task.IsCompleted,
 		CreatedAt:   task.CreatedAt,
+		ListID:      task.ListID,
 	}, nil
 }
 
-func (r *taskRepository) ListTasks(ctx context.Context) ([]model.Task, error) {
-	tasks, err := models.Tasks.Query().All(ctx, r.db)
+func (r *taskRepository) ListTasks(ctx context.Context, listID string) ([]model.Task, error) {
+	tasks, err := models.Tasks.Query(
+		sm.Where(models.Tasks.Columns.ListID.EQ(psql.Arg(listID))),
+	).All(ctx, r.db)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
@@ -82,6 +89,7 @@ func (r *taskRepository) ListTasks(ctx context.Context) ([]model.Task, error) {
 			Title:       task.Title,
 			IsCompleted: task.IsCompleted,
 			CreatedAt:   task.CreatedAt,
+			ListID:      task.ListID,
 		})
 	}
 	return result, nil
@@ -99,6 +107,7 @@ func (r *taskRepository) UpdateTask(ctx context.Context, task model.Task) (model
 		Title:       omit.From(task.Title),
 		IsCompleted: omit.From(task.IsCompleted),
 		CreatedAt:   omit.From(task.CreatedAt),
+		ListID:      omit.From(task.ListID),
 	}
 	err = bobTask.Update(ctx, r.db, &setter)
 	if err != nil {
@@ -109,6 +118,7 @@ func (r *taskRepository) UpdateTask(ctx context.Context, task model.Task) (model
 		Title:       bobTask.Title,
 		IsCompleted: bobTask.IsCompleted,
 		CreatedAt:   bobTask.CreatedAt,
+		ListID:      bobTask.ListID,
 	}, nil
 }
 

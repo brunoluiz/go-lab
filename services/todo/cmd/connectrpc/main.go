@@ -17,6 +17,7 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/connectrpc/interceptor"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
+	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stephenafamo/bob"
@@ -39,11 +40,13 @@ func run(cli *CLI, logger *slog.Logger) error {
 	}
 	defer sqlDB.Close()
 	db := bob.NewDB(sqlDB)
-	repo := repository.NewTaskRepository(db, logger)
-	service := todo.NewService(repo, logger)
+	taskRepo := repository.NewTaskRepository(db, logger)
+	listRepo := repository.NewListRepository(db, logger)
+	listService := list.NewService(listRepo, logger)
+	service := todo.NewService(taskRepo, listService, logger)
 
 	// Setup Connect Handler
-	grpcHandler := connectrpc.NewHandler(service)
+	grpcHandler := connectrpc.NewHandler(service, listService)
 	path, h := todov1connect.NewTodoServiceHandler(grpcHandler, connect.WithInterceptors(
 		interceptor.Error(logger),
 	))

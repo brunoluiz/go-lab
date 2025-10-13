@@ -33,6 +33,16 @@ const (
 // reflection-formatted method names, remove the leading slash and convert the remaining slash to a
 // period.
 const (
+	// TodoServiceCreateListProcedure is the fully-qualified name of the TodoService's CreateList RPC.
+	TodoServiceCreateListProcedure = "/acme.api.todo.v1.TodoService/CreateList"
+	// TodoServiceGetListProcedure is the fully-qualified name of the TodoService's GetList RPC.
+	TodoServiceGetListProcedure = "/acme.api.todo.v1.TodoService/GetList"
+	// TodoServiceListListsProcedure is the fully-qualified name of the TodoService's ListLists RPC.
+	TodoServiceListListsProcedure = "/acme.api.todo.v1.TodoService/ListLists"
+	// TodoServiceUpdateListProcedure is the fully-qualified name of the TodoService's UpdateList RPC.
+	TodoServiceUpdateListProcedure = "/acme.api.todo.v1.TodoService/UpdateList"
+	// TodoServiceDeleteListProcedure is the fully-qualified name of the TodoService's DeleteList RPC.
+	TodoServiceDeleteListProcedure = "/acme.api.todo.v1.TodoService/DeleteList"
 	// TodoServiceCreateTaskProcedure is the fully-qualified name of the TodoService's CreateTask RPC.
 	TodoServiceCreateTaskProcedure = "/acme.api.todo.v1.TodoService/CreateTask"
 	// TodoServiceGetTaskProcedure is the fully-qualified name of the TodoService's GetTask RPC.
@@ -47,6 +57,11 @@ const (
 
 // TodoServiceClient is a client for the acme.api.todo.v1.TodoService service.
 type TodoServiceClient interface {
+	CreateList(context.Context, *v1.CreateListRequest) (*v1.CreateListResponse, error)
+	GetList(context.Context, *v1.GetListRequest) (*v1.GetListResponse, error)
+	ListLists(context.Context, *v1.ListListsRequest) (*v1.ListListsResponse, error)
+	UpdateList(context.Context, *v1.UpdateListRequest) (*v1.UpdateListResponse, error)
+	DeleteList(context.Context, *v1.DeleteListRequest) (*v1.DeleteListResponse, error)
 	CreateTask(context.Context, *v1.CreateTaskRequest) (*v1.CreateTaskResponse, error)
 	GetTask(context.Context, *v1.GetTaskRequest) (*v1.GetTaskResponse, error)
 	ListTasks(context.Context, *v1.ListTasksRequest) (*v1.ListTasksResponse, error)
@@ -65,6 +80,36 @@ func NewTodoServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 	baseURL = strings.TrimRight(baseURL, "/")
 	todoServiceMethods := v1.File_acme_api_todo_v1_service_proto.Services().ByName("TodoService").Methods()
 	return &todoServiceClient{
+		createList: connect.NewClient[v1.CreateListRequest, v1.CreateListResponse](
+			httpClient,
+			baseURL+TodoServiceCreateListProcedure,
+			connect.WithSchema(todoServiceMethods.ByName("CreateList")),
+			connect.WithClientOptions(opts...),
+		),
+		getList: connect.NewClient[v1.GetListRequest, v1.GetListResponse](
+			httpClient,
+			baseURL+TodoServiceGetListProcedure,
+			connect.WithSchema(todoServiceMethods.ByName("GetList")),
+			connect.WithClientOptions(opts...),
+		),
+		listLists: connect.NewClient[v1.ListListsRequest, v1.ListListsResponse](
+			httpClient,
+			baseURL+TodoServiceListListsProcedure,
+			connect.WithSchema(todoServiceMethods.ByName("ListLists")),
+			connect.WithClientOptions(opts...),
+		),
+		updateList: connect.NewClient[v1.UpdateListRequest, v1.UpdateListResponse](
+			httpClient,
+			baseURL+TodoServiceUpdateListProcedure,
+			connect.WithSchema(todoServiceMethods.ByName("UpdateList")),
+			connect.WithClientOptions(opts...),
+		),
+		deleteList: connect.NewClient[v1.DeleteListRequest, v1.DeleteListResponse](
+			httpClient,
+			baseURL+TodoServiceDeleteListProcedure,
+			connect.WithSchema(todoServiceMethods.ByName("DeleteList")),
+			connect.WithClientOptions(opts...),
+		),
 		createTask: connect.NewClient[v1.CreateTaskRequest, v1.CreateTaskResponse](
 			httpClient,
 			baseURL+TodoServiceCreateTaskProcedure,
@@ -100,11 +145,61 @@ func NewTodoServiceClient(httpClient connect.HTTPClient, baseURL string, opts ..
 
 // todoServiceClient implements TodoServiceClient.
 type todoServiceClient struct {
+	createList *connect.Client[v1.CreateListRequest, v1.CreateListResponse]
+	getList    *connect.Client[v1.GetListRequest, v1.GetListResponse]
+	listLists  *connect.Client[v1.ListListsRequest, v1.ListListsResponse]
+	updateList *connect.Client[v1.UpdateListRequest, v1.UpdateListResponse]
+	deleteList *connect.Client[v1.DeleteListRequest, v1.DeleteListResponse]
 	createTask *connect.Client[v1.CreateTaskRequest, v1.CreateTaskResponse]
 	getTask    *connect.Client[v1.GetTaskRequest, v1.GetTaskResponse]
 	listTasks  *connect.Client[v1.ListTasksRequest, v1.ListTasksResponse]
 	updateTask *connect.Client[v1.UpdateTaskRequest, v1.UpdateTaskResponse]
 	deleteTask *connect.Client[v1.DeleteTaskRequest, v1.DeleteTaskResponse]
+}
+
+// CreateList calls acme.api.todo.v1.TodoService.CreateList.
+func (c *todoServiceClient) CreateList(ctx context.Context, req *v1.CreateListRequest) (*v1.CreateListResponse, error) {
+	response, err := c.createList.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// GetList calls acme.api.todo.v1.TodoService.GetList.
+func (c *todoServiceClient) GetList(ctx context.Context, req *v1.GetListRequest) (*v1.GetListResponse, error) {
+	response, err := c.getList.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// ListLists calls acme.api.todo.v1.TodoService.ListLists.
+func (c *todoServiceClient) ListLists(ctx context.Context, req *v1.ListListsRequest) (*v1.ListListsResponse, error) {
+	response, err := c.listLists.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// UpdateList calls acme.api.todo.v1.TodoService.UpdateList.
+func (c *todoServiceClient) UpdateList(ctx context.Context, req *v1.UpdateListRequest) (*v1.UpdateListResponse, error) {
+	response, err := c.updateList.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
+}
+
+// DeleteList calls acme.api.todo.v1.TodoService.DeleteList.
+func (c *todoServiceClient) DeleteList(ctx context.Context, req *v1.DeleteListRequest) (*v1.DeleteListResponse, error) {
+	response, err := c.deleteList.CallUnary(ctx, connect.NewRequest(req))
+	if response != nil {
+		return response.Msg, err
+	}
+	return nil, err
 }
 
 // CreateTask calls acme.api.todo.v1.TodoService.CreateTask.
@@ -154,6 +249,11 @@ func (c *todoServiceClient) DeleteTask(ctx context.Context, req *v1.DeleteTaskRe
 
 // TodoServiceHandler is an implementation of the acme.api.todo.v1.TodoService service.
 type TodoServiceHandler interface {
+	CreateList(context.Context, *v1.CreateListRequest) (*v1.CreateListResponse, error)
+	GetList(context.Context, *v1.GetListRequest) (*v1.GetListResponse, error)
+	ListLists(context.Context, *v1.ListListsRequest) (*v1.ListListsResponse, error)
+	UpdateList(context.Context, *v1.UpdateListRequest) (*v1.UpdateListResponse, error)
+	DeleteList(context.Context, *v1.DeleteListRequest) (*v1.DeleteListResponse, error)
 	CreateTask(context.Context, *v1.CreateTaskRequest) (*v1.CreateTaskResponse, error)
 	GetTask(context.Context, *v1.GetTaskRequest) (*v1.GetTaskResponse, error)
 	ListTasks(context.Context, *v1.ListTasksRequest) (*v1.ListTasksResponse, error)
@@ -168,6 +268,36 @@ type TodoServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewTodoServiceHandler(svc TodoServiceHandler, opts ...connect.HandlerOption) (string, http.Handler) {
 	todoServiceMethods := v1.File_acme_api_todo_v1_service_proto.Services().ByName("TodoService").Methods()
+	todoServiceCreateListHandler := connect.NewUnaryHandlerSimple(
+		TodoServiceCreateListProcedure,
+		svc.CreateList,
+		connect.WithSchema(todoServiceMethods.ByName("CreateList")),
+		connect.WithHandlerOptions(opts...),
+	)
+	todoServiceGetListHandler := connect.NewUnaryHandlerSimple(
+		TodoServiceGetListProcedure,
+		svc.GetList,
+		connect.WithSchema(todoServiceMethods.ByName("GetList")),
+		connect.WithHandlerOptions(opts...),
+	)
+	todoServiceListListsHandler := connect.NewUnaryHandlerSimple(
+		TodoServiceListListsProcedure,
+		svc.ListLists,
+		connect.WithSchema(todoServiceMethods.ByName("ListLists")),
+		connect.WithHandlerOptions(opts...),
+	)
+	todoServiceUpdateListHandler := connect.NewUnaryHandlerSimple(
+		TodoServiceUpdateListProcedure,
+		svc.UpdateList,
+		connect.WithSchema(todoServiceMethods.ByName("UpdateList")),
+		connect.WithHandlerOptions(opts...),
+	)
+	todoServiceDeleteListHandler := connect.NewUnaryHandlerSimple(
+		TodoServiceDeleteListProcedure,
+		svc.DeleteList,
+		connect.WithSchema(todoServiceMethods.ByName("DeleteList")),
+		connect.WithHandlerOptions(opts...),
+	)
 	todoServiceCreateTaskHandler := connect.NewUnaryHandlerSimple(
 		TodoServiceCreateTaskProcedure,
 		svc.CreateTask,
@@ -200,6 +330,16 @@ func NewTodoServiceHandler(svc TodoServiceHandler, opts ...connect.HandlerOption
 	)
 	return "/acme.api.todo.v1.TodoService/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case TodoServiceCreateListProcedure:
+			todoServiceCreateListHandler.ServeHTTP(w, r)
+		case TodoServiceGetListProcedure:
+			todoServiceGetListHandler.ServeHTTP(w, r)
+		case TodoServiceListListsProcedure:
+			todoServiceListListsHandler.ServeHTTP(w, r)
+		case TodoServiceUpdateListProcedure:
+			todoServiceUpdateListHandler.ServeHTTP(w, r)
+		case TodoServiceDeleteListProcedure:
+			todoServiceDeleteListHandler.ServeHTTP(w, r)
 		case TodoServiceCreateTaskProcedure:
 			todoServiceCreateTaskHandler.ServeHTTP(w, r)
 		case TodoServiceGetTaskProcedure:
@@ -218,6 +358,26 @@ func NewTodoServiceHandler(svc TodoServiceHandler, opts ...connect.HandlerOption
 
 // UnimplementedTodoServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedTodoServiceHandler struct{}
+
+func (UnimplementedTodoServiceHandler) CreateList(context.Context, *v1.CreateListRequest) (*v1.CreateListResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("acme.api.todo.v1.TodoService.CreateList is not implemented"))
+}
+
+func (UnimplementedTodoServiceHandler) GetList(context.Context, *v1.GetListRequest) (*v1.GetListResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("acme.api.todo.v1.TodoService.GetList is not implemented"))
+}
+
+func (UnimplementedTodoServiceHandler) ListLists(context.Context, *v1.ListListsRequest) (*v1.ListListsResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("acme.api.todo.v1.TodoService.ListLists is not implemented"))
+}
+
+func (UnimplementedTodoServiceHandler) UpdateList(context.Context, *v1.UpdateListRequest) (*v1.UpdateListResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("acme.api.todo.v1.TodoService.UpdateList is not implemented"))
+}
+
+func (UnimplementedTodoServiceHandler) DeleteList(context.Context, *v1.DeleteListRequest) (*v1.DeleteListResponse, error) {
+	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("acme.api.todo.v1.TodoService.DeleteList is not implemented"))
+}
 
 func (UnimplementedTodoServiceHandler) CreateTask(context.Context, *v1.CreateTaskRequest) (*v1.CreateTaskResponse, error) {
 	return nil, connect.NewError(connect.CodeUnimplemented, errors.New("acme.api.todo.v1.TodoService.CreateTask is not implemented"))

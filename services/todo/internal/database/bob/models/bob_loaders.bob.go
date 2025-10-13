@@ -16,10 +16,16 @@ import (
 
 var Preload = getPreloaders()
 
-type preloaders struct{}
+type preloaders struct {
+	List listPreloader
+	Task taskPreloader
+}
 
 func getPreloaders() preloaders {
-	return preloaders{}
+	return preloaders{
+		List: buildListPreloader(),
+		Task: buildTaskPreloader(),
+	}
 }
 
 var (
@@ -28,10 +34,16 @@ var (
 	UpdateThenLoad = getThenLoaders[*dialect.UpdateQuery]()
 )
 
-type thenLoaders[Q orm.Loadable] struct{}
+type thenLoaders[Q orm.Loadable] struct {
+	List listThenLoader[Q]
+	Task taskThenLoader[Q]
+}
 
 func getThenLoaders[Q orm.Loadable]() thenLoaders[Q] {
-	return thenLoaders[Q]{}
+	return thenLoaders[Q]{
+		List: buildListThenLoader[Q](),
+		Task: buildTaskThenLoader[Q](),
+	}
 }
 
 func thenLoadBuilder[Q orm.Loadable, T any](name string, f func(context.Context, bob.Executor, T, ...bob.Mod[*dialect.SelectQuery]) error) func(...bob.Mod[*dialect.SelectQuery]) orm.Loader[Q] {

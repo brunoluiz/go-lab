@@ -7,8 +7,15 @@ import "context"
 
 type contextKey string
 
-// Relationship Contexts for tasks
-var taskWithParentsCascadingCtx = newContextual[bool]("taskWithParentsCascading")
+var (
+	// Relationship Contexts for lists
+	listWithParentsCascadingCtx = newContextual[bool]("listWithParentsCascading")
+	listRelTasksCtx             = newContextual[bool]("lists.tasks.tasks.tasks_list_id_fkey")
+
+	// Relationship Contexts for tasks
+	taskWithParentsCascadingCtx = newContextual[bool]("taskWithParentsCascading")
+	taskRelListCtx              = newContextual[bool]("lists.tasks.tasks.tasks_list_id_fkey")
+)
 
 // Contextual is a convienience wrapper around context.WithValue and context.Value
 type contextual[V any] struct {

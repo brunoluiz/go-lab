@@ -5,6 +5,7 @@ package models
 
 import (
 	"context"
+	"fmt"
 	"io"
 	"time"
 
@@ -16,6 +17,9 @@ import (
 	"github.com/stephenafamo/bob/dialect/psql/sm"
 	"github.com/stephenafamo/bob/dialect/psql/um"
 	"github.com/stephenafamo/bob/expr"
+	"github.com/stephenafamo/bob/mods"
+	"github.com/stephenafamo/bob/orm"
+	"github.com/stephenafamo/bob/types/pgtypes"
 )
 
 // Task is an object representing the database table.
@@ -24,6 +28,9 @@ type Task struct {
 	Title       string    `db:"title" `
 	IsCompleted bool      `db:"is_completed" `
 	CreatedAt   time.Time `db:"created_at" `
+	ListID      string    `db:"list_id" `
+
+	R taskR `db:"-" `
 }
 
 // TaskSlice is an alias for a slice of pointers to Task.
@@ -36,16 +43,22 @@ var Tasks = psql.NewTablex[*Task, TaskSlice, *TaskSetter]("", "tasks", buildTask
 // TasksQuery is a query on the tasks table
 type TasksQuery = *psql.ViewQuery[*Task, TaskSlice]
 
+// taskR is where relationships are stored.
+type taskR struct {
+	List *List // tasks.tasks_list_id_fkey
+}
+
 func buildTaskColumns(alias string) taskColumns {
 	return taskColumns{
 		ColumnsExpr: expr.NewColumnsExpr(
-			"id", "title", "is_completed", "created_at",
+			"id", "title", "is_completed", "created_at", "list_id",
 		).WithParent("tasks"),
 		tableAlias:  alias,
 		ID:          psql.Quote(alias, "id"),
 		Title:       psql.Quote(alias, "title"),
 		IsCompleted: psql.Quote(alias, "is_completed"),
 		CreatedAt:   psql.Quote(alias, "created_at"),
+		ListID:      psql.Quote(alias, "list_id"),
 	}
 }
 
@@ -56,6 +69,7 @@ type taskColumns struct {
 	Title       psql.Expression
 	IsCompleted psql.Expression
 	CreatedAt   psql.Expression
+	ListID      psql.Expression
 }
 
 func (c taskColumns) Alias() string {
@@ -74,10 +88,11 @@ type TaskSetter struct {
 	Title       omit.Val[string]    `db:"title" `
 	IsCompleted omit.Val[bool]      `db:"is_completed" `
 	CreatedAt   omit.Val[time.Time] `db:"created_at" `
+	ListID      omit.Val[string]    `db:"list_id" `
 }
 
 func (s TaskSetter) SetColumns() []string {
-	vals := make([]string, 0, 4)
+	vals := make([]string, 0, 5)
 	if s.ID.IsValue() {
 		vals = append(vals, "id")
 	}
@@ -89,6 +104,9 @@ func (s TaskSetter) SetColumns() []string {
 	}
 	if s.CreatedAt.IsValue() {
 		vals = append(vals, "created_at")
+	}
+	if s.ListID.IsValue() {
+		vals = append(vals, "list_id")
 	}
 	return vals
 }
@@ -106,6 +124,9 @@ func (s TaskSetter) Overwrite(t *Task) {
 	if s.CreatedAt.IsValue() {
 		t.CreatedAt = s.CreatedAt.MustGet()
 	}
+	if s.ListID.IsValue() {
+		t.ListID = s.ListID.MustGet()
+	}
 }
 
 func (s *TaskSetter) Apply(q *dialect.InsertQuery) {
@@ -114,7 +135,7 @@ func (s *TaskSetter) Apply(q *dialect.InsertQuery) {
 	})
 
 	q.AppendValues(bob.ExpressionFunc(func(ctx context.Context, w io.Writer, d bob.Dialect, start int) ([]any, error) {
-		vals := make([]bob.Expression, 4)
+		vals := make([]bob.Expression, 5)
 		if s.ID.IsValue() {
 			vals[0] = psql.Arg(s.ID.MustGet())
 		} else {
@@ -139,6 +160,12 @@ func (s *TaskSetter) Apply(q *dialect.InsertQuery) {
 			vals[3] = psql.Raw("DEFAULT")
 		}
 
+		if s.ListID.IsValue() {
+			vals[4] = psql.Arg(s.ListID.MustGet())
+		} else {
+			vals[4] = psql.Raw("DEFAULT")
+		}
+
 		return bob.ExpressSlice(ctx, w, d, start, vals, "", ", ", "")
 	}))
 }
@@ -148,7 +175,7 @@ func (s TaskSetter) UpdateMod() bob.Mod[*dialect.UpdateQuery] {
 }
 
 func (s TaskSetter) Expressions(prefix ...string) []bob.Expression {
-	exprs := make([]bob.Expression, 0, 4)
+	exprs := make([]bob.Expression, 0, 5)
 
 	if s.ID.IsValue() {
 		exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
@@ -175,6 +202,13 @@ func (s TaskSetter) Expressions(prefix ...string) []bob.Expression {
 		exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
 			psql.Quote(append(prefix, "created_at")...),
 			psql.Arg(s.CreatedAt),
+		}})
+	}
+
+	if s.ListID.IsValue() {
+		exprs = append(exprs, expr.Join{Sep: " = ", Exprs: []bob.Expression{
+			psql.Quote(append(prefix, "list_id")...),
+			psql.Arg(s.ListID),
 		}})
 	}
 
@@ -239,6 +273,7 @@ func (o *Task) Update(ctx context.Context, exec bob.Executor, s *TaskSetter) err
 		return err
 	}
 
+	o.R = v.R
 	*o = *v
 
 	return nil
@@ -258,7 +293,7 @@ func (o *Task) Reload(ctx context.Context, exec bob.Executor) error {
 	if err != nil {
 		return err
 	}
-
+	o2.R = o.R
 	*o = *o2
 
 	return nil
@@ -305,7 +340,7 @@ func (o TaskSlice) copyMatchingRows(from ...*Task) {
 			if new.ID != old.ID {
 				continue
 			}
-
+			new.R = old.R
 			o[i] = new
 			break
 		}
@@ -403,11 +438,84 @@ func (o TaskSlice) ReloadAll(ctx context.Context, exec bob.Executor) error {
 	return nil
 }
 
+// List starts a query for related objects on lists
+func (o *Task) List(mods ...bob.Mod[*dialect.SelectQuery]) ListsQuery {
+	return Lists.Query(append(mods,
+		sm.Where(Lists.Columns.ID.EQ(psql.Arg(o.ListID))),
+	)...)
+}
+
+func (os TaskSlice) List(mods ...bob.Mod[*dialect.SelectQuery]) ListsQuery {
+	pkListID := make(pgtypes.Array[string], 0, len(os))
+	for _, o := range os {
+		if o == nil {
+			continue
+		}
+		pkListID = append(pkListID, o.ListID)
+	}
+	PKArgExpr := psql.Select(sm.Columns(
+		psql.F("unnest", psql.Cast(psql.Arg(pkListID), "text[]")),
+	))
+
+	return Lists.Query(append(mods,
+		sm.Where(psql.Group(Lists.Columns.ID).OP("IN", PKArgExpr)),
+	)...)
+}
+
+func attachTaskList0(ctx context.Context, exec bob.Executor, count int, task0 *Task, list1 *List) (*Task, error) {
+	setter := &TaskSetter{
+		ListID: omit.From(list1.ID),
+	}
+
+	err := task0.Update(ctx, exec, setter)
+	if err != nil {
+		return nil, fmt.Errorf("attachTaskList0: %w", err)
+	}
+
+	return task0, nil
+}
+
+func (task0 *Task) InsertList(ctx context.Context, exec bob.Executor, related *ListSetter) error {
+	var err error
+
+	list1, err := Lists.Insert(related).One(ctx, exec)
+	if err != nil {
+		return fmt.Errorf("inserting related objects: %w", err)
+	}
+
+	_, err = attachTaskList0(ctx, exec, 1, task0, list1)
+	if err != nil {
+		return err
+	}
+
+	task0.R.List = list1
+
+	list1.R.Tasks = append(list1.R.Tasks, task0)
+
+	return nil
+}
+
+func (task0 *Task) AttachList(ctx context.Context, exec bob.Executor, list1 *List) error {
+	var err error
+
+	_, err = attachTaskList0(ctx, exec, 1, task0, list1)
+	if err != nil {
+		return err
+	}
+
+	task0.R.List = list1
+
+	list1.R.Tasks = append(list1.R.Tasks, task0)
+
+	return nil
+}
+
 type taskWhere[Q psql.Filterable] struct {
 	ID          psql.WhereMod[Q, string]
 	Title       psql.WhereMod[Q, string]
 	IsCompleted psql.WhereMod[Q, bool]
 	CreatedAt   psql.WhereMod[Q, time.Time]
+	ListID      psql.WhereMod[Q, string]
 }
 
 func (taskWhere[Q]) AliasedAs(alias string) taskWhere[Q] {
@@ -420,5 +528,151 @@ func buildTaskWhere[Q psql.Filterable](cols taskColumns) taskWhere[Q] {
 		Title:       psql.Where[Q, string](cols.Title),
 		IsCompleted: psql.Where[Q, bool](cols.IsCompleted),
 		CreatedAt:   psql.Where[Q, time.Time](cols.CreatedAt),
+		ListID:      psql.Where[Q, string](cols.ListID),
+	}
+}
+
+func (o *Task) Preload(name string, retrieved any) error {
+	if o == nil {
+		return nil
+	}
+
+	switch name {
+	case "List":
+		rel, ok := retrieved.(*List)
+		if !ok {
+			return fmt.Errorf("task cannot load %T as %q", retrieved, name)
+		}
+
+		o.R.List = rel
+
+		if rel != nil {
+			rel.R.Tasks = TaskSlice{o}
+		}
+		return nil
+	default:
+		return fmt.Errorf("task has no relationship %q", name)
+	}
+}
+
+type taskPreloader struct {
+	List func(...psql.PreloadOption) psql.Preloader
+}
+
+func buildTaskPreloader() taskPreloader {
+	return taskPreloader{
+		List: func(opts ...psql.PreloadOption) psql.Preloader {
+			return psql.Preload[*List, ListSlice](psql.PreloadRel{
+				Name: "List",
+				Sides: []psql.PreloadSide{
+					{
+						From:        Tasks,
+						To:          Lists,
+						FromColumns: []string{"list_id"},
+						ToColumns:   []string{"id"},
+					},
+				},
+			}, Lists.Columns.Names(), opts...)
+		},
+	}
+}
+
+type taskThenLoader[Q orm.Loadable] struct {
+	List func(...bob.Mod[*dialect.SelectQuery]) orm.Loader[Q]
+}
+
+func buildTaskThenLoader[Q orm.Loadable]() taskThenLoader[Q] {
+	type ListLoadInterface interface {
+		LoadList(context.Context, bob.Executor, ...bob.Mod[*dialect.SelectQuery]) error
+	}
+
+	return taskThenLoader[Q]{
+		List: thenLoadBuilder[Q](
+			"List",
+			func(ctx context.Context, exec bob.Executor, retrieved ListLoadInterface, mods ...bob.Mod[*dialect.SelectQuery]) error {
+				return retrieved.LoadList(ctx, exec, mods...)
+			},
+		),
+	}
+}
+
+// LoadList loads the task's List into the .R struct
+func (o *Task) LoadList(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
+	if o == nil {
+		return nil
+	}
+
+	// Reset the relationship
+	o.R.List = nil
+
+	related, err := o.List(mods...).One(ctx, exec)
+	if err != nil {
+		return err
+	}
+
+	related.R.Tasks = TaskSlice{o}
+
+	o.R.List = related
+	return nil
+}
+
+// LoadList loads the task's List into the .R struct
+func (os TaskSlice) LoadList(ctx context.Context, exec bob.Executor, mods ...bob.Mod[*dialect.SelectQuery]) error {
+	if len(os) == 0 {
+		return nil
+	}
+
+	lists, err := os.List(mods...).All(ctx, exec)
+	if err != nil {
+		return err
+	}
+
+	for _, o := range os {
+		if o == nil {
+			continue
+		}
+
+		for _, rel := range lists {
+
+			if !(o.ListID == rel.ID) {
+				continue
+			}
+
+			rel.R.Tasks = append(rel.R.Tasks, o)
+
+			o.R.List = rel
+			break
+		}
+	}
+
+	return nil
+}
+
+type taskJoins[Q dialect.Joinable] struct {
+	typ  string
+	List modAs[Q, listColumns]
+}
+
+func (j taskJoins[Q]) aliasedAs(alias string) taskJoins[Q] {
+	return buildTaskJoins[Q](buildTaskColumns(alias), j.typ)
+}
+
+func buildTaskJoins[Q dialect.Joinable](cols taskColumns, typ string) taskJoins[Q] {
+	return taskJoins[Q]{
+		typ: typ,
+		List: modAs[Q, listColumns]{
+			c: Lists.Columns,
+			f: func(to listColumns) bob.Mod[Q] {
+				mods := make(mods.QueryMods[Q], 0, 1)
+
+				{
+					mods = append(mods, dialect.Join[Q](typ, Lists.Name().As(to.Alias())).On(
+						to.ID.EQ(cols.ListID),
+					))
+				}
+
+				return mods
+			},
+		},
 	}
 }

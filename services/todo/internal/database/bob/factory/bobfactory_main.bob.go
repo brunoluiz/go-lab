@@ -11,11 +11,43 @@ import (
 )
 
 type Factory struct {
+	baseListMods ListModSlice
 	baseTaskMods TaskModSlice
 }
 
 func New() *Factory {
 	return &Factory{}
+}
+
+func (f *Factory) NewList(mods ...ListMod) *ListTemplate {
+	return f.NewListWithContext(context.Background(), mods...)
+}
+
+func (f *Factory) NewListWithContext(ctx context.Context, mods ...ListMod) *ListTemplate {
+	o := &ListTemplate{f: f}
+
+	if f != nil {
+		f.baseListMods.Apply(ctx, o)
+	}
+
+	ListModSlice(mods).Apply(ctx, o)
+
+	return o
+}
+
+func (f *Factory) FromExistingList(m *models.List) *ListTemplate {
+	o := &ListTemplate{f: f, alreadyPersisted: true}
+
+	o.ID = func() string { return m.ID }
+	o.Name = func() string { return m.Name }
+	o.CreatedAt = func() time.Time { return m.CreatedAt }
+
+	ctx := context.Background()
+	if len(m.R.Tasks) > 0 {
+		ListMods.AddExistingTasks(m.R.Tasks...).Apply(ctx, o)
+	}
+
+	return o
 }
 
 func (f *Factory) NewTask(mods ...TaskMod) *TaskTemplate {
@@ -41,8 +73,22 @@ func (f *Factory) FromExistingTask(m *models.Task) *TaskTemplate {
 	o.Title = func() string { return m.Title }
 	o.IsCompleted = func() bool { return m.IsCompleted }
 	o.CreatedAt = func() time.Time { return m.CreatedAt }
+	o.ListID = func() string { return m.ListID }
+
+	ctx := context.Background()
+	if m.R.List != nil {
+		TaskMods.WithExistingList(m.R.List).Apply(ctx, o)
+	}
 
 	return o
+}
+
+func (f *Factory) ClearBaseListMods() {
+	f.baseListMods = nil
+}
+
+func (f *Factory) AddBaseListMod(mods ...ListMod) {
+	f.baseListMods = append(f.baseListMods, mods...)
 }
 
 func (f *Factory) ClearBaseTaskMods() {

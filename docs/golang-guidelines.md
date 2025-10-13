@@ -41,8 +41,7 @@ The below libraries must be used for the respective purposes and alternatives sh
 
 ## Testing
 
-- Table-driven tests must always be used.
-  - Create a `prepare` and `assert` methods for all scenarios to keep a common structure
+- Table-driven tests must be used when it makes sense. If so, create a `prepare` and `assert` methods for all scenarios to keep a common structure
 - Tests must be done so they can run using `t.Parallel()`, with exception to integration tests which should be on best-effort basis
 - Mocks should be created as a `mock` package within the package being tested
 - Mock generation must be done using `go:generate` and `mockgen`

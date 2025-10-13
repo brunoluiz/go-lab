@@ -17,11 +17,14 @@ var (
 )
 
 func Where[Q psql.Filterable]() struct {
+	Lists listWhere[Q]
 	Tasks taskWhere[Q]
 } {
 	return struct {
+		Lists listWhere[Q]
 		Tasks taskWhere[Q]
 	}{
+		Lists: buildListWhere[Q](Lists.Columns),
 		Tasks: buildTaskWhere[Q](Tasks.Columns),
 	}
 }

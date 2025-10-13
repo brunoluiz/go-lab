@@ -51,6 +51,15 @@ var Tasks = Table[
 			Generated: false,
 			AutoIncr:  false,
 		},
+		ListID: column{
+			Name:      "list_id",
+			DBType:    "text",
+			Default:   "",
+			Comment:   "",
+			Nullable:  false,
+			Generated: false,
+			AutoIncr:  false,
+		},
 	},
 	Indexes: taskIndexes{
 		TasksPkey: index{
@@ -76,6 +85,17 @@ var Tasks = Table[
 		Columns: []string{"id"},
 		Comment: "",
 	},
+	ForeignKeys: taskForeignKeys{
+		TasksTasksListIDFkey: foreignKey{
+			constraint: constraint{
+				Name:    "tasks.tasks_list_id_fkey",
+				Columns: []string{"list_id"},
+				Comment: "",
+			},
+			ForeignTable:   "lists",
+			ForeignColumns: []string{"id"},
+		},
+	},
 
 	Comment: "",
 }
@@ -85,11 +105,12 @@ type taskColumns struct {
 	Title       column
 	IsCompleted column
 	CreatedAt   column
+	ListID      column
 }
 
 func (c taskColumns) AsSlice() []column {
 	return []column{
-		c.ID, c.Title, c.IsCompleted, c.CreatedAt,
+		c.ID, c.Title, c.IsCompleted, c.CreatedAt, c.ListID,
 	}
 }
 
@@ -103,10 +124,14 @@ func (i taskIndexes) AsSlice() []index {
 	}
 }
 
-type taskForeignKeys struct{}
+type taskForeignKeys struct {
+	TasksTasksListIDFkey foreignKey
+}
 
 func (f taskForeignKeys) AsSlice() []foreignKey {
-	return []foreignKey{}
+	return []foreignKey{
+		f.TasksTasksListIDFkey,
+	}
 }
 
 type taskUniques struct{}

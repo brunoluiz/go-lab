@@ -4,6 +4,11 @@ package acme.api.todo.v1;
 import "google/protobuf/timestamp.proto";
 
 service TodoService {
+  rpc CreateList (CreateListRequest) returns (CreateListResponse);
+  rpc GetList (GetListRequest) returns (GetListResponse);
+  rpc ListLists (ListListsRequest) returns (ListListsResponse);
+  rpc UpdateList (UpdateListRequest) returns (UpdateListResponse);
+  rpc DeleteList (DeleteListRequest) returns (DeleteListResponse);
   rpc CreateTask (CreateTaskRequest) returns (CreateTaskResponse);
   rpc GetTask (GetTaskRequest) returns (GetTaskResponse);
   rpc ListTasks (ListTasksRequest) returns (ListTasksResponse);
@@ -12,27 +17,76 @@ service TodoService {
 }
 
 // -------------------------------------------------------------------
-// 1. Core Data Messages (from the original definition)
+// 1. Core Data Messages
 // -------------------------------------------------------------------
+
+message List {
+  string id = 1;
+  string name = 2;
+  google.protobuf.Timestamp created_at = 3;
+}
 
 message Task {
   string id = 1;
   string title = 2;
   bool is_completed = 3;
   google.protobuf.Timestamp created_at = 4;
+  string list_id = 5;
 }
 
 message TodoList {
   repeated Task tasks = 1;
   string name = 2;
+  string id = 3;
 }
 
 // -------------------------------------------------------------------
 // 2. Request and Response Wrapper Messages
 // -------------------------------------------------------------------
 
+message CreateListRequest {
+  string name = 1;
+}
+
+message CreateListResponse {
+  List list = 1;
+}
+
+message GetListRequest {
+  string list_id = 1;
+}
+
+message GetListResponse {
+  List list = 1;
+}
+
+message ListListsRequest {
+  // TODO: Example future fields:
+  // int32 page_number = 1;
+  // int32 page_size = 2;
+}
+
+message ListListsResponse {
+  repeated List lists = 1;
+}
+
+message UpdateListRequest {
+  List list = 1;
+}
+
+message UpdateListResponse {
+  List list = 1;
+}
+
+message DeleteListRequest {
+  string list_id = 1;
+}
+
+message DeleteListResponse {}
+
 message CreateTaskRequest {
   string title = 1;
+  string list_id = 2;
 }
 
 message CreateTaskResponse {
@@ -48,9 +102,10 @@ message GetTaskResponse {
 }
 
 message ListTasksRequest {
+  string list_id = 1;
   // TODO: Example future fields:
-  // int32 page_number = 1;
-  // int32 page_size = 2;
+  // int32 page_number = 2;
+  // int32 page_size = 3;
 }
 
 message ListTasksResponse {

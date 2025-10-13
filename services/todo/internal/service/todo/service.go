@@ -10,6 +10,7 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/brunoluiz/go-lab/services/todo/internal/dto"
+	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -17,6 +18,7 @@ import (
 var (
 	ErrTitleRequired    = errors.New("title is required")
 	ErrTaskNotFound     = errors.New("task not found")
+	ErrListNotFound     = errors.New("list not found")
 	ErrValidationFailed = errors.New("validation failed")
 	ErrInternal         = errors.New("internal error")
 )
@@ -27,6 +29,7 @@ func toDtoTask(t model.Task) dto.Task {
 		Title:       t.Title,
 		IsCompleted: t.IsCompleted,
 		CreatedAt:   t.CreatedAt,
+		ListID:      t.ListID,
 	}
 }
 
@@ -36,20 +39,23 @@ func fromDtoTask(t dto.Task) model.Task {
 		Title:       t.Title,
 		IsCompleted: t.IsCompleted,
 		CreatedAt:   t.CreatedAt,
+		ListID:      t.ListID,
 	}
 }
 
 type Service struct {
-	repo      repository.TaskRepository
-	logger    *slog.Logger
-	validator *validator.Validate
+	taskRepo    repository.TaskRepository
+	listService *list.Service
+	logger      *slog.Logger
+	validator   *validator.Validate
 }
 
-func NewService(repo repository.TaskRepository, logger *slog.Logger) *Service {
+func NewService(taskRepo repository.TaskRepository, listService *list.Service, logger *slog.Logger) *Service {
 	return &Service{
-		repo:      repo,
-		logger:    logger,
-		validator: validator.New(),
+		taskRepo:    taskRepo,
+		listService: listService,
+		logger:      logger,
+		validator:   validator.New(),
 	}
 }
 
@@ -66,8 +72,9 @@ func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dt
 		Title:       req.Title,
 		IsCompleted: false,
 		CreatedAt:   time.Now(),
+		ListID:      req.ListID,
 	}
-	created, err := s.repo.CreateTask(ctx, task)
+	created, err := s.taskRepo.CreateTask(ctx, task)
 	if err != nil {
 		return dto.CreateTaskResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
@@ -78,7 +85,7 @@ func (s *Service) GetTask(ctx context.Context, req dto.GetTaskRequest) (dto.GetT
 	if err := s.validator.Struct(req); err != nil {
 		return dto.GetTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
 	}
-	task, err := s.repo.GetTask(ctx, req.TaskID)
+	task, err := s.taskRepo.GetTask(ctx, req.TaskID)
 	if err != nil {
 		if errors.Is(err, repository.ErrTaskNotFound) {
 			return dto.GetTaskResponse{}, ErrTaskNotFound
@@ -88,8 +95,15 @@ func (s *Service) GetTask(ctx context.Context, req dto.GetTaskRequest) (dto.GetT
 	return dto.GetTaskResponse{Task: toDtoTask(task)}, nil
 }
 
-func (s *Service) ListTasks(ctx context.Context, _ dto.ListTasksRequest) (dto.ListTasksResponse, error) {
-	tasks, err := s.repo.ListTasks(ctx)
+func (s *Service) ListTasks(ctx context.Context, req dto.ListTasksRequest) (dto.ListTasksResponse, error) {
+	if err := s.validator.Struct(req); err != nil {
+		return dto.ListTasksResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
+	}
+	listResp, err := s.listService.GetList(ctx, dto.GetListRequest{ListID: req.ListID})
+	if err != nil {
+		return dto.ListTasksResponse{}, err
+	}
+	tasks, err := s.taskRepo.ListTasks(ctx, req.ListID)
 	if err != nil {
 		return dto.ListTasksResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
 	}
@@ -99,7 +113,8 @@ func (s *Service) ListTasks(ctx context.Context, _ dto.ListTasksRequest) (dto.Li
 	}
 	todoList := dto.TodoList{
 		Tasks: dtoTasks,
-		Name:  "default",
+		Name:  listResp.List.Name,
+		ID:    listResp.List.ID,
 	}
 	return dto.ListTasksResponse{TodoList: todoList}, nil
 }
@@ -109,7 +124,7 @@ func (s *Service) UpdateTask(ctx context.Context, req dto.UpdateTaskRequest) (dt
 		return dto.UpdateTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
 	}
 	task := fromDtoTask(req.Task)
-	updated, err := s.repo.UpdateTask(ctx, task)
+	updated, err := s.taskRepo.UpdateTask(ctx, task)
 	if err != nil {
 		if errors.Is(err, repository.ErrTaskNotFound) {
 			return dto.UpdateTaskResponse{}, ErrTaskNotFound
@@ -123,7 +138,7 @@ func (s *Service) DeleteTask(ctx context.Context, req dto.DeleteTaskRequest) (dt
 	if err := s.validator.Struct(req); err != nil {
 		return dto.DeleteTaskResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
 	}
-	err := s.repo.DeleteTask(ctx, req.TaskID)
+	err := s.taskRepo.DeleteTask(ctx, req.TaskID)
 	if err != nil {
 		if errors.Is(err, repository.ErrTaskNotFound) {
 			return dto.DeleteTaskResponse{}, ErrTaskNotFound

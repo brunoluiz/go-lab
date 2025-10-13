@@ -39,10 +39,20 @@ type TaskTemplate struct {
 	Title       func() string
 	IsCompleted func() bool
 	CreatedAt   func() time.Time
+	ListID      func() string
 
+	r taskR
 	f *Factory
 
 	alreadyPersisted bool
+}
+
+type taskR struct {
+	List *taskRListR
+}
+
+type taskRListR struct {
+	o *ListTemplate
 }
 
 // Apply mods to the TaskTemplate
@@ -54,7 +64,14 @@ func (o *TaskTemplate) Apply(ctx context.Context, mods ...TaskMod) {
 
 // setModelRels creates and sets the relationships on *models.Task
 // according to the relationships in the template. Nothing is inserted into the db
-func (t TaskTemplate) setModelRels(o *models.Task) {}
+func (t TaskTemplate) setModelRels(o *models.Task) {
+	if t.r.List != nil {
+		rel := t.r.List.o.Build()
+		rel.R.Tasks = append(rel.R.Tasks, o)
+		o.ListID = rel.ID // h2
+		o.R.List = rel
+	}
+}
 
 // BuildSetter returns an *models.TaskSetter
 // this does nothing with the relationship templates
@@ -76,6 +93,10 @@ func (o TaskTemplate) BuildSetter() *models.TaskSetter {
 	if o.CreatedAt != nil {
 		val := o.CreatedAt()
 		m.CreatedAt = omit.From(val)
+	}
+	if o.ListID != nil {
+		val := o.ListID()
+		m.ListID = omit.From(val)
 	}
 
 	return m
@@ -111,6 +132,9 @@ func (o TaskTemplate) Build() *models.Task {
 	if o.CreatedAt != nil {
 		m.CreatedAt = o.CreatedAt()
 	}
+	if o.ListID != nil {
+		m.ListID = o.ListID()
+	}
 
 	o.setModelRels(m)
 
@@ -143,6 +167,10 @@ func ensureCreatableTask(m *models.TaskSetter) {
 		val := random_time_Time(nil)
 		m.CreatedAt = omit.From(val)
 	}
+	if !(m.ListID.IsValue()) {
+		val := random_string(nil)
+		m.ListID = omit.From(val)
+	}
 }
 
 // insertOptRels creates and inserts any optional the relationships on *models.Task
@@ -161,10 +189,29 @@ func (o *TaskTemplate) Create(ctx context.Context, exec bob.Executor) (*models.T
 	opt := o.BuildSetter()
 	ensureCreatableTask(opt)
 
+	if o.r.List == nil {
+		TaskMods.WithNewList().Apply(ctx, o)
+	}
+
+	var rel0 *models.List
+
+	if o.r.List.o.alreadyPersisted {
+		rel0 = o.r.List.o.Build()
+	} else {
+		rel0, err = o.r.List.o.Create(ctx, exec)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	opt.ListID = omit.From(rel0.ID)
+
 	m, err := models.Tasks.Insert(opt).One(ctx, exec)
 	if err != nil {
 		return nil, err
 	}
+
+	m.R.List = rel0
 
 	if err := o.insertOptRels(ctx, exec, m); err != nil {
 		return nil, err
@@ -247,6 +294,7 @@ func (m taskMods) RandomizeAllColumns(f *faker.Faker) TaskMod {
 		TaskMods.RandomTitle(f),
 		TaskMods.RandomIsCompleted(f),
 		TaskMods.RandomCreatedAt(f),
+		TaskMods.RandomListID(f),
 	}
 }
 
@@ -374,11 +422,77 @@ func (m taskMods) RandomCreatedAt(f *faker.Faker) TaskMod {
 	})
 }
 
+// Set the model columns to this value
+func (m taskMods) ListID(val string) TaskMod {
+	return TaskModFunc(func(_ context.Context, o *TaskTemplate) {
+		o.ListID = func() string { return val }
+	})
+}
+
+// Set the Column from the function
+func (m taskMods) ListIDFunc(f func() string) TaskMod {
+	return TaskModFunc(func(_ context.Context, o *TaskTemplate) {
+		o.ListID = f
+	})
+}
+
+// Clear any values for the column
+func (m taskMods) UnsetListID() TaskMod {
+	return TaskModFunc(func(_ context.Context, o *TaskTemplate) {
+		o.ListID = nil
+	})
+}
+
+// Generates a random value for the column using the given faker
+// if faker is nil, a default faker is used
+func (m taskMods) RandomListID(f *faker.Faker) TaskMod {
+	return TaskModFunc(func(_ context.Context, o *TaskTemplate) {
+		o.ListID = func() string {
+			return random_string(f)
+		}
+	})
+}
+
 func (m taskMods) WithParentsCascading() TaskMod {
 	return TaskModFunc(func(ctx context.Context, o *TaskTemplate) {
 		if isDone, _ := taskWithParentsCascadingCtx.Value(ctx); isDone {
 			return
 		}
 		ctx = taskWithParentsCascadingCtx.WithValue(ctx, true)
+		{
+
+			related := o.f.NewListWithContext(ctx, ListMods.WithParentsCascading())
+			m.WithList(related).Apply(ctx, o)
+		}
+	})
+}
+
+func (m taskMods) WithList(rel *ListTemplate) TaskMod {
+	return TaskModFunc(func(ctx context.Context, o *TaskTemplate) {
+		o.r.List = &taskRListR{
+			o: rel,
+		}
+	})
+}
+
+func (m taskMods) WithNewList(mods ...ListMod) TaskMod {
+	return TaskModFunc(func(ctx context.Context, o *TaskTemplate) {
+		related := o.f.NewListWithContext(ctx, mods...)
+
+		m.WithList(related).Apply(ctx, o)
+	})
+}
+
+func (m taskMods) WithExistingList(em *models.List) TaskMod {
+	return TaskModFunc(func(ctx context.Context, o *TaskTemplate) {
+		o.r.List = &taskRListR{
+			o: o.f.FromExistingList(em),
+		}
+	})
+}
+
+func (m taskMods) WithoutList() TaskMod {
+	return TaskModFunc(func(ctx context.Context, o *TaskTemplate) {
+		o.r.List = nil
 	})
 }
