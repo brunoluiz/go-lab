@@ -1,0 +1,50 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+      grpc:
+
+processors:
+  # Batch Processor: Highly recommended for efficiency, reducing network calls and load
+  batch:
+    send_batch_size: 1024
+    timeout: 1s
+
+  # Resource Detection: Automatically adds resource attributes (like hostname)
+  resourcedetection/system:
+    detectors: [system]
+
+  # Memory Limiter: Prevents the collector from exhausting system memory
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 1500 # Set a reasonable limit, e.g., 80% of container memory
+    spike_limit_mib: 512
+
+exporters:
+  otlp/jaeger:
+    endpoint: jaeger:4317
+    tls:
+      insecure: true
+  debug:
+    verbosity: normal
+    sampling_initial: 0
+    sampling_thereafter: 0
+
+extensions:
+  # Health Check: Essential for container orchestration systems (like Kubernetes/Docker)
+  health_check:
+    endpoint: 0.0.0.0:13133 # Custom port for health checks
+
+# Act as the main() for this
+service:
+  extensions: [health_check]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resourcedetection/system] # Add k8sattributes if needed
+      exporters: [otlp/jaeger]
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, batch] # Add k8sattributes if needed
+      exporters: [debug]

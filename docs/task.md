@@ -1,4 +1,6 @@
 We will be working together in the `services/todo`.
+You must implement Open Telemetry for tracing and metrics.
 
-- You must extract list related operations from `internal/service/todo` into its own package
-- The handler for tasks and todo must be in separate files, such as `handler_task.go` and `handler_todo.go`
+- Read the Golang docs: <https://opentelemetry.io/docs/languages/go/>
+- All the plumbing for Open Telemetry must be in a new package `internal/observability`
+- I want to be able to see things in Jaeger, you must update the README.md with instructions.

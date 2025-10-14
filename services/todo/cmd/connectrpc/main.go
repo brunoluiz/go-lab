@@ -18,6 +18,7 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/connectrpc/interceptor"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
+	"github.com/brunoluiz/go-lab/services/todo/internal/otel"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -27,14 +28,26 @@ import (
 type CLI struct {
 	Address string `kong:"default=0.0.0.0,env=ADDRESS"`
 	Port    int    `kong:"default=4000,env=PORT"`
+	DBDSN   string `kong:"default=postgres://postgres:password@localhost:5432/todo?sslmode=disable,env=DB_DSN"`
 }
 
 func run(cli *CLI, logger *slog.Logger) error {
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
 
+	// Initialize OpenTelemetry
+	otelShutdown, err := otel.SetupOTelSDK(ctx)
+	if err != nil {
+		return fmt.Errorf("failed to setup OpenTelemetry: %w", err)
+	}
+	defer func() {
+		if shutdownErr := otelShutdown(ctx); shutdownErr != nil {
+			logger.ErrorContext(ctx, "failed to shutdown OpenTelemetry", "error", shutdownErr)
+		}
+	}()
+
 	sqlDB, err := postgres.New(postgres.EnvConfig{
-		DSN: os.Getenv("DB_DSN"),
+		DSN: cli.DBDSN,
 	}, postgres.WithLiveCheck())
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)

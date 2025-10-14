@@ -9,11 +9,20 @@ docker_namespace ?= brunoluiz/$(project)
 docker_repository ?= $(docker_registry)/$(docker_namespace)/dev/services/$(service)
 docker_tag ?= $(shell git rev-parse HEAD)
 docker_image ?= $(docker_repository)/$(cmd):$(docker_tag)
-
+OTEL_SERVICE_NAME=$(service)-$(cmd)
 .PHONY: run
 run:
-	-@docker compose -f ./$(service_path)/docker-compose.yaml up -d
+	. $(service_path)/.env.default; \
+	if test -f $(service_path)/.env; then . $(service_path)/.env; fi;
+	export OTEL_SERVICE_NAME=$(service)-$(cmd); \
+	docker compose -f ./$(service_path)/docker-compose.yaml up -d || true; \
 	air --build.cmd "go build -o $(project_out_dir)/app ./$(service_path_cmd)" --build.bin "./$(project_out_dir)/app"
+
+env:
+	env
+
+migrate:
+	migrate -source file://./services/$(service)/internal/database/migration -database "$(DB_DSN)" up
 
 .PHONY: format
 format:

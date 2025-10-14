@@ -1,2 +1,1 @@
-ALTER TABLE tasks DROP COLUMN list_id;
 DROP TABLE lists;
