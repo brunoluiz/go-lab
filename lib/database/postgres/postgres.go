@@ -14,10 +14,6 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
-type EnvConfig struct {
-	DSN string `envconfig:"db_dsn" required:"true"`
-}
-
 type config struct {
 	migration fs.FS
 	ping      bool
@@ -37,13 +33,13 @@ func WithLiveCheck() func(*config) {
 	}
 }
 
-func New(cfg EnvConfig, opts ...option) (*sql.DB, error) {
+func New(dsn string, opts ...option) (*sql.DB, error) {
 	c := &config{}
 	for _, opt := range opts {
 		opt(c)
 	}
 
-	db, err := otelsql.Open("pgx", cfg.DSN, otelsql.WithAttributes(
+	db, err := otelsql.Open("pgx", dsn, otelsql.WithAttributes(
 		semconv.DBSystemPostgreSQL,
 	))
 	if err != nil {

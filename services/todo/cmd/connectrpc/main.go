@@ -13,9 +13,9 @@ import (
 	"connectrpc.com/connect"
 	"connectrpc.com/otelconnect"
 	"github.com/alecthomas/kong"
-	"github.com/brunoluiz/go-lab/core/storage/postgres"
 	todov1connect "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1/todov1connect"
 	"github.com/brunoluiz/go-lab/lib/closer"
+	"github.com/brunoluiz/go-lab/lib/database/postgres"
 	"github.com/brunoluiz/go-lab/services/todo/internal/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/connectrpc/interceptor"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
@@ -44,9 +44,7 @@ func run(cli *CLI, logger *slog.Logger) error {
 	}
 	defer closer.WithLogContext(ctx, logger, "failed to shutdown OpenTelemetry", otelShutdown)
 
-	sqlDB, err := postgres.New(postgres.EnvConfig{
-		DSN: cli.DBDSN,
-	}, postgres.WithLiveCheck())
+	sqlDB, err := postgres.New(cli.DBDSN, postgres.WithLiveCheck())
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
