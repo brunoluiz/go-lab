@@ -2,6 +2,12 @@
 
 These are notes I am gathering from my experiments.
 
+# 2025-10-15
+
+- Other potential ORMs to be tried: `bun` and `gorm/gen`
+- Considering some error library such as `samber/oops` / `errorx` / `eris` + custom domain errors (can be handled by middleware)
+- Added opentelemetry basics, but really wished there was some auto-instrumentation for most stuff
+
 # 2025-10-11
 
 - I am trialling adding mono-repository tooling via `monogo`, a separate project... main challenge seems to be not the build steps anymore, but linting or testing, since at the moment it runs for all and counts on the cache solely to skip

@@ -5,11 +5,13 @@ import (
 	"errors"
 	"io/fs"
 
+	"github.com/XSAM/otelsql"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 	_ "github.com/jackc/pgx/stdlib" // PostgreSQL driver
+	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 type EnvConfig struct {
@@ -41,8 +43,16 @@ func New(cfg EnvConfig, opts ...option) (*sql.DB, error) {
 		opt(c)
 	}
 
-	db, err := sql.Open("pgx", cfg.DSN)
+	db, err := otelsql.Open("pgx", cfg.DSN, otelsql.WithAttributes(
+		semconv.DBSystemPostgreSQL,
+	))
 	if err != nil {
+		return nil, err
+	}
+
+	if err = otelsql.RegisterDBStatsMetrics(db, otelsql.WithAttributes(
+		semconv.DBSystemPostgreSQL,
+	)); err != nil {
 		return nil, err
 	}
 

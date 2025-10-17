@@ -34,3 +34,6 @@
 
 - Format and linting should only take changed files
 - Linter and tests might need manual saving after running, as the cache action doesn't handle it nicely
+- Automatic tracing/metrics of integrations
+- Shared error handling?
+- Improved postgres connection management

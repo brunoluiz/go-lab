@@ -18,9 +18,6 @@ run:
 	docker compose -f ./$(service_path)/docker-compose.yaml up -d || true; \
 	air --build.cmd "go build -o $(project_out_dir)/app ./$(service_path_cmd)" --build.bin "./$(project_out_dir)/app"
 
-env:
-	env
-
 migrate:
 	migrate -source file://./services/$(service)/internal/database/migration -database "$(DB_DSN)" up
 

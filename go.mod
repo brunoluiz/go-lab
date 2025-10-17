@@ -5,6 +5,7 @@ go 1.25
 require (
 	connectrpc.com/connect v1.19.1
 	connectrpc.com/otelconnect v0.8.0
+	github.com/XSAM/otelsql v0.40.0
 	github.com/aarondl/opt v0.0.0-20250607033636-982744e1bd65
 	github.com/alecthomas/kong v1.12.1
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc

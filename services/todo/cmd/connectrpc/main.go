@@ -15,6 +15,7 @@ import (
 	"github.com/alecthomas/kong"
 	"github.com/brunoluiz/go-lab/core/storage/postgres"
 	todov1connect "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1/todov1connect"
+	"github.com/brunoluiz/go-lab/lib/closer"
 	"github.com/brunoluiz/go-lab/services/todo/internal/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/connectrpc/interceptor"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
@@ -23,6 +24,7 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stephenafamo/bob"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 type CLI struct {
@@ -40,11 +42,7 @@ func run(cli *CLI, logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("failed to setup OpenTelemetry: %w", err)
 	}
-	defer func() {
-		if shutdownErr := otelShutdown(ctx); shutdownErr != nil {
-			logger.ErrorContext(ctx, "failed to shutdown OpenTelemetry", "error", shutdownErr)
-		}
-	}()
+	defer closer.WithLogContext(ctx, logger, "failed to shutdown OpenTelemetry", otelShutdown)
 
 	sqlDB, err := postgres.New(postgres.EnvConfig{
 		DSN: cli.DBDSN,
@@ -52,7 +50,7 @@ func run(cli *CLI, logger *slog.Logger) error {
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
-	defer sqlDB.Close()
+	defer closer.WithLog(ctx, logger, "failed to shutdown database/sql", sqlDB.Close)
 
 	otelInterceptor, err := otelconnect.NewInterceptor()
 	if err != nil {
@@ -75,12 +73,13 @@ func run(cli *CLI, logger *slog.Logger) error {
 	mux.Handle(path, h)
 	p := new(http.Protocols)
 	p.SetHTTP1(true)
-	// Use h2c so we can serve HTTP/2 without TLS.
-	p.SetUnencryptedHTTP2(true)
+	p.SetUnencryptedHTTP2(true) // Use h2c so we can serve HTTP/2 without TLS.
 
 	server := &http.Server{
-		Addr:              fmt.Sprintf("%s:%d", cli.Address, cli.Port),
-		Handler:           mux,
+		Addr: fmt.Sprintf("%s:%d", cli.Address, cli.Port),
+		Handler: otelhttp.NewHandler(mux, "server",
+			otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
+		),
 		ReadHeaderTimeout: 10 * time.Second,
 		Protocols:         p,
 	}
