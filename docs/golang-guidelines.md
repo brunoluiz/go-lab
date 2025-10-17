@@ -87,16 +87,19 @@ $request --> handler --> $dto --> service --> $model --> repository --> $db_mode
     │   │ # (Only reqyuired if using SQL)
     │   └── migrations
     │
-    │ # GRPC handlers
-    ├── grpc
-    │
-    │ # HTTP handlers and related packages
-    ├── http
-    │   ├── middleware
-    │   │   └── etc.go
-    │   └── handler
-    │       ├── hello.go
-    │       └── todo.go
+    │ # Handlers for incoming commands (like ports)
+    ├── handler
+    │   │
+    │   │ # GRPC handlers
+    │   ├── grpc
+    │   │
+    │   │ # HTTP handlers and related packages
+    │   └── http
+    │       ├── middleware
+    │       │   └── etc.go
+    │       └── handler
+    │           ├── hello.go
+    │           └── todo.go
     │
     │ # Used to convert handlers requests (grpc/http/cli) <=> business domain (service)
     ├── dto
