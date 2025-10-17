@@ -11,9 +11,9 @@ import (
 
 	v1 "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1"
 	todov1connect "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1/todov1connect"
-	"github.com/brunoluiz/go-lab/services/todo/internal/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/migration"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
+	"github.com/brunoluiz/go-lab/services/todo/internal/handler/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	"github.com/stephenafamo/bob"
