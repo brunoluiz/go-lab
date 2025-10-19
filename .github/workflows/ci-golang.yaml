@@ -26,6 +26,7 @@ jobs:
       - id: monogo
         run: |-
           set -x
+          echo $GITHUB_REF
           echo "detect=$(make monogo)" >> "$GITHUB_OUTPUT"
 
   lint:
