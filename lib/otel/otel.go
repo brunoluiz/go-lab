@@ -17,6 +17,8 @@ import (
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
 
+const defaultExporter = "otlp"
+
 // SetupOTelSDK bootstraps the OpenTelemetry pipeline.
 // If it does not return an error, make sure to call shutdown for proper cleanup.
 func SetupOTelSDK(ctx context.Context) (func(context.Context) error, error) {
@@ -65,14 +67,14 @@ func newPropagator() propagation.TextMapPropagator {
 func newTracerProvider(ctx context.Context) (*sdktrace.TracerProvider, error) {
 	exporter := os.Getenv("OTEL_TRACES_EXPORTER")
 	if exporter == "" {
-		exporter = "otlp"
+		exporter = defaultExporter
 	}
 
 	var exp sdktrace.SpanExporter
 	var err error
 
 	switch exporter {
-	case "otlp":
+	case defaultExporter:
 		exp, err = otlptracehttp.New(ctx)
 	default:
 		return nil, fmt.Errorf("unsupported traces exporter: %s", exporter)
@@ -94,7 +96,7 @@ func newTracerProvider(ctx context.Context) (*sdktrace.TracerProvider, error) {
 func newMeterProvider(ctx context.Context) (*metric.MeterProvider, error) {
 	exporter := os.Getenv("OTEL_METRICS_EXPORTER")
 	if exporter == "" {
-		exporter = "otlp"
+		exporter = defaultExporter
 	}
 
 	var metricExporter metric.Reader
@@ -106,7 +108,7 @@ func newMeterProvider(ctx context.Context) (*metric.MeterProvider, error) {
 			return nil, err
 		}
 		metricExporter = metric.NewPeriodicReader(exp, metric.WithInterval(3*time.Second))
-	case "otlp":
+	case defaultExporter:
 		exp, err := otlpmetrichttp.New(ctx)
 		if err != nil {
 			return nil, err

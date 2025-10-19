@@ -16,6 +16,7 @@ func (c Code) String() string {
 	return string(c)
 }
 
+//nolint:gochecknoglobals
 var (
 	ErrInternal   = oops.Code(string(CodeInternal)).Public("Internal error")
 	ErrUnknown    = oops.Code(string(CodeUnknown)).Public("Unknown error")

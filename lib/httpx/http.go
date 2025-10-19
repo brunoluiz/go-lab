@@ -68,7 +68,7 @@ func (s *Server) Run(ctx context.Context) error {
 		return err
 	case <-ctx.Done():
 		s.logger.InfoContext(ctx, "shutting down server...")
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), s.shutdownTimeout)
+		shutdownCtx, cancel := context.WithTimeout(ctx, s.shutdownTimeout)
 		defer cancel()
 		if err := s.Shutdown(shutdownCtx); err != nil {
 			return fmt.Errorf("failure to shutdown: %w", err)

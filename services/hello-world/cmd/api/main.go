@@ -23,11 +23,11 @@ func main() {
 		helloMsg, err := greeter.Hello(lang)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusBadRequest)
-			logger.Error("unable to greet", slog.String("error", err.Error()))
+			logger.ErrorContext(r.Context(), "unable to greet", slog.String("error", err.Error()))
 		}
 
-		if _, err := w.Write([]byte(helloMsg)); err != nil {
-			logger.Error("unable to write response", slog.String("error", err.Error()))
+		if _, writeErr := w.Write([]byte(helloMsg)); writeErr != nil {
+			logger.ErrorContext(r.Context(), "unable to write response", slog.String("error", writeErr.Error()))
 		}
 	})
 

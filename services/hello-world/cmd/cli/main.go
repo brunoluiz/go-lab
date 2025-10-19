@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log/slog"
 	"os"
 
@@ -12,14 +13,14 @@ func main() {
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	if len(os.Args) < 2 {
-		logger.Error("language argument is required")
+		logger.ErrorContext(context.Background(), "language argument is required")
 		return
 	}
 
 	helloMsg, err := greeter.Hello(os.Args[1])
 	if err != nil {
-		logger.Error("unable to greet", slog.String("error", err.Error()))
+		logger.ErrorContext(context.Background(), "unable to greet", slog.String("error", err.Error()))
 		return
 	}
-	logger.Info(helloMsg)
+	logger.InfoContext(context.Background(), helloMsg)
 }
