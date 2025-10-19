@@ -77,6 +77,7 @@ func run(cli *CLI, logger *slog.Logger) error {
 		otelhttp.NewHandler(mux, "server", otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents)),
 		httpx.WithLogger(logger),
 	)
+	defer closer.WithLogContext(ctx, logger, "failed to shutdown HTTP server", server.Close)
 
 	return server.Run(ctx)
 }
