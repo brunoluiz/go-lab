@@ -25,6 +25,7 @@ jobs:
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
       - run: git branch
+      - run: git fetch main
       - id: monogo
         run: echo "detect=$(make monogo)" >> "$GITHUB_OUTPUT"
 
