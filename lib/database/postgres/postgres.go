@@ -132,7 +132,7 @@ func New(dsn string, opts ...option) (*sql.DB, error) {
 	return db, nil
 }
 
-func up(db *sql.DB, fs fs.FS, logger *slog.Logger) error {
+func up(db *sql.DB, fs fs.FS, _ *slog.Logger) error {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
 		return errx.ErrInternal.Wrap(err)
@@ -192,7 +192,6 @@ func HealthCheck(ctx context.Context, db *sql.DB, logger *slog.Logger) error {
 	// Check connection pool stats
 	stats := db.Stats()
 	if logger != nil && logger.Enabled(ctx, slog.LevelDebug) {
-		const x = "b"
 		logger.DebugContext(ctx, "database connection pool stats",
 			"open_connections", stats.OpenConnections,
 			"in_use", stats.InUse,
