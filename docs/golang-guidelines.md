@@ -14,6 +14,7 @@ The below libraries must be used for the respective purposes and alternatives sh
 
 - Entrypoint flags and environment variables management: `github.com/alecthomas/kong`
 - Logging: `log/slog`
+- Errors: `github.com/samber/oops`
 - HTTP REST: `github.com/go-resty/resty`
 - JSON: `encoding/json/v2`
 - YAML: `github.com/yaml/go-yaml`
@@ -36,8 +37,9 @@ The below libraries must be used for the respective purposes and alternatives sh
 
 ## Error handling
 
-- Each layer should define its own sentinel error types (eg: `var ErrNotFound = errors.New("not found")`)
-- Errors must be wrapped into the layer's sentinel errors, meaning it should usually end up with `fmt.Errorf("%w: %w")` instead of `fmt.Errorf("bla bla: %w")`
+- Always wrap errors on adapters such as repositories or external clients using `app.Err*` errors
+- The service layer it should never re-wrap calls from adapters, but they must wrap errors from third-party libraries or others happening within its own layer
+- All handlers must handle errors coming from the service layer and convert them into appropriate responses (eg: HTTP status codes) using a middleware. It must be placed within `lib`.
 
 ## Testing
 
