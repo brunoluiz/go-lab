@@ -9,6 +9,8 @@ docker_namespace ?= brunoluiz/$(project)
 docker_repository ?= $(docker_registry)/$(docker_namespace)/dev/services/$(service)
 docker_tag ?= $(shell git rev-parse HEAD)
 docker_image ?= $(docker_repository)/$(cmd):$(docker_tag)
+git_current_branch := $(shell git rev-parse --abbrev-ref HEAD)
+git_base := $(if $(filter main,$(git_current_branch)),HEAD~1,refs/remotes/origin/main)
 OTEL_SERVICE_NAME=$(service)-$(cmd)
 
 .PHONY: run
@@ -30,7 +32,7 @@ format:
 .PHONY: lint
 lint:
 	buf lint
-	golangci-lint run --timeout 5m --color always --new-from-merge-base='refs/remotes/origin/main' --whole-files ./...
+	golangci-lint run --timeout 5m --color always --new-from-merge-base="$(git_base)" --whole-files ./...
 
 .PHONY: scan
 scan:
