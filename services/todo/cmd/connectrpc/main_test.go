@@ -16,6 +16,7 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/handler/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
+	"github.com/go-playground/validator/v10"
 	"github.com/stephenafamo/bob"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -68,8 +69,9 @@ func setupTestServer(t *testing.T) todov1connect.TodoServiceClient {
 	bobDB := bob.NewDB(sqlDB)
 	taskRepo := repository.NewTaskRepository(bobDB, logger)
 	listRepo := repository.NewListRepository(bobDB, logger)
-	listService := list.NewService(listRepo, logger)
-	service := todo.NewService(taskRepo, listService, logger)
+	validator := validator.New()
+	listService := list.NewService(listRepo, logger, validator)
+	service := todo.NewService(taskRepo, listService, logger, validator)
 
 	// Setup Connect Handler
 	grpcHandler := connectrpc.NewHandler(service, listService)

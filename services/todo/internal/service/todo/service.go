@@ -10,7 +10,6 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/brunoluiz/go-lab/services/todo/internal/dto"
-	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
@@ -37,29 +36,34 @@ func fromDtoTask(t dto.Task) model.Task {
 	}
 }
 
+type ListService interface {
+	GetList(ctx context.Context, req dto.GetListRequest) (dto.GetListResponse, error)
+}
+
 type Service struct {
 	taskRepo    repository.TaskRepository
-	listService *list.Service
+	listService ListService
 	logger      *slog.Logger
 	validator   *validator.Validate
 }
 
-func NewService(taskRepo repository.TaskRepository, listService *list.Service, logger *slog.Logger) *Service {
+func NewService(taskRepo repository.TaskRepository, listService ListService, logger *slog.Logger, validator *validator.Validate) *Service {
 	return &Service{
 		taskRepo:    taskRepo,
 		listService: listService,
 		logger:      logger,
-		validator:   validator.New(),
+		validator:   validator,
 	}
 }
 
 func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dto.CreateTaskResponse, error) {
-	if err := s.validator.Struct(req); err != nil {
-		return dto.CreateTaskResponse{}, errx.ErrValidation.Wrapf(err, "validation error")
+	if err := s.validator.StructCtx(ctx, req); err != nil {
+		return dto.CreateTaskResponse{}, errx.ErrValidation.Wrap(err)
 	}
+
 	id, err := uuid.NewV7()
 	if err != nil {
-		return dto.CreateTaskResponse{}, errx.ErrUnknown.Wrapf(err, "unknown error")
+		return dto.CreateTaskResponse{}, errx.ErrUnknown.Wrap(err)
 	}
 	task := model.Task{
 		ID:          id.String(),
@@ -76,9 +80,10 @@ func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dt
 }
 
 func (s *Service) GetTask(ctx context.Context, req dto.GetTaskRequest) (dto.GetTaskResponse, error) {
-	if err := s.validator.Struct(req); err != nil {
-		return dto.GetTaskResponse{}, errx.ErrValidation.Wrapf(err, "validation error")
+	if err := s.validator.StructCtx(ctx, req); err != nil {
+		return dto.GetTaskResponse{}, errx.ErrValidation.Wrap(err)
 	}
+
 	task, err := s.taskRepo.GetTask(ctx, req.TaskID)
 	if err != nil {
 		return dto.GetTaskResponse{}, err
@@ -87,9 +92,10 @@ func (s *Service) GetTask(ctx context.Context, req dto.GetTaskRequest) (dto.GetT
 }
 
 func (s *Service) ListTasks(ctx context.Context, req dto.ListTasksRequest) (dto.ListTasksResponse, error) {
-	if err := s.validator.Struct(req); err != nil {
-		return dto.ListTasksResponse{}, errx.ErrValidation.Wrapf(err, "validation error")
+	if err := s.validator.StructCtx(ctx, req); err != nil {
+		return dto.ListTasksResponse{}, errx.ErrValidation.Wrap(err)
 	}
+
 	getListReq := dto.GetListRequest{ListID: req.ListID} //nolint:staticcheck
 	listResp, err := s.listService.GetList(ctx, getListReq)
 	if err != nil {
@@ -112,9 +118,10 @@ func (s *Service) ListTasks(ctx context.Context, req dto.ListTasksRequest) (dto.
 }
 
 func (s *Service) UpdateTask(ctx context.Context, req dto.UpdateTaskRequest) (dto.UpdateTaskResponse, error) {
-	if err := s.validator.Struct(req); err != nil {
-		return dto.UpdateTaskResponse{}, errx.ErrValidation.Wrapf(err, "validation error")
+	if err := s.validator.StructCtx(ctx, req); err != nil {
+		return dto.UpdateTaskResponse{}, errx.ErrValidation.Wrap(err)
 	}
+
 	task := fromDtoTask(req.Task)
 	updated, err := s.taskRepo.UpdateTask(ctx, task)
 	if err != nil {
@@ -124,9 +131,10 @@ func (s *Service) UpdateTask(ctx context.Context, req dto.UpdateTaskRequest) (dt
 }
 
 func (s *Service) DeleteTask(ctx context.Context, req dto.DeleteTaskRequest) (dto.DeleteTaskResponse, error) {
-	if err := s.validator.Struct(req); err != nil {
-		return dto.DeleteTaskResponse{}, errx.ErrValidation.Wrapf(err, "validation error")
+	if err := s.validator.StructCtx(ctx, req); err != nil {
+		return dto.DeleteTaskResponse{}, errx.ErrValidation.Wrap(err)
 	}
+
 	err := s.taskRepo.DeleteTask(ctx, req.TaskID)
 	if err != nil {
 		return dto.DeleteTaskResponse{}, err

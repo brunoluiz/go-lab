@@ -34,6 +34,7 @@ The below libraries must be used for the respective purposes and alternatives sh
 - When input arguments are not used, replace the name with `_`, for example `(_ context.Context, input Bla)`
 - When `go build` is trigged, always delete after finishing any tests
 - Migrations must not be done on application (human operator will do separate), unless in tests
+- Services should always receive interfaces, never concrete classes
 
 ## Error handling
 

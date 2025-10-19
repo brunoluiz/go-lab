@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/otelconnect"
@@ -17,11 +16,13 @@ import (
 	"github.com/brunoluiz/go-lab/lib/closer"
 	"github.com/brunoluiz/go-lab/lib/database/postgres"
 	"github.com/brunoluiz/go-lab/lib/handler/connectrpc/interceptor"
+	"github.com/brunoluiz/go-lab/lib/httpx"
 	"github.com/brunoluiz/go-lab/lib/otel"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/brunoluiz/go-lab/services/todo/internal/handler/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
+	"github.com/go-playground/validator/v10"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stephenafamo/bob"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -44,60 +45,40 @@ func run(cli *CLI, logger *slog.Logger) error {
 	}
 	defer closer.WithLogContext(ctx, logger, "failed to shutdown OpenTelemetry", otelShutdown)
 
+	// Initialize Database
 	sqlDB, err := postgres.New(cli.DBDSN, postgres.WithLiveCheck())
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 	defer closer.WithLog(ctx, logger, "failed to shutdown database/sql", sqlDB.Close)
 
+	db := bob.NewDB(sqlDB)
+	taskRepo := repository.NewTaskRepository(db, logger)
+	listRepo := repository.NewListRepository(db, logger)
+	validator := validator.New()
+	listService := list.NewService(listRepo, logger, validator)
+	todoService := todo.NewService(taskRepo, listService, logger, validator)
+
+	// Setup Connect Handler
 	otelInterceptor, err := otelconnect.NewInterceptor()
 	if err != nil {
 		return fmt.Errorf("failed to create otel interceptor: %w", err)
 	}
 
-	db := bob.NewDB(sqlDB)
-	taskRepo := repository.NewTaskRepository(db, logger)
-	listRepo := repository.NewListRepository(db, logger)
-	listService := list.NewService(listRepo, logger)
-	service := todo.NewService(taskRepo, listService, logger)
-
-	// Setup Connect Handler
-	grpcHandler := connectrpc.NewHandler(service, listService)
+	grpcHandler := connectrpc.NewHandler(todoService, listService)
 	path, h := todov1connect.NewTodoServiceHandler(grpcHandler, connect.WithInterceptors(
 		otelInterceptor,
 		interceptor.ErrorLogger(logger),
 	))
 	mux := http.NewServeMux()
 	mux.Handle(path, h)
-	p := new(http.Protocols)
-	p.SetHTTP1(true)
-	p.SetUnencryptedHTTP2(true) // Use h2c so we can serve HTTP/2 without TLS.
 
-	server := &http.Server{
-		Addr: fmt.Sprintf("%s:%d", cli.Address, cli.Port),
-		Handler: otelhttp.NewHandler(mux, "server",
-			otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents),
-		),
-		ReadHeaderTimeout: 10 * time.Second,
-		Protocols:         p,
-	}
+	server := httpx.NewServer(fmt.Sprintf("%s:%d", cli.Address, cli.Port),
+		otelhttp.NewHandler(mux, "server", otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents)),
+		httpx.WithLogger(logger),
+	)
 
-	go func() {
-		logger.InfoContext(ctx, "starting server", slog.String("address", cli.Address), slog.Int("port", cli.Port))
-		if serr := server.ListenAndServe(); serr != nil && serr != http.ErrServerClosed {
-			logger.ErrorContext(ctx, "failure to serve", "error", serr)
-		}
-	}()
-
-	<-ctx.Done()
-	logger.InfoContext(ctx, "shutting down server...")
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if serr := server.Shutdown(shutdownCtx); serr != nil {
-		return fmt.Errorf("failure to shutdown: %w", serr)
-	}
-	logger.InfoContext(ctx, "shutdown complete")
-	return nil
+	return server.Run(ctx)
 }
 
 func main() {
