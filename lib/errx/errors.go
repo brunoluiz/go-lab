@@ -5,6 +5,7 @@ import "github.com/samber/oops"
 type Code string
 
 const (
+	CodeInternal   Code = "internal"
 	CodeUnknown    Code = "unknown"
 	CodeNotFound   Code = "not_found"
 	CodeConflict   Code = "conflict"
@@ -16,6 +17,7 @@ func (c Code) String() string {
 }
 
 var (
+	ErrInternal   = oops.Code(string(CodeInternal)).Public("Internal error")
 	ErrUnknown    = oops.Code(string(CodeUnknown)).Public("Unknown error")
 	ErrNotFound   = oops.Code(string(CodeNotFound)).Public("Resource not found")
 	ErrConflict   = oops.Code(string(CodeConflict)).Public("Resource already exists")
