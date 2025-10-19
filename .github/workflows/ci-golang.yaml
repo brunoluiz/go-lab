@@ -24,10 +24,7 @@ jobs:
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
       - id: monogo
-        run: |-
-          set -x
-          echo $GITHUB_REF
-          echo "detect=$(make monogo)" >> "$GITHUB_OUTPUT"
+        run: echo "detect=$(make monogo)" >> "$GITHUB_OUTPUT"
 
   lint:
     name: Lint

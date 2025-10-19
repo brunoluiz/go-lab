@@ -45,7 +45,7 @@ monogo:
 	-@monogo detect --entrypoints $(shell find services -type d -name cmd -print0 \
 	| xargs -0 -I {} find {} -maxdepth 1 -mindepth 1 -type d \
 	| paste -sd ',' -) \
-	--compare-ref '$(or $(GITHUB_REF),HEAD)'
+	--compare-ref 'HEAD'
 
 .PHONY: docker-all
 docker-all: docker-login docker-build docker-sign docker-scan
