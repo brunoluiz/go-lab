@@ -3,11 +3,10 @@ package todo
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"time"
 
-	"github.com/brunoluiz/go-lab/lib/app"
+	"github.com/brunoluiz/go-lab/lib/errx"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/brunoluiz/go-lab/services/todo/internal/dto"
@@ -56,11 +55,11 @@ func NewService(taskRepo repository.TaskRepository, listService *list.Service, l
 
 func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dto.CreateTaskResponse, error) {
 	if err := s.validator.Struct(req); err != nil {
-		return dto.CreateTaskResponse{}, fmt.Errorf("%w: %w", app.ErrValidation, err)
+		return dto.CreateTaskResponse{}, errx.ErrValidation.Wrapf(err, "validation error")
 	}
 	id, err := uuid.NewV7()
 	if err != nil {
-		return dto.CreateTaskResponse{}, fmt.Errorf("%w: %w", app.ErrUnknown, err)
+		return dto.CreateTaskResponse{}, errx.ErrUnknown.Wrapf(err, "unknown error")
 	}
 	task := model.Task{
 		ID:          id.String(),
@@ -78,7 +77,7 @@ func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dt
 
 func (s *Service) GetTask(ctx context.Context, req dto.GetTaskRequest) (dto.GetTaskResponse, error) {
 	if err := s.validator.Struct(req); err != nil {
-		return dto.GetTaskResponse{}, fmt.Errorf("%w: %w", app.ErrValidation, err)
+		return dto.GetTaskResponse{}, errx.ErrValidation.Wrapf(err, "validation error")
 	}
 	task, err := s.taskRepo.GetTask(ctx, req.TaskID)
 	if err != nil {
@@ -89,7 +88,7 @@ func (s *Service) GetTask(ctx context.Context, req dto.GetTaskRequest) (dto.GetT
 
 func (s *Service) ListTasks(ctx context.Context, req dto.ListTasksRequest) (dto.ListTasksResponse, error) {
 	if err := s.validator.Struct(req); err != nil {
-		return dto.ListTasksResponse{}, fmt.Errorf("%w: %w", app.ErrValidation, err)
+		return dto.ListTasksResponse{}, errx.ErrValidation.Wrapf(err, "validation error")
 	}
 	getListReq := dto.GetListRequest{ListID: req.ListID} //nolint:staticcheck
 	listResp, err := s.listService.GetList(ctx, getListReq)
@@ -114,7 +113,7 @@ func (s *Service) ListTasks(ctx context.Context, req dto.ListTasksRequest) (dto.
 
 func (s *Service) UpdateTask(ctx context.Context, req dto.UpdateTaskRequest) (dto.UpdateTaskResponse, error) {
 	if err := s.validator.Struct(req); err != nil {
-		return dto.UpdateTaskResponse{}, fmt.Errorf("%w: %w", app.ErrValidation, err)
+		return dto.UpdateTaskResponse{}, errx.ErrValidation.Wrapf(err, "validation error")
 	}
 	task := fromDtoTask(req.Task)
 	updated, err := s.taskRepo.UpdateTask(ctx, task)
@@ -126,7 +125,7 @@ func (s *Service) UpdateTask(ctx context.Context, req dto.UpdateTaskRequest) (dt
 
 func (s *Service) DeleteTask(ctx context.Context, req dto.DeleteTaskRequest) (dto.DeleteTaskResponse, error) {
 	if err := s.validator.Struct(req); err != nil {
-		return dto.DeleteTaskResponse{}, fmt.Errorf("%w: %w", app.ErrValidation, err)
+		return dto.DeleteTaskResponse{}, errx.ErrValidation.Wrapf(err, "validation error")
 	}
 	err := s.taskRepo.DeleteTask(ctx, req.TaskID)
 	if err != nil {

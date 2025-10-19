@@ -65,8 +65,7 @@ func run(cli *CLI, logger *slog.Logger) error {
 	grpcHandler := connectrpc.NewHandler(service, listService)
 	path, h := todov1connect.NewTodoServiceHandler(grpcHandler, connect.WithInterceptors(
 		otelInterceptor,
-		interceptor.Logger(logger),
-		interceptor.Error(),
+		interceptor.ErrorLogger(logger),
 	))
 	mux := http.NewServeMux()
 	mux.Handle(path, h)
