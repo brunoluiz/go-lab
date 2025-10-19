@@ -30,7 +30,7 @@ format:
 .PHONY: lint
 lint:
 	buf lint
-	golangci-lint run --timeout 5m --color always --new-from-merge-base=main --whole-files ./...
+	golangci-lint run --timeout 5m --color always --new-from-merge-base='refs/remotes/origin/main' --whole-files ./...
 
 .PHONY: scan
 scan:
