@@ -44,7 +44,7 @@ test:
 
 .PHONY: monogo
 monogo:
-	monogo detect --entrypoints $(shell find services -type d -name cmd -print0 \
+	@monogo detect --entrypoints $(shell find services -type d -name cmd -print0 \
 	| xargs -0 -I {} find {} -maxdepth 1 -mindepth 1 -type d \
 	| paste -sd ',' -) \
 	--base-ref $(git_base) --compare-ref 'HEAD'
