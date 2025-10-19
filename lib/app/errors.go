@@ -1,10 +1,10 @@
 package app
 
-import "errors"
+import "github.com/samber/oops"
 
 var (
-	ErrUnknown    = errors.New("unknown error")
-	ErrNotFound   = errors.New("resource not found")
-	ErrConflict   = errors.New("resource already exists")
-	ErrValidation = errors.New("validation error")
+	ErrUnknown    = oops.Code("UNKNOWN").Public("unknown error").Errorf("unknown error")
+	ErrNotFound   = oops.Code("NOT_FOUND").Public("not found").Errorf("resource not found")
+	ErrConflict   = oops.Code("CONFLICT").Public("resource already exists").Errorf("resource already exists")
+	ErrValidation = oops.Code("VALIDATION").Public("validation error").Errorf("validation error")
 )

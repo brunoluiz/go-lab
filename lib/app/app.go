@@ -1,9 +1,5 @@
 package app
 
-type CommonConfig struct {
-	Env string `envconfig:"env" default:"production"`
-}
-
 type Env string
 
 const (

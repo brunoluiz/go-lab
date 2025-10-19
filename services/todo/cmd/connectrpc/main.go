@@ -16,10 +16,10 @@ import (
 	todov1connect "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1/todov1connect"
 	"github.com/brunoluiz/go-lab/lib/closer"
 	"github.com/brunoluiz/go-lab/lib/database/postgres"
+	"github.com/brunoluiz/go-lab/lib/handler/connectrpc/interceptor"
 	"github.com/brunoluiz/go-lab/lib/otel"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/brunoluiz/go-lab/services/todo/internal/handler/connectrpc"
-	"github.com/brunoluiz/go-lab/services/todo/internal/handler/connectrpc/interceptor"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -64,8 +64,9 @@ func run(cli *CLI, logger *slog.Logger) error {
 	// Setup Connect Handler
 	grpcHandler := connectrpc.NewHandler(service, listService)
 	path, h := todov1connect.NewTodoServiceHandler(grpcHandler, connect.WithInterceptors(
-		interceptor.Error(logger),
 		otelInterceptor,
+		interceptor.Logger(logger),
+		interceptor.Error(),
 	))
 	mux := http.NewServeMux()
 	mux.Handle(path, h)
@@ -83,20 +84,20 @@ func run(cli *CLI, logger *slog.Logger) error {
 	}
 
 	go func() {
-		logger.InfoContext(ctx, "Starting server", slog.String("address", cli.Address), slog.Int("port", cli.Port))
+		logger.InfoContext(ctx, "starting server", slog.String("address", cli.Address), slog.Int("port", cli.Port))
 		if serr := server.ListenAndServe(); serr != nil && serr != http.ErrServerClosed {
-			logger.ErrorContext(ctx, "Failure to serve", "error", serr)
+			logger.ErrorContext(ctx, "failure to serve", "error", serr)
 		}
 	}()
 
 	<-ctx.Done()
-	logger.InfoContext(ctx, "Shutting down server...")
+	logger.InfoContext(ctx, "shutting down server...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if serr := server.Shutdown(shutdownCtx); serr != nil {
 		return fmt.Errorf("failure to shutdown: %w", serr)
 	}
-	logger.InfoContext(ctx, "Shutdown complete")
+	logger.InfoContext(ctx, "shutdown complete")
 	return nil
 }
 
@@ -108,7 +109,7 @@ func main() {
 
 	if err := run(&cli, logger); err != nil {
 		//nolint
-		logger.Error("Application error", "error", err)
+		logger.Error("application error", "error", err)
 		os.Exit(1)
 	}
 }

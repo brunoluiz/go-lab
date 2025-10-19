@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/brunoluiz/go-lab/lib/app"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/brunoluiz/go-lab/services/todo/internal/dto"
@@ -14,12 +15,7 @@ import (
 	"github.com/google/uuid"
 )
 
-var (
-	ErrNameRequired     = errors.New("name is required")
-	ErrListNotFound     = errors.New("list not found")
-	ErrValidationFailed = errors.New("validation failed")
-	ErrInternal         = errors.New("internal error")
-)
+var ErrNameRequired = errors.New("name is required")
 
 func toDtoList(l model.List) dto.List {
 	return dto.List{
@@ -53,11 +49,11 @@ func NewService(listRepo repository.ListRepository, logger *slog.Logger) *Servic
 
 func (s *Service) CreateList(ctx context.Context, req dto.CreateListRequest) (dto.CreateListResponse, error) {
 	if err := s.validator.Struct(req); err != nil {
-		return dto.CreateListResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
+		return dto.CreateListResponse{}, fmt.Errorf("%w: %w", app.ErrValidation, err)
 	}
 	id, err := uuid.NewV7()
 	if err != nil {
-		return dto.CreateListResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
+		return dto.CreateListResponse{}, fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	list := model.List{
 		ID:        id.String(),
@@ -66,21 +62,18 @@ func (s *Service) CreateList(ctx context.Context, req dto.CreateListRequest) (dt
 	}
 	created, err := s.listRepo.CreateList(ctx, list)
 	if err != nil {
-		return dto.CreateListResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
+		return dto.CreateListResponse{}, err
 	}
 	return dto.CreateListResponse{List: toDtoList(created)}, nil
 }
 
 func (s *Service) GetList(ctx context.Context, req dto.GetListRequest) (dto.GetListResponse, error) {
 	if err := s.validator.Struct(req); err != nil {
-		return dto.GetListResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
+		return dto.GetListResponse{}, fmt.Errorf("%w: %w", app.ErrValidation, err)
 	}
 	list, err := s.listRepo.GetList(ctx, req.ListID)
 	if err != nil {
-		if errors.Is(err, repository.ErrListNotFound) {
-			return dto.GetListResponse{}, ErrListNotFound
-		}
-		return dto.GetListResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
+		return dto.GetListResponse{}, err
 	}
 	return dto.GetListResponse{List: toDtoList(list)}, nil
 }
@@ -88,7 +81,7 @@ func (s *Service) GetList(ctx context.Context, req dto.GetListRequest) (dto.GetL
 func (s *Service) ListLists(ctx context.Context, _ dto.ListListsRequest) (dto.ListListsResponse, error) {
 	lists, err := s.listRepo.ListLists(ctx)
 	if err != nil {
-		return dto.ListListsResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
+		return dto.ListListsResponse{}, err
 	}
 	dtoLists := make([]dto.List, len(lists))
 	for i, l := range lists {
@@ -99,29 +92,23 @@ func (s *Service) ListLists(ctx context.Context, _ dto.ListListsRequest) (dto.Li
 
 func (s *Service) UpdateList(ctx context.Context, req dto.UpdateListRequest) (dto.UpdateListResponse, error) {
 	if err := s.validator.Struct(req); err != nil {
-		return dto.UpdateListResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
+		return dto.UpdateListResponse{}, fmt.Errorf("%w: %w", app.ErrValidation, err)
 	}
 	list := fromDtoList(req.List)
 	updated, err := s.listRepo.UpdateList(ctx, list)
 	if err != nil {
-		if errors.Is(err, repository.ErrListNotFound) {
-			return dto.UpdateListResponse{}, ErrListNotFound
-		}
-		return dto.UpdateListResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
+		return dto.UpdateListResponse{}, err
 	}
 	return dto.UpdateListResponse{List: toDtoList(updated)}, nil
 }
 
 func (s *Service) DeleteList(ctx context.Context, req dto.DeleteListRequest) (dto.DeleteListResponse, error) {
 	if err := s.validator.Struct(req); err != nil {
-		return dto.DeleteListResponse{}, fmt.Errorf("%w: %w", ErrValidationFailed, err)
+		return dto.DeleteListResponse{}, fmt.Errorf("%w: %w", app.ErrValidation, err)
 	}
 	err := s.listRepo.DeleteList(ctx, req.ListID)
 	if err != nil {
-		if errors.Is(err, repository.ErrListNotFound) {
-			return dto.DeleteListResponse{}, ErrListNotFound
-		}
-		return dto.DeleteListResponse{}, fmt.Errorf("%w: %w", ErrInternal, err)
+		return dto.DeleteListResponse{}, err
 	}
 	return dto.DeleteListResponse{}, nil
 }

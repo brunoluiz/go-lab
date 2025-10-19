@@ -8,14 +8,10 @@ import (
 	"log/slog"
 
 	"github.com/aarondl/opt/omit"
+	"github.com/brunoluiz/go-lab/lib/app"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/bob/models"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
 	"github.com/stephenafamo/bob"
-)
-
-var (
-	ErrListNotFound = errors.New("list not found")
-	ErrInternalList = errors.New("internal error")
 )
 
 type ListRepository interface {
@@ -43,7 +39,7 @@ func (r *listRepository) CreateList(ctx context.Context, list model.List) (model
 	}
 	created, err := models.Lists.Insert(&setter).One(ctx, r.db)
 	if err != nil {
-		return model.List{}, fmt.Errorf("%w: %w", ErrInternalList, err)
+		return model.List{}, fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	return model.List{
 		ID:        created.ID,
@@ -56,9 +52,9 @@ func (r *listRepository) GetList(ctx context.Context, id string) (model.List, er
 	list, err := models.FindList(ctx, r.db, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return model.List{}, ErrListNotFound
+			return model.List{}, app.ErrNotFound
 		}
-		return model.List{}, fmt.Errorf("%w: %w", ErrInternalList, err)
+		return model.List{}, fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	return model.List{
 		ID:        list.ID,
@@ -70,7 +66,7 @@ func (r *listRepository) GetList(ctx context.Context, id string) (model.List, er
 func (r *listRepository) ListLists(ctx context.Context) ([]model.List, error) {
 	lists, err := models.Lists.Query().All(ctx, r.db)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrInternalList, err)
+		return nil, fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	var result []model.List
 	for _, list := range lists {
@@ -87,9 +83,9 @@ func (r *listRepository) UpdateList(ctx context.Context, list model.List) (model
 	bobList, err := models.FindList(ctx, r.db, list.ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return model.List{}, ErrListNotFound
+			return model.List{}, app.ErrNotFound
 		}
-		return model.List{}, fmt.Errorf("%w: %w", ErrInternalList, err)
+		return model.List{}, fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	setter := models.ListSetter{
 		Name:      omit.From(list.Name),
@@ -97,7 +93,7 @@ func (r *listRepository) UpdateList(ctx context.Context, list model.List) (model
 	}
 	err = bobList.Update(ctx, r.db, &setter)
 	if err != nil {
-		return model.List{}, fmt.Errorf("%w: %w", ErrInternalList, err)
+		return model.List{}, fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	return model.List{
 		ID:        bobList.ID,
@@ -110,13 +106,13 @@ func (r *listRepository) DeleteList(ctx context.Context, id string) error {
 	bobList, err := models.FindList(ctx, r.db, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return ErrListNotFound
+			return app.ErrNotFound
 		}
-		return fmt.Errorf("%w: %w", ErrInternalList, err)
+		return fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	err = bobList.Delete(ctx, r.db)
 	if err != nil {
-		return fmt.Errorf("%w: %w", ErrInternalList, err)
+		return fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	return nil
 }

@@ -8,16 +8,12 @@ import (
 	"log/slog"
 
 	"github.com/aarondl/opt/omit"
+	"github.com/brunoluiz/go-lab/lib/app"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/bob/models"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
 	"github.com/stephenafamo/bob"
 	"github.com/stephenafamo/bob/dialect/psql"
 	"github.com/stephenafamo/bob/dialect/psql/sm"
-)
-
-var (
-	ErrTaskNotFound = errors.New("task not found")
-	ErrInternal     = errors.New("internal error")
 )
 
 type TaskRepository interface {
@@ -47,7 +43,7 @@ func (r *taskRepository) CreateTask(ctx context.Context, task model.Task) (model
 	}
 	created, err := models.Tasks.Insert(&setter).One(ctx, r.db)
 	if err != nil {
-		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, err)
+		return model.Task{}, fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	return model.Task{
 		ID:          created.ID,
@@ -62,9 +58,9 @@ func (r *taskRepository) GetTask(ctx context.Context, id string) (model.Task, er
 	task, err := models.FindTask(ctx, r.db, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return model.Task{}, ErrTaskNotFound
+			return model.Task{}, app.ErrNotFound
 		}
-		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, err)
+		return model.Task{}, fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	return model.Task{
 		ID:          task.ID,
@@ -80,7 +76,7 @@ func (r *taskRepository) ListTasks(ctx context.Context, listID string) ([]model.
 		sm.Where(models.Tasks.Columns.ListID.EQ(psql.Arg(listID))),
 	).All(ctx, r.db)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %w", ErrInternal, err)
+		return nil, fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	var result []model.Task
 	for _, task := range tasks {
@@ -99,9 +95,9 @@ func (r *taskRepository) UpdateTask(ctx context.Context, task model.Task) (model
 	bobTask, err := models.FindTask(ctx, r.db, task.ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return model.Task{}, ErrTaskNotFound
+			return model.Task{}, app.ErrNotFound
 		}
-		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, err)
+		return model.Task{}, fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	setter := models.TaskSetter{
 		Title:       omit.From(task.Title),
@@ -111,7 +107,7 @@ func (r *taskRepository) UpdateTask(ctx context.Context, task model.Task) (model
 	}
 	err = bobTask.Update(ctx, r.db, &setter)
 	if err != nil {
-		return model.Task{}, fmt.Errorf("%w: %w", ErrInternal, err)
+		return model.Task{}, fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	return model.Task{
 		ID:          bobTask.ID,
@@ -126,13 +122,13 @@ func (r *taskRepository) DeleteTask(ctx context.Context, id string) error {
 	bobTask, err := models.FindTask(ctx, r.db, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return ErrTaskNotFound
+			return app.ErrNotFound
 		}
-		return fmt.Errorf("%w: %w", ErrInternal, err)
+		return fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	err = bobTask.Delete(ctx, r.db)
 	if err != nil {
-		return fmt.Errorf("%w: %w", ErrInternal, err)
+		return fmt.Errorf("%w: %w", app.ErrUnknown, err)
 	}
 	return nil
 }
