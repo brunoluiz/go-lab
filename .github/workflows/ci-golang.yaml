@@ -27,7 +27,9 @@ jobs:
       - run: git branch
       - run: git fetch origin main
       - id: monogo
-        run: echo "detect=$(make monogo)" >> "$GITHUB_OUTPUT"
+        run: |-
+          detect=$(make monogo)
+          echo $detect && echo "detect=$detect" >> "$GITHUB_OUTPUT"
 
   lint:
     name: Lint
