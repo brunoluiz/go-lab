@@ -132,7 +132,7 @@ func New(dsn string, opts ...option) (*sql.DB, error) {
 	return db, nil
 }
 
-func up(db *sql.DB, fs fs.FS, logger *slog.Logger) error {
+func up(db *sql.DB, fs fs.FS, _ *slog.Logger) error {
 	driver, err := postgres.WithInstance(db, &postgres.Config{})
 	if err != nil {
 		return errx.ErrInternal.Wrap(err)

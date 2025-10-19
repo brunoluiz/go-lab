@@ -21,10 +21,11 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
+          fetch-tags: true
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
       - id: monogo
-        run: echo "detect=$(make monogo)" >> "$GITHUB_OUTPUT"
+        run: echo "detect=$(make monogo)" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
 
   lint:
     name: Lint
@@ -33,6 +34,9 @@ jobs:
     needs: [prepare]
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-golangci-lint
       - uses: ./.github/actions/cache-go-modules
