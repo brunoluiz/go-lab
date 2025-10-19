@@ -24,7 +24,8 @@ jobs:
           fetch-tags: true
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
-      - run: git branch
+      - run: git branch -a
+      - run: git show-ref
       - run: git fetch origin main
       - id: monogo
         run: |-
