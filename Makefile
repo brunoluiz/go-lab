@@ -10,7 +10,7 @@ docker_repository ?= $(docker_registry)/$(docker_namespace)/dev/services/$(servi
 docker_tag ?= $(shell git rev-parse HEAD)
 docker_image ?= $(docker_repository)/$(cmd):$(docker_tag)
 git_current_branch := $(shell git rev-parse --abbrev-ref HEAD)
-git_base := $(if $(filter main,$(git_current_branch)),HEAD~1,refs/remotes/origin/main)
+git_base := $(if $(filter main,$(git_current_branch)),refs/remotes/origin/main~1,refs/remotes/origin/main)
 OTEL_SERVICE_NAME=$(service)-$(cmd)
 
 .PHONY: run
