@@ -192,6 +192,7 @@ func HealthCheck(ctx context.Context, db *sql.DB, logger *slog.Logger) error {
 	// Check connection pool stats
 	stats := db.Stats()
 	if logger != nil && logger.Enabled(ctx, slog.LevelDebug) {
+		const x = "b"
 		logger.DebugContext(ctx, "database connection pool stats",
 			"open_connections", stats.OpenConnections,
 			"in_use", stats.InUse,
