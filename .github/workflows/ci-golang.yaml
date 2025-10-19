@@ -26,8 +26,7 @@ jobs:
       - uses: ./.github/actions/cache-go-modules
       - id: monogo
         run: |-
-          detect=$(make monogo)
-          echo $detect && echo "detect=$detect" >> "$GITHUB_OUTPUT"
+          echo "detect=$(make monogo)" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
 
   lint:
     name: Lint
