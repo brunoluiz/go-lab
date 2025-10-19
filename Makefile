@@ -10,6 +10,7 @@ docker_repository ?= $(docker_registry)/$(docker_namespace)/dev/services/$(servi
 docker_tag ?= $(shell git rev-parse HEAD)
 docker_image ?= $(docker_repository)/$(cmd):$(docker_tag)
 OTEL_SERVICE_NAME=$(service)-$(cmd)
+
 .PHONY: run
 run:
 	. $(service_path)/.env.default; \
@@ -43,7 +44,8 @@ test:
 monogo:
 	-@monogo detect --entrypoints $(shell find services -type d -name cmd -print0 \
 	| xargs -0 -I {} find {} -maxdepth 1 -mindepth 1 -type d \
-	| paste -sd ',' -)
+	| paste -sd ',' -) \
+	--compare-ref 'HEAD'
 
 .PHONY: docker-all
 docker-all: docker-login docker-build docker-sign docker-scan
