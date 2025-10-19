@@ -34,4 +34,3 @@
 
 - Format and linting should only take changed files
 - Linter and tests might need manual saving after running, as the cache action doesn't handle it nicely
-- Improved postgres connection management

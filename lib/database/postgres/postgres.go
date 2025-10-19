@@ -184,10 +184,6 @@ func pingWithRetry(db *sql.DB, timeout time.Duration, maxRetries int, logger *sl
 
 // HealthCheck performs a comprehensive health check on the database connection
 func HealthCheck(ctx context.Context, db *sql.DB, logger *slog.Logger) error {
-	if logger == nil {
-		logger = slog.Default()
-	}
-
 	// Basic ping check
 	if err := db.PingContext(ctx); err != nil {
 		return errx.ErrInternal.Wrapf(err, "database health check failed: ping")
@@ -195,15 +191,17 @@ func HealthCheck(ctx context.Context, db *sql.DB, logger *slog.Logger) error {
 
 	// Check connection pool stats
 	stats := db.Stats()
-	logger.DebugContext(ctx, "database connection pool stats",
-		"open_connections", stats.OpenConnections,
-		"in_use", stats.InUse,
-		"idle", stats.Idle,
-		"wait_count", stats.WaitCount,
-		"wait_duration", stats.WaitDuration,
-		"max_idle_closed", stats.MaxIdleClosed,
-		"max_lifetime_closed", stats.MaxLifetimeClosed,
-	)
+	if logger != nil && logger.Enabled(ctx, slog.LevelDebug) {
+		logger.DebugContext(ctx, "database connection pool stats",
+			"open_connections", stats.OpenConnections,
+			"in_use", stats.InUse,
+			"idle", stats.Idle,
+			"wait_count", stats.WaitCount,
+			"wait_duration", stats.WaitDuration,
+			"max_idle_closed", stats.MaxIdleClosed,
+			"max_lifetime_closed", stats.MaxLifetimeClosed,
+		)
+	}
 
 	// Simple query to verify database is responsive
 	if err := db.QueryRowContext(ctx, "SELECT 1").Scan(new(int)); err != nil {
