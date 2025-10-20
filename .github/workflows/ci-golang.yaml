@@ -16,7 +16,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      monogo: ${{ steps.monogo.outputs.detect }}
+      monogo: ${{ steps.monogo.outputs.monogo }}
+      impacted_files: ${{ steps.monogo.outputs.impacted_files }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -33,7 +34,10 @@ jobs:
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
       - id: monogo
-        run: echo "detect=$(make monogo)" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
+        run: |-
+          monogo=$(make monogo)
+          echo "monogo=$monogo" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
+          echo "impacted_files=$(echo monogo | jq -r '.git.files.impacted.go | @csv')" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
 
   lint:
     name: Lint
@@ -49,9 +53,7 @@ jobs:
       - uses: ./.github/actions/cache-go-modules
         with:
           restore-only: "true"
-      - run: |
-          set -x
-          make lint files="$(echo ${{ toJSON(needs.prepare.outputs.monogo) }} | jq -r '.git.files.impacted.go | @csv')"
+      - run: make lint files="${{ needs.prepare.outputs.impacted_files) }}"
 
   test:
     name: Test
