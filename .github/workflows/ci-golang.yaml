@@ -16,7 +16,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
-      monogo: ${{ steps.monogo.outputs.detect }}
+      monogo: ${{ steps.monogo.outputs.json }}
+      entrypoints: ${{ steps.monogo.outputs.entrypoints }}
+      impacted_files: ${{ steps.monogo.outputs.impacted_go_files }}
+      changed: ${{ steps.monogo.outputs.changed }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -33,7 +36,7 @@ jobs:
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
       - id: monogo
-        run: echo "detect=$(make monogo)" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
+        run: make monogo | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
 
   lint:
     name: Lint
@@ -46,11 +49,10 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - uses: jdx/mise-action@v3
-      - uses: ./.github/actions/cache-golangci-lint
       - uses: ./.github/actions/cache-go-modules
         with:
           restore-only: "true"
-      - run: make lint
+      - run: make lint files="${{ needs.prepare.outputs.impacted_files }}"
 
   test:
     name: Test
@@ -67,8 +69,7 @@ jobs:
       - run: make test
 
   build:
-    # if: github.ref == 'refs/heads/main'
-    if: ${{ fromJSON(needs.prepare.outputs.monogo).changed == true }}
+    if: ${{ needs.prepare.outputs.changed == 'true' }}
     name: Build (${{ matrix.entrypoint.path }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -81,7 +82,7 @@ jobs:
     needs: [prepare, test]
     strategy:
       matrix:
-        entrypoint: ${{ fromJSON(needs.prepare.outputs.monogo).entrypoints }}
+        entrypoint: ${{ fromJSON(needs.prepare.outputs.entrypoints) }}
     env:
       docker_registry: ghcr.io
       docker_user: ${{ github.actor }}
