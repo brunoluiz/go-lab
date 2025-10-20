@@ -57,6 +57,7 @@ jobs:
           echo ${{ fromJSON(needs.prepare.outputs.monogo).git.files.impacted }}
           echo ${{ fromJSON(needs.prepare.outputs.monogo).git.files }}
           echo ${{ fromJSON(needs.prepare.outputs.monogo).git }}
+          echo ${{ toJSON(needs.prepare.outputs.monogo).git }}
           make lint files=$(echo $GO_FILES | jq --raw-output '@csv')
 
   test:
