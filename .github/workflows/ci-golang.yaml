@@ -20,7 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: ${{ github.ref == 'refs/heads/main' && 1 || 0 }}
+          fetch-depth: 0
+          fetch-tags: true
       - env:
           DEBUG_CONTEXT: ${{ toJson(github) }}
           DEBUG_JOB_CONTEXT: ${{ toJson(job) }}
@@ -42,7 +43,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: ${{ github.ref == 'refs/heads/main' && 1 || 0 }}
+          fetch-depth: 0
+          fetch-tags: true
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-golangci-lint
       - uses: ./.github/actions/cache-go-modules
