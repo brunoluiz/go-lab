@@ -69,8 +69,7 @@ jobs:
       - run: make test
 
   build:
-    # if: github.ref == 'refs/heads/main'
-    if: ${{ needs.prepare.outputs.changed == true }}
+    if: ${{ needs.prepare.outputs.changed == 'true' }}
     name: Build (${{ matrix.entrypoint.path }})
     runs-on: ubuntu-latest
     timeout-minutes: 10
