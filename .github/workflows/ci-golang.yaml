@@ -51,7 +51,7 @@ jobs:
           restore-only: "true"
       - run: |
           set -x
-          make lint files="$(echo '${{ toJSON(needs.prepare.outputs.monogo) }}' | jq -r '.git.files.impacted.go | @csv')"
+          make lint files="$(echo ${{ toJSON(needs.prepare.outputs.monogo) }} | jq -r '.git.files.impacted.go | @csv')"
 
   test:
     name: Test
