@@ -21,6 +21,7 @@ run:
 	docker compose -f ./$(service_path)/docker-compose.yaml up -d || true; \
 	air --build.cmd "go build -o $(project_out_dir)/app ./$(service_path_cmd)" --build.bin "./$(project_out_dir)/app"
 
+.PHONY: migrate
 migrate:
 	migrate -source file://./services/$(service)/internal/database/migration -database "$(DB_DSN)" up
 
@@ -77,3 +78,9 @@ docker-scan:
 .PHONY: docker-scan-platform
 docker-scan-platform:
 	trivy image --format sarif --platform $(platform) -o "$(project_out_dir)/$(cmd)-$(subst /,-,$(platform)).sarif" --scanners vuln,misconfig,license $(docker_image)
+
+.PHONY: ci-debug
+ci-debug:
+	git show-ref
+	git branch -a
+	env | grep GITHUB_

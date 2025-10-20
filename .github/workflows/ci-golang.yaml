@@ -20,9 +20,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 0
-          fetch-tags: true
-      - run: git show-ref
+          fetch-depth: ${{ github.ref == 'refs/heads/main' && 1 || 0 }}
+      - run: make ci-debug
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
       - id: monogo
@@ -36,8 +35,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 0
-          fetch-tags: true
+          fetch-depth: ${{ github.ref == 'refs/heads/main' && 1 || 0 }}
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-golangci-lint
       - uses: ./.github/actions/cache-go-modules
