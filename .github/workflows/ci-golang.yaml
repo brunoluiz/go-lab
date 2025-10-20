@@ -23,6 +23,8 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - run: git show-ref
+      - run: git diff refs/remotes/origin/main
+      - run: git diff refs/remotes/origin/main~1
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
       - id: monogo
