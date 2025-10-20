@@ -52,9 +52,8 @@ jobs:
       - env:
           GO_FILES: ${{ fromJSON(needs.prepare.outputs.monogo).git.files.impacted.go }}
         run: |
-          echo ${{ fromJSON(needs.prepare.outputs.monogo) }}
-          echo ${{ toJSON(needs.prepare.outputs.monogo) }}
-          make lint files="$(echo $GO_FILES | jq -r '.[]' | paste -sd ' ' -)"
+          set -x
+          make lint files="$(echo ${{ toJSON(needs.prepare.outputs.monogo) }} | jq -r '.git.files.impacted.go | @csv')"
 
   test:
     name: Test
