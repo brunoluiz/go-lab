@@ -84,3 +84,9 @@ ci-debug:
 	git show-ref
 	git branch -a
 	env | grep GITHUB_
+	echo ${DEBUG_CONTEXT}
+	echo ${DEBUG_JOB_CONTEXT}
+	echo ${DEBUG_STEPS_CONTEXT}
+	echo ${DEBUG_RUNNER_CONTEXT}
+	echo ${DEBUG_STRATEGY_CONTEXT}
+	echo ${DEBUG_MATRIX_CONTEXT}
