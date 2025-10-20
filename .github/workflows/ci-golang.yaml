@@ -82,7 +82,7 @@ jobs:
     needs: [prepare, test]
     strategy:
       matrix:
-        entrypoint: ${{ needs.prepare.outputs.entrypoints }}
+        entrypoint: ${{ fromJSON(needs.prepare.outputs.entrypoints) }}
     env:
       docker_registry: ghcr.io
       docker_user: ${{ github.actor }}
