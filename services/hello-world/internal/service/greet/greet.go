@@ -25,6 +25,8 @@ func (g *Greeter) Hello(l string) (string, error) {
 		return "hello", nil
 	case language.Portuguese:
 		return "olá", nil
+	case language.German:
+		return "hallo", nil
 	default:
 		return "", ErrNotImplemented
 	}
