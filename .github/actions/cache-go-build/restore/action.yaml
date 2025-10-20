@@ -1,0 +1,11 @@
+name: Restore Go Build Cache
+description: Restore Go build cache
+runs:
+  using: composite
+  steps:
+    - name: Restore Go build cache
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/.cache/go-build
+        key: ${{ runner.os }}-go-test-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go-test

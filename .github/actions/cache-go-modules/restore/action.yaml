@@ -1,0 +1,11 @@
+name: Restore Go Modules Cache
+description: Restore Go modules cache
+runs:
+  using: composite
+  steps:
+    - name: Restore Go modules cache
+      uses: actions/cache/restore@v4
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go-mod

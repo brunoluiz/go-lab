@@ -1,0 +1,10 @@
+name: Save Go Modules Cache
+description: Save Go modules cache
+runs:
+  using: composite
+  steps:
+    - name: Save Go modules cache
+      uses: actions/cache/save@v4
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}

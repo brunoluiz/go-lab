@@ -31,9 +31,10 @@ jobs:
           DEBUG_MATRIX_CONTEXT: ${{ toJson(matrix) }}
         run: make ci-debug
       - uses: jdx/mise-action@v3
-      - uses: ./.github/actions/cache-go-modules
+      - uses: ./.github/actions/cache-go-modules/restore
       - id: monogo
         run: echo "detect=$(make monogo)" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
+      - uses: ./.github/actions/cache-go-modules/save
 
   lint:
     name: Lint
@@ -46,11 +47,10 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - uses: jdx/mise-action@v3
-      - uses: ./.github/actions/cache-golangci-lint
-      - uses: ./.github/actions/cache-go-modules
-        with:
-          restore-only: "true"
+      - uses: ./.github/actions/cache-golangci-lint/restore
+      - uses: ./.github/actions/cache-go-modules/restore
       - run: make lint
+      - uses: ./.github/actions/cache-golangci-lint/save
 
   test:
     name: Test
@@ -60,11 +60,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: jdx/mise-action@v3
-      - uses: ./.github/actions/cache-go-build
-      - uses: ./.github/actions/cache-go-modules
-        with:
-          restore-only: "true"
+      - uses: ./.github/actions/cache-go-build/restore
+      - uses: ./.github/actions/cache-go-modules/restore
       - run: make test
+      - uses: ./.github/actions/cache-go-build/save
 
   build:
     # if: github.ref == 'refs/heads/main'
@@ -89,11 +88,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: jdx/mise-action@v3
-      - uses: ./.github/actions/cache-go-modules
-        with:
-          restore-only: "true"
-      - uses: ./.github/actions/cache-go-build
-        with:
-          restore-only: "true"
+      - uses: ./.github/actions/cache-go-modules/restore
+      - uses: ./.github/actions/cache-go-build/restore
       - shell: bash
         run: . ./scripts/monogo-entrypoint-path.sh ${{ matrix.entrypoint.path }} && make docker-all
+      - uses: ./.github/actions/cache-go-build/save
