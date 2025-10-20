@@ -53,7 +53,7 @@ jobs:
       - uses: ./.github/actions/cache-go-modules
         with:
           restore-only: "true"
-      - run: make lint files="${{ needs.prepare.outputs.impacted_files) }}"
+      - run: make lint files="${{ needs.prepare.outputs.impacted_files }}"
 
   test:
     name: Test
