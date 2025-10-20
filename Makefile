@@ -33,7 +33,7 @@ format:
 .PHONY: lint
 lint:
 	buf lint
-	golangci-lint run --timeout 5m --color always --new-from-merge-base="$(git_base)" --whole-files ./...
+	golangci-lint run --timeout 5m --color always --whole-files $(if $(files),$(files),./...)
 
 .PHONY: scan
 scan:
@@ -45,7 +45,7 @@ test:
 
 .PHONY: monogo
 monogo:
-	@/Users/brunoluiz/.local/share/mise/installs/go/1.25.2/bin/monogo detect --entrypoints $(shell find services -type d -name cmd -print0 \
+	@monogo detect --entrypoints $(shell find services -type d -name cmd -print0 \
 	| xargs -0 -I {} find {} -maxdepth 1 -mindepth 1 -type d \
 	| paste -sd ',' -) \
 	--base-ref $(git_base) --compare-ref 'HEAD'

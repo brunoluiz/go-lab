@@ -50,7 +50,9 @@ jobs:
       - uses: ./.github/actions/cache-go-modules
         with:
           restore-only: "true"
-      - run: make lint
+      - env:
+          GO_FILES: ${{ fromJSON(needs.prepare.outputs.monogo).git.files.impacted.go }}
+        run: make lint files=$(echo $GO_FILES | jq --raw-output '@csv')
 
   test:
     name: Test
