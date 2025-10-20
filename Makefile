@@ -13,6 +13,10 @@ git_current_branch := $(shell git rev-parse --abbrev-ref HEAD)
 git_base := $(if $(filter main,$(git_current_branch)),refs/remotes/origin/main~1,refs/remotes/origin/main)
 OTEL_SERVICE_NAME=$(service)-$(cmd)
 
+.PHONY: install
+install:
+	mise install
+
 .PHONY: run
 run:
 	. $(service_path)/.env.default; \
