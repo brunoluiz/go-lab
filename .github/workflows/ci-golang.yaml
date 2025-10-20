@@ -21,7 +21,14 @@ jobs:
       - uses: actions/checkout@v5
         with:
           fetch-depth: ${{ github.ref == 'refs/heads/main' && 1 || 0 }}
-      - run: make ci-debug
+      - env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+          GITHUB_JOB_CONTEXT: ${{ toJson(job) }}
+          GITHUB_STEPS_CONTEXT: ${{ toJson(steps) }}
+          GITHUB_RUNNER_CONTEXT: ${{ toJson(runner) }}
+          GITHUB_STRATEGY_CONTEXT: ${{ toJson(strategy) }}
+          GITHUB_MATRIX_CONTEXT: ${{ toJson(matrix) }}
+        run: make ci-debug
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
       - id: monogo
