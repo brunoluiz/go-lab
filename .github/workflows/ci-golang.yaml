@@ -37,7 +37,7 @@ jobs:
         run: |-
           monogo=$(make monogo)
           echo "monogo=$monogo" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
-          echo "impacted_files=$(echo monogo | jq -r '.git.files.impacted.go | @csv')" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
+          echo "impacted_files=$(echo $monogo | jq -r '.git.files.impacted.go | @csv')" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
 
   lint:
     name: Lint
