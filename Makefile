@@ -84,9 +84,3 @@ ci-debug:
 	git show-ref
 	git branch -a
 	env | grep GITHUB_
-	echo "${DEBUG_CONTEXT}" | jq
-	echo "${DEBUG_JOB_CONTEXT}" | jq
-	echo "${DEBUG_STEPS_CONTEXT}" | jq
-	echo "${DEBUG_RUNNER_CONTEXT}" | jq
-	echo "${DEBUG_STRATEGY_CONTEXT}" | jq
-	echo "${DEBUG_MATRIX_CONTEXT}" | jq
