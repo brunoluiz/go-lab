@@ -46,7 +46,6 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - uses: jdx/mise-action@v3
-      - uses: ./.github/actions/cache-golangci-lint
       - uses: ./.github/actions/cache-go-modules
         with:
           restore-only: "true"
