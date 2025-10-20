@@ -83,4 +83,4 @@ docker-scan-platform:
 ci-debug:
 	git show-ref
 	git branch -a
-	env | grep GITHUB_
+	env
