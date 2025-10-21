@@ -88,13 +88,13 @@ jobs:
       docker_user: ${{ github.actor }}
       docker_password: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - id: details
+        run: make ci-details | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
       - uses: actions/checkout@v5
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
-        with:
-          restore-only: "true"
       - uses: ./.github/actions/cache-go-build
         with:
-          restore-only: "true"
+          key: "true"
       - shell: bash
         run: . ./scripts/monogo-entrypoint-path.sh ${{ matrix.entrypoint.path }} && make docker-all

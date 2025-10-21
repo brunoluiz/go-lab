@@ -88,3 +88,7 @@ ci-debug:
 	git show-ref
 	git branch -a
 	# env
+
+ci-details:
+		@echo "service=$$(echo "$$entrypoint" | cut -d'/' -f3)"
+		@echo "cmd=$$(echo "$$entrypoint" | cut -d'/' -f5)"

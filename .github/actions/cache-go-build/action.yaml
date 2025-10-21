@@ -5,6 +5,9 @@ inputs:
     description: "Whether to only restore cache without saving"
     required: false
     default: "false"
+  key:
+    required: false
+    default: "general"
 runs:
   using: composite
   steps:
@@ -13,13 +16,13 @@ runs:
       uses: actions/cache@v4
       with:
         path: ~/.cache/go-build
-        key: ${{ runner.os }}-go-test-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-go-test
+        key: ${{ runner.os }}-go-build-${{ inputs.key }}-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go-build-${{ inputs.key }}
 
     - name: Restore Go build cache
       if: inputs.restore-only == 'true'
       uses: actions/cache/restore@v4
       with:
         path: ~/.cache/go-build
-        key: ${{ runner.os }}-go-test-${{ hashFiles('**/go.sum') }}
-        restore-keys: ${{ runner.os }}-go-test
+        key: ${{ runner.os }}-go-build-${{ inputs.key }}-${{ hashFiles('**/go.sum') }}
+        restore-keys: ${{ runner.os }}-go-build-${{ inputs.key }}
