@@ -32,10 +32,12 @@ func (h *Handler) ListTasks(ctx context.Context, req *v1.ListTasksRequest) (*v1.
 	if err != nil {
 		return nil, err
 	}
+
 	protoTasks := make([]*v1.Task, len(resp.TodoList.Tasks))
 	for i, t := range resp.TodoList.Tasks {
 		protoTasks[i] = toProtoTask(t)
 	}
+
 	return &v1.ListTasksResponse{TodoList: &v1.TodoList{Tasks: protoTasks, Name: resp.TodoList.Name, Id: resp.TodoList.ID}}, nil
 }
 

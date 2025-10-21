@@ -26,13 +26,13 @@ func (h *Handler) GetList(ctx context.Context, req *v1.GetListRequest) (*v1.GetL
 	return &v1.GetListResponse{List: toProtoList(resp.List)}, nil
 }
 
-func (h *Handler) ListLists(ctx context.Context, req *v1.ListListsRequest) (*v1.ListListsResponse, error) {
-	_ = req
+func (h *Handler) ListLists(ctx context.Context, _ *v1.ListListsRequest) (*v1.ListListsResponse, error) {
 	internalReq := dto.ListListsRequest{}
 	resp, err := h.listService.ListLists(ctx, internalReq)
 	if err != nil {
 		return nil, err
 	}
+
 	protoLists := make([]*v1.List, len(resp.Lists))
 	for i, l := range resp.Lists {
 		protoLists[i] = toProtoList(l)

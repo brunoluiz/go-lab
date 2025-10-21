@@ -90,5 +90,5 @@ ci-debug:
 	# env
 
 ci-details:
-		@echo "service=$$(echo "$$entrypoint" | cut -d'/' -f3)"
-		@echo "cmd=$$(echo "$$entrypoint" | cut -d'/' -f5)"
+		@echo "service=$$(echo "$$entrypoint" | cut -d'/' -f2)"
+		@echo "cmd=$$(echo "$$entrypoint" | cut -d'/' -f4)"
