@@ -16,6 +16,7 @@ OTEL_SERVICE_NAME=$(service)-$(cmd)
 .PHONY: install
 install:
 	mise install
+	go mod download
 
 .PHONY: run
 run:
