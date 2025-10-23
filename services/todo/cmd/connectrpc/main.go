@@ -19,6 +19,7 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	"github.com/go-playground/validator/v10"
+	"github.com/hellofresh/health-go/v5"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stephenafamo/bob"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
@@ -32,7 +33,7 @@ type CLI struct {
 	DBDSN             string `kong:"default=postgres://todo_user:todo_pass@localhost:5432/todo?sslmode=disable,env=DB_DSN"`
 }
 
-func (cli *CLI) Run(ctx context.Context, logger *slog.Logger) error {
+func (cli *CLI) Run(ctx context.Context, logger *slog.Logger, healthz *health.Health) error {
 	// Initialize Database
 	sqlDB, err := postgres.New(cli.DBDSN, logger, postgres.WithLiveCheck())
 	if err != nil {

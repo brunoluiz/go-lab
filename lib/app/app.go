@@ -25,7 +25,7 @@ const (
 )
 
 type Exec interface {
-	Run(ctx context.Context, logger *slog.Logger) error
+	Run(ctx context.Context, logger *slog.Logger, healthz *health.Health) error
 }
 
 func Run[T Exec](exec T) {
@@ -54,7 +54,7 @@ func Run[T Exec](exec T) {
 	})
 
 	eg.Go(func() error {
-		return exec.Run(ctx, logger)
+		return exec.Run(ctx, logger, healthz)
 	})
 
 	if err := eg.Wait(); err != nil {
