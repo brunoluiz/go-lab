@@ -61,7 +61,7 @@ func (cli *CLI) Run(ctx context.Context, logger *slog.Logger) error {
 	mux := http.NewServeMux()
 	mux.Handle(path, h)
 
-	server := httpx.NewServer(fmt.Sprintf("%s:%d", cli.Address, cli.Port),
+	server := httpx.New(fmt.Sprintf("%s:%d", cli.Address, cli.Port),
 		otelhttp.NewHandler(mux, "server", otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents)),
 		httpx.WithLogger(logger),
 	)

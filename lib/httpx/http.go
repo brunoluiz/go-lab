@@ -30,7 +30,13 @@ func WithLogger(logger *slog.Logger) ServerOption {
 	}
 }
 
-func NewServer(addr string, handler http.Handler, opts ...ServerOption) *Server {
+func WithAddr(addr string) ServerOption {
+	return func(s *Server) {
+		s.Addr = addr
+	}
+}
+
+func New(addr string, handler http.Handler, opts ...ServerOption) *Server {
 	p := new(http.Protocols)
 	p.SetHTTP1(true)
 	p.SetUnencryptedHTTP2(true)
@@ -43,7 +49,7 @@ func NewServer(addr string, handler http.Handler, opts ...ServerOption) *Server 
 			Protocols:         p,
 		},
 		shutdownTimeout: 5 * time.Second,
-		logger:          slog.Default(),
+		logger:          slog.New(slog.DiscardHandler),
 	}
 
 	for _, opt := range opts {
