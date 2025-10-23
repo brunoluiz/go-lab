@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/signal"
@@ -24,6 +25,11 @@ const (
 	EnvTest       Env = "test"
 )
 
+type global struct {
+	O11yAddress string `kong:"default=0.0.0.0,env=O11Y_ADDRESS,name=o11y-address"`
+	O11yPort    int    `kong:"default=9090,env=O11Y_PORT,name=o11y-port"`
+}
+
 type Exec interface {
 	Run(ctx context.Context, logger *slog.Logger, healthz *health.Health) error
 }
@@ -32,7 +38,10 @@ func Run[T Exec](exec T) {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
-	kong.Parse(exec)
+
+	// Parses app flags, but also cfg (do not judge the trickery here)
+	cfg := &global{}
+	kong.Parse(exec, kong.Embed(cfg))
 
 	// Initialize OpenTelemetry
 	otelShutdown, err := otel.SetupOTelSDK(ctx)
@@ -50,7 +59,7 @@ func Run[T Exec](exec T) {
 
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		return o11y.Run(ctx, logger, healthz)
+		return o11y.Run(ctx, logger, healthz, o11y.WithAddr(fmt.Sprintf("%s:%d", cfg.O11yAddress, cfg.O11yPort)))
 	})
 
 	eg.Go(func() error {
