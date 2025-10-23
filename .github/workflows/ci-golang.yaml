@@ -33,7 +33,7 @@ jobs:
         run: make ci-debug
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
-      - uses: make install
+      - run: make install
       - id: monogo
         run: make monogo | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
 
@@ -61,8 +61,6 @@ jobs:
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-build
       - uses: ./.github/actions/cache-go-modules
-      - run: go env GOMODCACHE
-      - run: ls $(go env GOMODCACHE)
       - run: make test
 
   build:
