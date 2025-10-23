@@ -13,13 +13,13 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	"github.com/golang-migrate/migrate/v4/source/iofs"
+	"github.com/hellofresh/health-go/v5"
 	_ "github.com/jackc/pgx/stdlib" // registers pgx driver for database/sql
 	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
 )
 
 type config struct {
 	migration       fs.FS
-	ping            bool
 	maxOpenConns    int
 	maxIdleConns    int
 	connMaxLifetime time.Duration
@@ -27,65 +27,15 @@ type config struct {
 	logger          *slog.Logger
 	connTimeout     time.Duration
 	maxRetries      int
+	health          *health.Health
 }
 
-type option func(*config)
-
-func WithMigration(embed fs.FS) func(*config) {
-	return func(c *config) {
-		c.migration = embed
-	}
+type DB struct {
+	Conn   *sql.DB
+	logger *slog.Logger
 }
 
-func WithLiveCheck() func(*config) {
-	return func(c *config) {
-		c.ping = true
-	}
-}
-
-func WithMaxOpenConns(n int) func(*config) {
-	return func(c *config) {
-		c.maxOpenConns = n
-	}
-}
-
-func WithMaxIdleConns(n int) func(*config) {
-	return func(c *config) {
-		c.maxIdleConns = n
-	}
-}
-
-func WithConnMaxLifetime(d time.Duration) func(*config) {
-	return func(c *config) {
-		c.connMaxLifetime = d
-	}
-}
-
-func WithConnMaxIdleTime(d time.Duration) func(*config) {
-	return func(c *config) {
-		c.connMaxIdleTime = d
-	}
-}
-
-func WithLogger(logger *slog.Logger) func(*config) {
-	return func(c *config) {
-		c.logger = logger
-	}
-}
-
-func WithConnTimeout(timeout time.Duration) func(*config) {
-	return func(c *config) {
-		c.connTimeout = timeout
-	}
-}
-
-func WithMaxRetries(retries int) func(*config) {
-	return func(c *config) {
-		c.maxRetries = retries
-	}
-}
-
-func New(dsn string, opts ...option) (*sql.DB, error) {
+func New(ctx context.Context, dsn string, logger *slog.Logger, opts ...option) (*DB, error) {
 	c := &config{
 		maxOpenConns:    25,
 		maxIdleConns:    5,
@@ -98,34 +48,46 @@ func New(dsn string, opts ...option) (*sql.DB, error) {
 		opt(c)
 	}
 
-	db, err := otelsql.Open("pgx", dsn, otelsql.WithAttributes(
+	conn, err := otelsql.Open("pgx", dsn, otelsql.WithAttributes(
 		semconv.DBSystemPostgreSQL,
 	))
 	if err != nil {
 		return nil, err
 	}
 
-	// Configure connection pool
-	db.SetMaxOpenConns(c.maxOpenConns)
-	db.SetMaxIdleConns(c.maxIdleConns)
-	db.SetConnMaxLifetime(c.connMaxLifetime)
-	db.SetConnMaxIdleTime(c.connMaxIdleTime)
+	db := &DB{Conn: conn, logger: logger}
+	db.Conn.SetMaxOpenConns(c.maxOpenConns)
+	db.Conn.SetMaxIdleConns(c.maxIdleConns)
+	db.Conn.SetConnMaxLifetime(c.connMaxLifetime)
+	db.Conn.SetConnMaxIdleTime(c.connMaxIdleTime)
 
-	if err = otelsql.RegisterDBStatsMetrics(db, otelsql.WithAttributes(
+	if err = otelsql.RegisterDBStatsMetrics(db.Conn, otelsql.WithAttributes(
 		semconv.DBSystemPostgreSQL,
 	)); err != nil {
+		db.Conn.Close()
 		return nil, err
 	}
 
-	if c.ping {
-		if pingErr := pingWithRetry(db, c.connTimeout, c.maxRetries, c.logger); pingErr != nil {
-			return nil, pingErr
-		}
+	if pingErr := db.ping(ctx, c.connTimeout, c.maxRetries); pingErr != nil {
+		db.Conn.Close()
+		return nil, pingErr
 	}
 
 	if c.migration != nil {
-		if migrateErr := up(db, c.migration, c.logger); migrateErr != nil {
+		if migrateErr := up(db.Conn, c.migration, c.logger); migrateErr != nil {
+			db.Conn.Close()
 			return nil, migrateErr
+		}
+	}
+
+	if c.health != nil {
+		if registerErr := c.health.Register(health.Config{
+			Name:    "postgres",
+			Timeout: 2 * time.Second,
+			Check:   db.Health,
+		}); registerErr != nil {
+			db.Conn.Close()
+			return nil, errx.ErrInternal.Wrap(registerErr)
 		}
 	}
 
@@ -155,20 +117,16 @@ func up(db *sql.DB, fs fs.FS, _ *slog.Logger) error {
 	return nil
 }
 
-func pingWithRetry(db *sql.DB, timeout time.Duration, maxRetries int, logger *slog.Logger) error {
-	if logger == nil {
-		logger = slog.Default()
-	}
-
+func (db *DB) ping(ctx context.Context, timeout time.Duration, maxRetries int) error {
 	var lastErr error
 	for attempt := 0; attempt <= maxRetries; attempt++ {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
-		if err := db.PingContext(ctx); err != nil {
+		pingCtx, cancel := context.WithTimeout(ctx, timeout)
+		err := db.Conn.PingContext(pingCtx)
+		cancel()
+		if err != nil {
 			lastErr = err
 			if attempt < maxRetries {
-				logger.WarnContext(context.Background(), "database ping failed, retrying",
+				db.logger.WarnContext(ctx, "database ping failed, retrying",
 					"attempt", attempt+1,
 					"max_retries", maxRetries,
 					"error", err)
@@ -182,17 +140,16 @@ func pingWithRetry(db *sql.DB, timeout time.Duration, maxRetries int, logger *sl
 	return lastErr
 }
 
-// HealthCheck performs a comprehensive health check on the database connection
-func HealthCheck(ctx context.Context, db *sql.DB, logger *slog.Logger) error {
+func (db *DB) Health(ctx context.Context) error {
 	// Basic ping check
-	if err := db.PingContext(ctx); err != nil {
+	if err := db.Conn.PingContext(ctx); err != nil {
 		return errx.ErrInternal.Wrapf(err, "database health check failed: ping")
 	}
 
 	// Check connection pool stats
-	stats := db.Stats()
-	if logger != nil && logger.Enabled(ctx, slog.LevelDebug) {
-		logger.DebugContext(ctx, "database connection pool stats",
+	if db.logger.Enabled(ctx, slog.LevelDebug) {
+		stats := db.Conn.Stats()
+		db.logger.DebugContext(ctx, "database connection pool stats",
 			"open_connections", stats.OpenConnections,
 			"in_use", stats.InUse,
 			"idle", stats.Idle,
@@ -204,7 +161,7 @@ func HealthCheck(ctx context.Context, db *sql.DB, logger *slog.Logger) error {
 	}
 
 	// Simple query to verify database is responsive
-	if err := db.QueryRowContext(ctx, "SELECT 1").Scan(new(int)); err != nil {
+	if err := db.Conn.QueryRowContext(ctx, "SELECT 1").Scan(new(int)); err != nil {
 		return errx.ErrInternal.Wrapf(err, "database health check failed: query")
 	}
 

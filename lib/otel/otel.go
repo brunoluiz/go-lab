@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/go-logr/logr"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
@@ -37,6 +38,7 @@ func SetupOTelSDK(ctx context.Context) (func(context.Context) error, error) {
 	// Set up propagator.
 	prop := newPropagator()
 	otel.SetTextMapPropagator(prop)
+	otel.SetLogger(logr.Discard())
 
 	// Set up trace provider.
 	tracerProvider, err := newTracerProvider(ctx)

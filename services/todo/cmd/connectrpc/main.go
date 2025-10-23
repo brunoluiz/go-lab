@@ -5,25 +5,21 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/otelconnect"
-	"github.com/alecthomas/kong"
 	todov1connect "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1/todov1connect"
+	"github.com/brunoluiz/go-lab/lib/app"
 	"github.com/brunoluiz/go-lab/lib/closer"
 	"github.com/brunoluiz/go-lab/lib/database/postgres"
 	"github.com/brunoluiz/go-lab/lib/handler/connectrpc/interceptor"
 	"github.com/brunoluiz/go-lab/lib/httpx"
-	"github.com/brunoluiz/go-lab/lib/otel"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/brunoluiz/go-lab/services/todo/internal/handler/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	"github.com/go-playground/validator/v10"
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/hellofresh/health-go/v5"
 	"github.com/stephenafamo/bob"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
@@ -31,31 +27,20 @@ import (
 type CLI struct {
 	Address string `kong:"default=0.0.0.0,env=ADDRESS"`
 	Port    int    `kong:"default=4000,env=PORT"`
-	DBDSN   string `kong:"default=postgres://postgres:password@localhost:5432/todo?sslmode=disable,env=DB_DSN"`
+	DBDSN   string `kong:"default=postgres://todo_user:todo_pass@localhost:5432/todo?sslmode=disable,env=DB_DSN"`
 }
 
-func run(cli *CLI, logger *slog.Logger) error {
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
-
-	// Initialize OpenTelemetry
-	otelShutdown, err := otel.SetupOTelSDK(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to setup OpenTelemetry: %w", err)
-	}
-	defer closer.WithLogContext(ctx, logger, "failed to shutdown OpenTelemetry", otelShutdown)
-
-	// Initialize Database
-	sqlDB, err := postgres.New(cli.DBDSN, postgres.WithLiveCheck())
+func (cli *CLI) Run(ctx context.Context, logger *slog.Logger, healthz *health.Health) error {
+	sqlDB, err := postgres.New(ctx, cli.DBDSN, logger, postgres.WithHealthChecker(healthz))
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
-	defer closer.WithLog(ctx, logger, "failed to shutdown database/sql", sqlDB.Close)
+	defer closer.WithLog(ctx, logger, "failed to shutdown database/sql", sqlDB.Conn.Close)
 
-	db := bob.NewDB(sqlDB)
+	db := bob.NewDB(sqlDB.Conn)
+	validator := validator.New()
 	taskRepo := repository.NewTaskRepository(db, logger)
 	listRepo := repository.NewListRepository(db, logger)
-	validator := validator.New()
 	listService := list.NewService(listRepo, logger, validator)
 	todoService := todo.NewService(taskRepo, listService, logger, validator)
 
@@ -73,7 +58,7 @@ func run(cli *CLI, logger *slog.Logger) error {
 	mux := http.NewServeMux()
 	mux.Handle(path, h)
 
-	server := httpx.NewServer(fmt.Sprintf("%s:%d", cli.Address, cli.Port),
+	server := httpx.New(fmt.Sprintf("%s:%d", cli.Address, cli.Port),
 		otelhttp.NewHandler(mux, "server", otelhttp.WithMessageEvents(otelhttp.ReadEvents, otelhttp.WriteEvents)),
 		httpx.WithLogger(logger),
 	)
@@ -83,14 +68,5 @@ func run(cli *CLI, logger *slog.Logger) error {
 }
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-
-	var cli CLI
-	kong.Parse(&cli)
-
-	if err := run(&cli, logger); err != nil {
-		//nolint
-		logger.Error("application error", "error", err)
-		os.Exit(1)
-	}
+	app.Run(&CLI{})
 }
