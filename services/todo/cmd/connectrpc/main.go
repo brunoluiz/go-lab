@@ -28,9 +28,7 @@ import (
 type CLI struct {
 	Address string `kong:"default=0.0.0.0,env=ADDRESS"`
 	Port    int    `kong:"default=4000,env=PORT"`
-	// TODO: do projects such as kubernetes put pprof + health + other stuff on the same port?
-	ObservabilityPort int    `kong:"default=9090,env=OBSERVABILITY_PORT"`
-	DBDSN             string `kong:"default=postgres://todo_user:todo_pass@localhost:5432/todo?sslmode=disable,env=DB_DSN"`
+	DBDSN   string `kong:"default=postgres://todo_user:todo_pass@localhost:5432/todo?sslmode=disable,env=DB_DSN"`
 }
 
 func (cli *CLI) Run(ctx context.Context, logger *slog.Logger, healthz *health.Health) error {
