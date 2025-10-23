@@ -140,16 +140,16 @@ func (db *DB) ping(timeout time.Duration, maxRetries int) error {
 	return lastErr
 }
 
-func (pg *DB) Health(ctx context.Context) error {
+func (db *DB) Health(ctx context.Context) error {
 	// Basic ping check
-	if err := pg.Conn.PingContext(ctx); err != nil {
+	if err := db.Conn.PingContext(ctx); err != nil {
 		return errx.ErrInternal.Wrapf(err, "database health check failed: ping")
 	}
 
 	// Check connection pool stats
-	if pg.logger.Enabled(ctx, slog.LevelDebug) {
-		stats := pg.Conn.Stats()
-		pg.logger.DebugContext(ctx, "database connection pool stats",
+	if db.logger.Enabled(ctx, slog.LevelDebug) {
+		stats := db.Conn.Stats()
+		db.logger.DebugContext(ctx, "database connection pool stats",
 			"open_connections", stats.OpenConnections,
 			"in_use", stats.InUse,
 			"idle", stats.Idle,
@@ -161,7 +161,7 @@ func (pg *DB) Health(ctx context.Context) error {
 	}
 
 	// Simple query to verify database is responsive
-	if err := pg.Conn.QueryRowContext(ctx, "SELECT 1").Scan(new(int)); err != nil {
+	if err := db.Conn.QueryRowContext(ctx, "SELECT 1").Scan(new(int)); err != nil {
 		return errx.ErrInternal.Wrapf(err, "database health check failed: query")
 	}
 
