@@ -5,19 +5,15 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/otelconnect"
-	"github.com/alecthomas/kong"
 	todov1connect "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1/todov1connect"
+	"github.com/brunoluiz/go-lab/lib/app"
 	"github.com/brunoluiz/go-lab/lib/closer"
 	"github.com/brunoluiz/go-lab/lib/database/postgres"
 	"github.com/brunoluiz/go-lab/lib/handler/connectrpc/interceptor"
 	"github.com/brunoluiz/go-lab/lib/httpx"
-	"github.com/brunoluiz/go-lab/lib/otel"
 	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
 	"github.com/brunoluiz/go-lab/services/todo/internal/handler/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
@@ -33,20 +29,10 @@ type CLI struct {
 	Port    int    `kong:"default=4000,env=PORT"`
 	// TODO: do projects such as kubernetes put pprof + health + other stuff on the same port?
 	ObservabilityPort int    `kong:"default=9090,env=OBSERVABILITY_PORT"`
-	DBDSN             string `kong:"default=postgres://postgres:password@localhost:5432/todo?sslmode=disable,env=DB_DSN"`
+	DBDSN             string `kong:"default=postgres://todo_user:todo_pass@localhost:5432/todo?sslmode=disable,env=DB_DSN"`
 }
 
-func run(cli *CLI, logger *slog.Logger) error {
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
-
-	// Initialize OpenTelemetry
-	otelShutdown, err := otel.SetupOTelSDK(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to setup OpenTelemetry: %w", err)
-	}
-	defer closer.WithLogContext(ctx, logger, "failed to shutdown OpenTelemetry", otelShutdown)
-
+func (cli *CLI) Run(ctx context.Context, logger *slog.Logger) error {
 	// Initialize Database
 	sqlDB, err := postgres.New(cli.DBDSN, logger, postgres.WithLiveCheck())
 	if err != nil {
@@ -85,14 +71,5 @@ func run(cli *CLI, logger *slog.Logger) error {
 }
 
 func main() {
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-
-	var cli CLI
-	kong.Parse(&cli)
-
-	if err := run(&cli, logger); err != nil {
-		//nolint
-		logger.Error("application error", "error", err)
-		os.Exit(1)
-	}
+	app.Run(&CLI{})
 }
