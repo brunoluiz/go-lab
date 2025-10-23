@@ -31,7 +31,9 @@ import (
 type CLI struct {
 	Address string `kong:"default=0.0.0.0,env=ADDRESS"`
 	Port    int    `kong:"default=4000,env=PORT"`
-	DBDSN   string `kong:"default=postgres://postgres:password@localhost:5432/todo?sslmode=disable,env=DB_DSN"`
+	// TODO: do projects such as kubernetes put pprof + health + other stuff on the same port?
+	ObservabilityPort int    `kong:"default=9090,env=OBSERVABILITY_PORT"`
+	DBDSN             string `kong:"default=postgres://postgres:password@localhost:5432/todo?sslmode=disable,env=DB_DSN"`
 }
 
 func run(cli *CLI, logger *slog.Logger) error {
@@ -46,13 +48,13 @@ func run(cli *CLI, logger *slog.Logger) error {
 	defer closer.WithLogContext(ctx, logger, "failed to shutdown OpenTelemetry", otelShutdown)
 
 	// Initialize Database
-	sqlDB, err := postgres.New(cli.DBDSN, postgres.WithLiveCheck())
+	sqlDB, err := postgres.New(cli.DBDSN, logger, postgres.WithLiveCheck())
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
-	defer closer.WithLog(ctx, logger, "failed to shutdown database/sql", sqlDB.Close)
+	defer closer.WithLog(ctx, logger, "failed to shutdown database/sql", sqlDB.DB.Close)
 
-	db := bob.NewDB(sqlDB)
+	db := bob.NewDB(sqlDB.DB)
 	taskRepo := repository.NewTaskRepository(db, logger)
 	listRepo := repository.NewListRepository(db, logger)
 	validator := validator.New()

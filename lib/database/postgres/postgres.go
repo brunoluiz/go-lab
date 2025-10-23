@@ -29,68 +29,12 @@ type config struct {
 	maxRetries      int
 }
 
-type option func(*config)
-
-func WithMigration(embed fs.FS) func(*config) {
-	return func(c *config) {
-		c.migration = embed
-	}
-}
-
-func WithLiveCheck() func(*config) {
-	return func(c *config) {
-		c.ping = true
-	}
-}
-
-func WithMaxOpenConns(n int) func(*config) {
-	return func(c *config) {
-		c.maxOpenConns = n
-	}
-}
-
-func WithMaxIdleConns(n int) func(*config) {
-	return func(c *config) {
-		c.maxIdleConns = n
-	}
-}
-
-func WithConnMaxLifetime(d time.Duration) func(*config) {
-	return func(c *config) {
-		c.connMaxLifetime = d
-	}
-}
-
-func WithConnMaxIdleTime(d time.Duration) func(*config) {
-	return func(c *config) {
-		c.connMaxIdleTime = d
-	}
-}
-
-func WithLogger(logger *slog.Logger) func(*config) {
-	return func(c *config) {
-		c.logger = logger
-	}
-}
-
-func WithConnTimeout(timeout time.Duration) func(*config) {
-	return func(c *config) {
-		c.connTimeout = timeout
-	}
-}
-
-func WithMaxRetries(retries int) func(*config) {
-	return func(c *config) {
-		c.maxRetries = retries
-	}
-}
-
 type DB struct {
-	db     *sql.DB
+	DB     *sql.DB
 	logger *slog.Logger
 }
 
-func New(dsn string, opts ...option) (*sql.DB, error) {
+func New(dsn string, logger *slog.Logger, opts ...option) (*DB, error) {
 	c := &config{
 		maxOpenConns:    25,
 		maxIdleConns:    5,
@@ -134,7 +78,7 @@ func New(dsn string, opts ...option) (*sql.DB, error) {
 		}
 	}
 
-	return db, nil
+	return &DB{DB: db, logger: logger}, nil
 }
 
 func up(db *sql.DB, fs fs.FS, _ *slog.Logger) error {
@@ -189,13 +133,13 @@ func pingWithRetry(db *sql.DB, timeout time.Duration, maxRetries int, logger *sl
 
 func (pg *DB) Health(ctx context.Context) error {
 	// Basic ping check
-	if err := pg.db.PingContext(ctx); err != nil {
+	if err := pg.DB.PingContext(ctx); err != nil {
 		return errx.ErrInternal.Wrapf(err, "database health check failed: ping")
 	}
 
 	// Check connection pool stats
-	stats := pg.db.Stats()
-	if pg.logger != nil && pg.logger.Enabled(ctx, slog.LevelDebug) {
+	if pg.logger.Enabled(ctx, slog.LevelDebug) {
+		stats := pg.DB.Stats()
 		pg.logger.DebugContext(ctx, "database connection pool stats",
 			"open_connections", stats.OpenConnections,
 			"in_use", stats.InUse,
@@ -208,13 +152,9 @@ func (pg *DB) Health(ctx context.Context) error {
 	}
 
 	// Simple query to verify database is responsive
-	if err := pg.db.QueryRowContext(ctx, "SELECT 1").Scan(new(int)); err != nil {
+	if err := pg.DB.QueryRowContext(ctx, "SELECT 1").Scan(new(int)); err != nil {
 		return errx.ErrInternal.Wrapf(err, "database health check failed: query")
 	}
 
 	return nil
-}
-
-func (pg *DB) DB() *sql.DB {
-	return pg.db
 }
