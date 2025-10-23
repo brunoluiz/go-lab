@@ -3,6 +3,8 @@ package postgres
 import (
 	"io/fs"
 	"time"
+
+	"github.com/hellofresh/health-go/v5"
 )
 
 type option func(*config)
@@ -10,12 +12,6 @@ type option func(*config)
 func WithMigration(embed fs.FS) func(*config) {
 	return func(c *config) {
 		c.migration = embed
-	}
-}
-
-func WithLiveCheck() func(*config) {
-	return func(c *config) {
-		c.ping = true
 	}
 }
 
@@ -52,5 +48,11 @@ func WithConnTimeout(timeout time.Duration) func(*config) {
 func WithMaxRetries(retries int) func(*config) {
 	return func(c *config) {
 		c.maxRetries = retries
+	}
+}
+
+func WithHealthChecker(h *health.Health) func(*config) {
+	return func(c *config) {
+		c.health = h
 	}
 }

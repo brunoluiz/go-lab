@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"time"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/otelconnect"
@@ -35,22 +34,16 @@ type CLI struct {
 }
 
 func (cli *CLI) Run(ctx context.Context, logger *slog.Logger, healthz *health.Health) error {
-	// Initialize Database
-	sqlDB, err := postgres.New(cli.DBDSN, logger, postgres.WithLiveCheck())
+	sqlDB, err := postgres.New(cli.DBDSN, logger, postgres.WithHealthChecker(healthz))
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 	defer closer.WithLog(ctx, logger, "failed to shutdown database/sql", sqlDB.Conn.Close)
-	healthz.Register(health.Config{
-		Name:    "postgres",
-		Timeout: time.Second * 2,
-		Check:   sqlDB.Health,
-	})
 
 	db := bob.NewDB(sqlDB.Conn)
+	validator := validator.New()
 	taskRepo := repository.NewTaskRepository(db, logger)
 	listRepo := repository.NewListRepository(db, logger)
-	validator := validator.New()
 	listService := list.NewService(listRepo, logger, validator)
 	todoService := todo.NewService(taskRepo, listService, logger, validator)
 
