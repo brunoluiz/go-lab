@@ -30,7 +30,7 @@ type config struct {
 }
 
 type DB struct {
-	DB     *sql.DB
+	Conn   *sql.DB
 	logger *slog.Logger
 }
 
@@ -78,7 +78,7 @@ func New(dsn string, logger *slog.Logger, opts ...option) (*DB, error) {
 		}
 	}
 
-	return &DB{DB: db, logger: logger}, nil
+	return &DB{Conn: db, logger: logger}, nil
 }
 
 func up(db *sql.DB, fs fs.FS, _ *slog.Logger) error {
@@ -133,13 +133,13 @@ func pingWithRetry(db *sql.DB, timeout time.Duration, maxRetries int, logger *sl
 
 func (pg *DB) Health(ctx context.Context) error {
 	// Basic ping check
-	if err := pg.DB.PingContext(ctx); err != nil {
+	if err := pg.Conn.PingContext(ctx); err != nil {
 		return errx.ErrInternal.Wrapf(err, "database health check failed: ping")
 	}
 
 	// Check connection pool stats
 	if pg.logger.Enabled(ctx, slog.LevelDebug) {
-		stats := pg.DB.Stats()
+		stats := pg.Conn.Stats()
 		pg.logger.DebugContext(ctx, "database connection pool stats",
 			"open_connections", stats.OpenConnections,
 			"in_use", stats.InUse,
@@ -152,7 +152,7 @@ func (pg *DB) Health(ctx context.Context) error {
 	}
 
 	// Simple query to verify database is responsive
-	if err := pg.DB.QueryRowContext(ctx, "SELECT 1").Scan(new(int)); err != nil {
+	if err := pg.Conn.QueryRowContext(ctx, "SELECT 1").Scan(new(int)); err != nil {
 		return errx.ErrInternal.Wrapf(err, "database health check failed: query")
 	}
 

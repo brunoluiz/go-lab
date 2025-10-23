@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"time"
 
 	"connectrpc.com/connect"
 	"connectrpc.com/otelconnect"
@@ -39,9 +40,14 @@ func (cli *CLI) Run(ctx context.Context, logger *slog.Logger, healthz *health.He
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
-	defer closer.WithLog(ctx, logger, "failed to shutdown database/sql", sqlDB.DB.Close)
+	defer closer.WithLog(ctx, logger, "failed to shutdown database/sql", sqlDB.Conn.Close)
+	healthz.Register(health.Config{
+		Name:    "postgres",
+		Timeout: time.Second * 2,
+		Check:   sqlDB.Health,
+	})
 
-	db := bob.NewDB(sqlDB.DB)
+	db := bob.NewDB(sqlDB.Conn)
 	taskRepo := repository.NewTaskRepository(db, logger)
 	listRepo := repository.NewListRepository(db, logger)
 	validator := validator.New()
