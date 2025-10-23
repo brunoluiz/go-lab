@@ -12,6 +12,7 @@ import (
 type Server struct {
 	*http.Server
 
+	name            string
 	logger          *slog.Logger
 	shutdownTimeout time.Duration
 }
@@ -36,6 +37,12 @@ func WithAddr(addr string) ServerOption {
 	}
 }
 
+func WithName(name string) ServerOption {
+	return func(s *Server) {
+		s.name = name
+	}
+}
+
 func New(addr string, handler http.Handler, opts ...ServerOption) *Server {
 	p := new(http.Protocols)
 	p.SetHTTP1(true)
@@ -48,6 +55,7 @@ func New(addr string, handler http.Handler, opts ...ServerOption) *Server {
 			ReadHeaderTimeout: 10 * time.Second,
 			Protocols:         p,
 		},
+		name:            "app",
 		shutdownTimeout: 5 * time.Second,
 		logger:          slog.New(slog.DiscardHandler),
 	}
@@ -63,7 +71,7 @@ func (s *Server) Run(ctx context.Context) error {
 	errChan := make(chan error, 1)
 
 	go func() {
-		s.logger.InfoContext(ctx, "starting server", slog.String("address", s.Addr))
+		s.logger.InfoContext(ctx, "starting server", slog.String("address", s.Addr), slog.String("name", s.name))
 		if err := s.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			errChan <- err
 		}
@@ -73,13 +81,11 @@ func (s *Server) Run(ctx context.Context) error {
 	case err := <-errChan:
 		return err
 	case <-ctx.Done():
-		s.logger.InfoContext(ctx, "shutting down server...")
 		shutdownCtx, cancel := context.WithTimeout(ctx, s.shutdownTimeout)
 		defer cancel()
 		if err := s.Shutdown(shutdownCtx); err != nil {
-			return fmt.Errorf("failure to shutdown: %w", err)
+			return fmt.Errorf("failure to shutdown http:%s: %w", s.name, err)
 		}
-		s.logger.InfoContext(ctx, "shutdown complete")
 		return nil
 	}
 }

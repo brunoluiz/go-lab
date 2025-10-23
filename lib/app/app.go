@@ -42,7 +42,7 @@ func Run[T Exec](exec T) {
 
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		obsServer := o11y.New()
+		obsServer := o11y.New(logger)
 		defer closer.WithLogContext(ctx, logger, "failed to shutdown o11y server", obsServer.Close)
 		return obsServer.Run(ctx)
 	})

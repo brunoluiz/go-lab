@@ -1,6 +1,7 @@
 package o11y
 
 import (
+	"log/slog"
 	"net/http"
 	"net/http/pprof"
 
@@ -19,7 +20,7 @@ func WithAddr(addr string) Option {
 	}
 }
 
-func New(opts ...Option) *httpx.Server {
+func New(logger *slog.Logger, opts ...Option) *httpx.Server {
 	o := &options{
 		addr: "0.0.0.0:9090",
 	}
@@ -44,5 +45,5 @@ func New(opts ...Option) *httpx.Server {
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
 
-	return httpx.New(o.addr, mux)
+	return httpx.New(o.addr, mux, httpx.WithName("o11y"), httpx.WithLogger(logger))
 }
