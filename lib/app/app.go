@@ -35,10 +35,15 @@ type Exec interface {
 }
 
 func Run[T Exec](exec T) {
+	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
+	if err := run(ctx, logger, exec); err != nil {
+		logger.ErrorContext(ctx, "application error", "error", err)
+		os.Exit(1)
+	}
+}
 
+func run[T Exec](ctx context.Context, logger *slog.Logger, exec T) error {
 	// Parses app flags, but also cfg (do not judge the trickery here)
 	cfg := &global{}
 	kong.Parse(exec, kong.Embed(cfg))
@@ -46,15 +51,13 @@ func Run[T Exec](exec T) {
 	// Initialize OpenTelemetry
 	otelShutdown, err := otel.SetupOTelSDK(ctx)
 	if err != nil {
-		logger.ErrorContext(ctx, "failed to setup otel", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to setup otel: %w", err)
 	}
 	defer closer.WithLogContext(ctx, logger, "failed to shutdown otel", otelShutdown)
 
 	healthz, err := health.New()
 	if err != nil {
-		logger.ErrorContext(ctx, "failed to setup health checker", "error", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to setup health checker: %w", err)
 	}
 
 	eg, ctx := errgroup.WithContext(ctx)
@@ -66,8 +69,9 @@ func Run[T Exec](exec T) {
 		return exec.Run(ctx, logger, healthz)
 	})
 
-	if err := eg.Wait(); err != nil {
-		logger.ErrorContext(ctx, "application error", "error", err)
-		os.Exit(1)
+	if egErr := eg.Wait(); egErr != nil {
+		return fmt.Errorf("application error: %w", egErr)
 	}
+
+	return nil
 }

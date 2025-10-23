@@ -32,7 +32,7 @@ type CLI struct {
 }
 
 func (cli *CLI) Run(ctx context.Context, logger *slog.Logger, healthz *health.Health) error {
-	sqlDB, err := postgres.New(cli.DBDSN, logger, postgres.WithHealthChecker(healthz))
+	sqlDB, err := postgres.New(ctx, cli.DBDSN, logger, postgres.WithHealthChecker(healthz))
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}

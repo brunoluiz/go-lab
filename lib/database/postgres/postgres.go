@@ -35,7 +35,7 @@ type DB struct {
 	logger *slog.Logger
 }
 
-func New(dsn string, logger *slog.Logger, opts ...option) (*DB, error) {
+func New(ctx context.Context, dsn string, logger *slog.Logger, opts ...option) (*DB, error) {
 	c := &config{
 		maxOpenConns:    25,
 		maxIdleConns:    5,
@@ -68,9 +68,9 @@ func New(dsn string, logger *slog.Logger, opts ...option) (*DB, error) {
 		return nil, err
 	}
 
-	if err := db.ping(c.connTimeout, c.maxRetries); err != nil {
+	if pingErr := db.ping(ctx, c.connTimeout, c.maxRetries); pingErr != nil {
 		db.Conn.Close()
-		return nil, err
+		return nil, pingErr
 	}
 
 	if c.migration != nil {
@@ -117,16 +117,16 @@ func up(db *sql.DB, fs fs.FS, _ *slog.Logger) error {
 	return nil
 }
 
-func (db *DB) ping(timeout time.Duration, maxRetries int) error {
+func (db *DB) ping(ctx context.Context, timeout time.Duration, maxRetries int) error {
 	var lastErr error
 	for attempt := 0; attempt <= maxRetries; attempt++ {
-		ctx, cancel := context.WithTimeout(context.Background(), timeout)
-		defer cancel()
-
-		if err := db.Conn.PingContext(ctx); err != nil {
+		pingCtx, cancel := context.WithTimeout(ctx, timeout)
+		err := db.Conn.PingContext(pingCtx)
+		cancel()
+		if err != nil {
 			lastErr = err
 			if attempt < maxRetries {
-				db.logger.WarnContext(context.Background(), "database ping failed, retrying",
+				db.logger.WarnContext(ctx, "database ping failed, retrying",
 					"attempt", attempt+1,
 					"max_retries", maxRetries,
 					"error", err)
