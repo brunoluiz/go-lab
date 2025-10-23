@@ -12,6 +12,8 @@ import (
 	"github.com/brunoluiz/go-lab/lib/o11y"
 	"github.com/brunoluiz/go-lab/lib/otel"
 	"golang.org/x/sync/errgroup"
+
+	"github.com/hellofresh/health-go/v5"
 )
 
 type Env string
@@ -27,10 +29,10 @@ type Exec interface {
 }
 
 func Run[T Exec](exec T) {
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 	ctx, cancel := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer cancel()
-
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	kong.Parse(exec)
 
 	// Initialize OpenTelemetry
 	otelShutdown, err := otel.SetupOTelSDK(ctx)
@@ -40,15 +42,18 @@ func Run[T Exec](exec T) {
 	}
 	defer closer.WithLogContext(ctx, logger, "failed to shutdown otel", otelShutdown)
 
+	healthz, err := health.New()
+	if err != nil {
+		logger.ErrorContext(ctx, "failed to setup health checker", "error", err)
+		os.Exit(1)
+	}
+
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		obsServer := o11y.New(logger)
-		defer closer.WithLogContext(ctx, logger, "failed to shutdown o11y server", obsServer.Close)
-		return obsServer.Run(ctx)
+		return o11y.Run(ctx, logger, healthz)
 	})
 
 	eg.Go(func() error {
-		kong.Parse(exec)
 		return exec.Run(ctx, logger)
 	})
 

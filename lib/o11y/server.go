@@ -1,11 +1,14 @@
 package o11y
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 	"net/http/pprof"
 
+	"github.com/brunoluiz/go-lab/lib/closer"
 	"github.com/brunoluiz/go-lab/lib/httpx"
+	"github.com/hellofresh/health-go/v5"
 )
 
 type Option func(*options)
@@ -20,7 +23,7 @@ func WithAddr(addr string) Option {
 	}
 }
 
-func New(logger *slog.Logger, opts ...Option) *httpx.Server {
+func Run(ctx context.Context, logger *slog.Logger, healthz *health.Health, opts ...Option) error {
 	o := &options{
 		addr: "0.0.0.0:9090",
 	}
@@ -30,20 +33,16 @@ func New(logger *slog.Logger, opts ...Option) *httpx.Server {
 
 	mux := http.NewServeMux()
 
-	// 1. Health Endpoints
-	// mux.HandleFunc("/healthz", healthzHandler) // Liveness
-	// mux.HandleFunc("/ready", readyHandler)     // Readiness
-
-	// 2. Metrics Endpoint
-	// mux.Handle("/metrics", promhttp.Handler())
-
-	// 3. Profiling/Debugging Endpoints (pprof)
-	// Registers standard pprof handlers under /debug/pprof/
+	http.Handle("/status", healthz.Handler())
 	mux.HandleFunc("/debug/pprof/", pprof.Index)
 	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
-	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	// mux.Handle("/metrics", promhttp.Handler())
 
-	return httpx.New(o.addr, mux, httpx.WithName("o11y"), httpx.WithLogger(logger))
+	srv := httpx.New(o.addr, mux, httpx.WithName("o11y"), httpx.WithLogger(logger))
+	defer closer.WithLogContext(ctx, logger, "failed to shutdown o11y server", srv.Close)
+
+	return srv.Run(ctx)
 }
