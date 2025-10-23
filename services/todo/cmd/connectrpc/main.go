@@ -20,7 +20,6 @@ import (
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	"github.com/go-playground/validator/v10"
 	"github.com/hellofresh/health-go/v5"
-	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/stephenafamo/bob"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )

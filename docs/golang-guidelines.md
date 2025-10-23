@@ -24,6 +24,7 @@ The below libraries must be used for the respective purposes and alternatives sh
 - Test (mocks): `github.com/uber-go/mock`
 - SQL (query): `github.com/stephenafamo/bob`
 - SQL (migration): `github.com/golang-migrate/migrate`
+- Health checks: `github.com/hellofresh/health-go`
 
 ## Best practices
 
@@ -35,12 +36,13 @@ The below libraries must be used for the respective purposes and alternatives sh
 - When `go build` is trigged, always delete after finishing any tests
 - Migrations must not be done on application (human operator will do separate), unless in tests
 - Services should always receive interfaces, never concrete classes
+- When creating a new service, leverage `lib/app` so the app contains some strong defaults
 
 ## Error handling
 
-- Always wrap errors on adapters such as repositories or external clients using `app.Err*` errors
+- Always wrap errors on adapters such as repositories or external clients using `lib/errx.Err*` errors
 - The service layer it should never re-wrap calls from adapters, but they must wrap errors from third-party libraries or others happening within its own layer
-- All handlers must handle errors coming from the service layer and convert them into appropriate responses (eg: HTTP status codes) using a middleware. It must be placed within `lib`.
+- All handlers must handle errors coming from the service layer and convert them into appropriate responses (eg: HTTP status codes) using a middleware. An example is `./lib/handler/connectrpc/interceptor`
 
 ## Testing
 
@@ -48,6 +50,10 @@ The below libraries must be used for the respective purposes and alternatives sh
 - Tests must be done so they can run using `t.Parallel()`, with exception to integration tests which should be on best-effort basis
 - Mocks should be created as a `mock` package within the package being tested
 - Mock generation must be done using `go:generate` and `mockgen`
+
+## Observability
+
+1. When using `lib/app`, it will always expose metrics, debug probes and health checks on port `9090` + give a health check registry
 
 ## Flow of data
 
@@ -60,8 +66,6 @@ $request --> handler --> $dto --> service --> $model --> repository --> $db_mode
 3. Service executes business logic, potentially using repositories to fetch/store data
 4. When using repositories, data is converted from DTO to database/model and vice-versa
 5. Within the database/repository, it will do the required storage operations and convert to the required structures (eg: bob/model)
-
-## Observability
 
 ## Folder and package structure
 
