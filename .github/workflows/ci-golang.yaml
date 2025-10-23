@@ -33,6 +33,7 @@ jobs:
         run: make ci-debug
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
+      - run: make install
       - id: monogo
         run: make monogo | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
 
