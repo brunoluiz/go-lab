@@ -1,4 +1,4 @@
-bases:
+resources:
   - ../../../../../infra/kustomize/shared/deployment
 
 namePrefix: connectrpc-
@@ -12,5 +12,5 @@ labels:
   - pairs:
       app.kubernetes.io/name: connectrpc
       app.kubernetes.io/part-of: todo
-    includeSelectors: true # <-- false by default
-    includeTemplates: true # <-- false by default
+    includeSelectors: true
+    includeTemplates: true

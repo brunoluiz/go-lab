@@ -93,3 +93,10 @@ ci-debug:
 ci-details:
 		@echo "service=$$(echo "$$entrypoint" | cut -d'/' -f2)"
 		@echo "cmd=$$(echo "$$entrypoint" | cut -d'/' -f4)"
+
+kustomize-build:
+	@for overlay in $$(find ./services/$(service)/kustomize/$(cmd)/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
+		mkdir -p ./services/$(service)/manifests/$(cmd)/$$overlay/; \
+		kustomize build ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay > ./services/$(service)/manifests/$(cmd)/$$overlay/manifest.yaml; \
+		echo "Generated manifests for ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay"; \
+	done
