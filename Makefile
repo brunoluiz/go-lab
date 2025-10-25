@@ -125,10 +125,8 @@ kustomize-push:
 				git pull origin "$$branch_name" --rebase 2>/dev/null || true; \
 				$(MAKE) kustomize-build service=$$service cmd=$$cmd overlay=$$overlay; \
 				git add "services/$$service/manifests/$$cmd/$$overlay"; \
-				if ! git diff --cached --quiet; then \
-					git commit -m "render kustomize into manifests"; git push -f -u origin "$$branch_name"; \
-					gh pr create -t "chore(deploy): $$branch_name" -b 'Trigger deployment if merged' --base main || echo "Conflict or failed"; \
-				fi; \
+				git commit -m "render kustomize into manifests"; git push -f -u origin "$$branch_name"; \
+				gh pr create -t "chore(deploy): $$branch_name" -b 'Trigger deployment if merged' --base main || echo "Conflict or failed"; \
 			done; \
 		done; \
 	done;
