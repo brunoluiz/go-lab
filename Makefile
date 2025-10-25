@@ -13,6 +13,21 @@ git_current_branch := $(shell git rev-parse --abbrev-ref HEAD)
 git_base := $(if $(filter main,$(git_current_branch)),refs/remotes/origin/main~1,refs/remotes/origin/main)
 OTEL_SERVICE_NAME=$(service)-$(cmd)
 
+.PHONY: ci-debug
+ci-debug:
+	git show-ref
+	git branch -a
+
+.PHONY: ci-details
+ci-details:
+		@echo "service=$$(echo "$$entrypoint" | cut -d'/' -f2)"
+		@echo "cmd=$$(echo "$$entrypoint" | cut -d'/' -f4)"
+
+.PHONY: ci-bot
+ci-bot:
+		git config --global user.name "github-actions[bot]"
+		git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
 .PHONY: install
 install:
 	mise install
@@ -80,20 +95,24 @@ docker-sign:
 docker-scan:
 	$(foreach platform,$(subst $(comma), ,$(build_platforms)),$(MAKE) docker-scan-platform platform=$(platform);)
 
+.PHONY: docker-kustomize
+docker-kustomize:
+	@for overlay in $$(find ./services/$(service)/kustomize/$(cmd)/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
+		branch_name="deploy/$(service)/$(cmd)/$$overlay"; \
+		if [ -f ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/kustomization.yaml ]; then \
+			git switch -C "$$branch_name"; \
+			sed -E -i.bak 's/newTag: .*/newTag: $(docker_tag)/g' ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/kustomization.yaml && rm ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/*.bak; \
+			git add "./services/$(service)/kustomize/$(cmd)/overlays/$$overlay"; \
+			git commit -m "chore(deploy,$$overlay): change kustomize $$branch_name" || echo "No changes for $$branch_name"; \
+			git push -f -u origin $$branch_name || true; \
+		fi \
+	done
+
 .PHONY: docker-scan-platform
 docker-scan-platform:
 	trivy image --format sarif --platform $(platform) -o "$(project_out_dir)/$(cmd)-$(subst /,-,$(platform)).sarif" --scanners vuln,misconfig,license $(docker_image)
 
-.PHONY: ci-debug
-ci-debug:
-	git show-ref
-	git branch -a
-	# env
-
-ci-details:
-		@echo "service=$$(echo "$$entrypoint" | cut -d'/' -f2)"
-		@echo "cmd=$$(echo "$$entrypoint" | cut -d'/' -f4)"
-
+.PHONY: kustomize-build
 kustomize-build:
 	@for overlay in $$(find ./services/$(service)/kustomize/$(cmd)/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
 		mkdir -p ./services/$(service)/manifests/$(cmd)/$$overlay/; \
@@ -105,16 +124,16 @@ kustomize-build:
 kustomize-patch-overlays:
 	@for overlay in $$(find ./services/$(service)/kustomize/$(cmd)/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
 		if [ -f ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/kustomization.yaml ]; then \
-			sed -E -i.bak 's/newTag: latest/newTag: $(docker_tag)/g' ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/kustomization.yaml && rm ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/kustomization.yaml.bak; \
+			sed -E -i.bak 's/newTag: .*/newTag: $(docker_tag)/g' ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/kustomization.yaml && rm ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/kustomization.yaml.bak; \
 		fi \
 	done
 
 .PHONY: deploy-pr
-deploy-pr: kustomize-patch-overlays kustomize-build
+deploy-pr: kustomize-build
 	@for overlay in $$(find ./services/$(service)/kustomize/$(cmd)/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
-		git checkout -b "deploy/$(service)/$(cmd)/$$overlay/$(docker_tag)"; \
-		git add "./services/$(service)/kustomize/$(cmd)/overlays/$$overlay"; \
-		git commit -m "chore(deploy,$$overlay): $(service)/$(cmd)/$$overlay" || echo "No changes for $$overlay"; \
-		git push -f -u origin "deploy/$(service)/$(cmd)/$$overlay/$(docker_tag)"; \
+		git checkout -B "deploy/$(service)/$(cmd)/$$overlay/$(docker_tag)" || true; \
+		git add "./services/$(service)/kustomize/$(cmd)/manifests/$$overlay"; \
+		git commit -m "chore(deploy,$$overlay): render kustomize $(service)/$(cmd)/$$overlay" || echo "No changes for $$overlay"; \
+		git push -f -u origin "deploy/$(service)/$(cmd)/$$overlay/$(docker_tag)" || true; \
 		gh pr create --title "chore(deploy,$$overlay): $(service)/$(cmd)" --body "Automated deployment for commit $(docker_tag)" --base main; \
 	done
