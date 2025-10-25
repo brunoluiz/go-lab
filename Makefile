@@ -121,7 +121,7 @@ kustomize-push:
 		for cmd in $$(ls services/$$service/kustomize 2>/dev/null || echo ""); do \
 			for overlay in $$(find services/$$service/kustomize/$$cmd/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
 				branch_name="deploy/$$service/$$cmd/$$overlay"; \
-				if git show-ref --verify --quiet refs/heads/"$$branch_name"; then git switch "$$branch_name"; else git switch -c "$$branch_name" main; fi; \
+				if git show-ref --verify --quiet refs/remotes/"$$branch_name"; then git switch "$$branch_name"; else git switch -c "$$branch_name" main; fi; \
 				$(MAKE) kustomize-build service=$$service cmd=$$cmd overlay=$$overlay; \
 				git add "services/$$service/manifests/$$cmd/$$overlay"; \
 				git commit -m "render kustomize into manifests"; git push -f -u origin "$$branch_name"; \
