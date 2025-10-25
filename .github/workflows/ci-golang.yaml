@@ -107,5 +107,9 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - run: make ci-debug
       - uses: jdx/mise-action@v3
       - run: make ci-bot kustomize-push
