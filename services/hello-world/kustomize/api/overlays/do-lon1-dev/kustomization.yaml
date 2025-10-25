@@ -4,4 +4,4 @@ resources:
 images:
   - name: image
     newName: ghcr.io/brunoluiz/go-lab/services/hello-world/api
-    newTag: latest
+    newTag: de6bf00f15d075428f187979c7503f93e28987db
