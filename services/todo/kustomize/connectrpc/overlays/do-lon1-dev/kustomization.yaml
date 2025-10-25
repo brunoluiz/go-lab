@@ -4,7 +4,7 @@ resources:
 images:
   - name: image
     newName: ghcr.io/brunoluiz/go-lab/services/todo/connectrpc
-    newTag: latest
+    newTag: fc2574986bf76ba7776175ef0dfbc09c76c8c3d7
 
 patches:
   - path: config.json
