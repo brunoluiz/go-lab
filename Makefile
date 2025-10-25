@@ -122,7 +122,7 @@ kustomize-push:
 			for overlay in $$(find services/$$service/kustomize/$$cmd/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
 				branch_name="deploy/$$service/$$cmd/$$overlay"; \
 				git checkout "$$branch_name" 2>/dev/null || git checkout -b "$$branch_name"; \
-				git pull origin "$$branch_name" --rebase 2>/dev/null || true; \
+				git pull origin "$$branch_name" --ff 2>/dev/null || true; \
 				$(MAKE) kustomize-build service=$$service cmd=$$cmd overlay=$$overlay; \
 				git add "services/$$service/manifests/$$cmd/$$overlay"; \
 				git commit -m "render kustomize into manifests"; git push -f -u origin "$$branch_name"; \
