@@ -9,6 +9,7 @@ import (
 	"github.com/brunoluiz/go-lab/lib/closer"
 	"github.com/brunoluiz/go-lab/lib/httpx"
 	"github.com/hellofresh/health-go/v5"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 type Option func(*options)
@@ -33,13 +34,13 @@ func Run(ctx context.Context, logger *slog.Logger, healthz *health.Health, opts 
 
 	mux := http.NewServeMux()
 
-	http.Handle("/status", healthz.Handler())
+	mux.Handle("/metrics", promhttp.Handler())
+	mux.Handle("/healthz", healthz.Handler())
 	mux.HandleFunc("/debug/pprof/", pprof.Index)
 	mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
 	mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
 	mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
 	mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
-	// mux.Handle("/metrics", promhttp.Handler())
 
 	srv := httpx.New(o.addr, mux, httpx.WithName("o11y"), httpx.WithLogger(logger))
 	defer closer.WithLogContext(ctx, logger, "failed to shutdown o11y server", srv.Close)

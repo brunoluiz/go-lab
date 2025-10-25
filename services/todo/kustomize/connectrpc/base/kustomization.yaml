@@ -1,0 +1,23 @@
+bases:
+  - ../../../../../infra/kustomize/shared/deployment
+
+namePrefix: connectrpc-
+
+images:
+  - name: image
+    newName: ghcr.io/brunoluiz/go-lab/services/todo/connectrpc
+    newTag: latest
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: connectrpc
+    includeSelectors: true # <-- false by default
+    includeTemplates: true # <-- false by default
+
+# patches:
+#   - path: config.json
+#     target:
+#       group: apps
+#       version: v1
+#       kind: Deployment
+#       name: app

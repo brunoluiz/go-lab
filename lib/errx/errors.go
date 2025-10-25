@@ -10,6 +10,7 @@ const (
 	CodeNotFound   Code = "not_found"
 	CodeConflict   Code = "conflict"
 	CodeValidation Code = "validation"
+	CodeZero       Code = "0"
 )
 
 func (c Code) String() string {

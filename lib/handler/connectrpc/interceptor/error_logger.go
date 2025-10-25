@@ -12,9 +12,9 @@ import (
 )
 
 func ErrorLogger(logger *slog.Logger) connect.UnaryInterceptorFunc {
-	l := logger
 	return func(next connect.UnaryFunc) connect.UnaryFunc {
 		return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+			l := logger
 			level := slog.LevelInfo
 			startedAt := time.Now()
 			resp, err := next(ctx, req)

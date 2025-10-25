@@ -3,22 +3,19 @@ package otel
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os"
 	"time"
 
-	"github.com/go-logr/logr"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
+	"go.opentelemetry.io/otel/exporters/prometheus"
 	"go.opentelemetry.io/otel/exporters/stdout/stdoutmetric"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/metric"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 )
-
-const defaultExporter = "otlp"
 
 // SetupOTelSDK bootstraps the OpenTelemetry pipeline.
 // If it does not return an error, make sure to call shutdown for proper cleanup.
@@ -38,7 +35,6 @@ func SetupOTelSDK(ctx context.Context) (func(context.Context) error, error) {
 	// Set up propagator.
 	prop := newPropagator()
 	otel.SetTextMapPropagator(prop)
-	otel.SetLogger(logr.Discard())
 
 	// Set up trace provider.
 	tracerProvider, err := newTracerProvider(ctx)
@@ -67,61 +63,48 @@ func newPropagator() propagation.TextMapPropagator {
 }
 
 func newTracerProvider(ctx context.Context) (*sdktrace.TracerProvider, error) {
-	exporter := os.Getenv("OTEL_TRACES_EXPORTER")
-	if exporter == "" {
-		exporter = defaultExporter
-	}
+	switch exporter := os.Getenv("OTEL_TRACES_EXPORTER"); exporter {
+	case "otlp":
+		exp, err := otlptracehttp.New(ctx)
+		if err != nil {
+			return nil, err
+		}
 
-	var exp sdktrace.SpanExporter
-	var err error
-
-	switch exporter {
-	case defaultExporter:
-		exp, err = otlptracehttp.New(ctx)
+		return sdktrace.NewTracerProvider(
+			sdktrace.WithBatcher(exp),
+			sdktrace.WithResource(resource.Default()),
+		), nil
 	default:
-		return nil, fmt.Errorf("unsupported traces exporter: %s", exporter)
+		return sdktrace.NewTracerProvider(), nil
 	}
-
-	if err != nil {
-		return nil, err
-	}
-
-	res := resource.Default()
-
-	tp := sdktrace.NewTracerProvider(
-		sdktrace.WithBatcher(exp),
-		sdktrace.WithResource(res),
-	)
-	return tp, nil
 }
 
 func newMeterProvider(ctx context.Context) (*metric.MeterProvider, error) {
-	exporter := os.Getenv("OTEL_METRICS_EXPORTER")
-	if exporter == "" {
-		exporter = defaultExporter
-	}
-
-	var metricExporter metric.Reader
-
-	switch exporter {
+	switch os.Getenv("OTEL_METRICS_EXPORTER") {
 	case "console":
 		exp, err := stdoutmetric.New()
 		if err != nil {
 			return nil, err
 		}
-		metricExporter = metric.NewPeriodicReader(exp, metric.WithInterval(3*time.Second))
-	case defaultExporter:
+
+		return metric.NewMeterProvider(
+			metric.WithReader(metric.NewPeriodicReader(exp, metric.WithInterval(3*time.Second))),
+		), nil
+	case "otlp":
 		exp, err := otlpmetrichttp.New(ctx)
 		if err != nil {
 			return nil, err
 		}
-		metricExporter = metric.NewPeriodicReader(exp, metric.WithInterval(3*time.Second))
-	default:
-		return nil, fmt.Errorf("unsupported metrics exporter: %s", exporter)
-	}
 
-	meterProvider := metric.NewMeterProvider(
-		metric.WithReader(metricExporter),
-	)
-	return meterProvider, nil
+		return metric.NewMeterProvider(
+			metric.WithReader(metric.NewPeriodicReader(exp, metric.WithInterval(3*time.Second))),
+		), nil
+	default:
+		prometheus, err := prometheus.New()
+		if err != nil {
+			return nil, err
+		}
+
+		return metric.NewMeterProvider(metric.WithReader(prometheus)), nil
+	}
 }
