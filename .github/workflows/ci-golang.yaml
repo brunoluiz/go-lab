@@ -74,7 +74,7 @@ jobs:
       packages: write # required for docker
       attestations: write # required for cosign
       id-token: write
-    needs: [prepare, test]
+    needs: [prepare]
     strategy:
       matrix:
         entrypoint: ${{ fromJSON(needs.prepare.outputs.entrypoints) }}
