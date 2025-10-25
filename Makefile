@@ -106,8 +106,9 @@ docker-kustomize:
 		git switch -C "$$branch_name" $(git_current_branch); \
 		sed -E -i.bak 's/newTag: .*/newTag: $(docker_tag)/g' ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/kustomization.yaml && rm ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/*.bak; \
 		git add "./services/$(service)/kustomize/$(cmd)/overlays/$$overlay"; \
-		git commit -m "patch kustomize image"; git push -f -u origin $$branch_name || true; \
+		git commit -m "patch kustomize image"; git push -f -u origin $$branch_name; \
 	done;
+	git switch $(git_current_branch);
 
 .PHONY: kustomize-build
 kustomize-build:
@@ -124,9 +125,10 @@ kustomize-push:
 				$(MAKE) kustomize-build service=$$service cmd=$$cmd overlay=$$overlay; \
 				git add "services/$$service/manifests/$$cmd/$$overlay"; \
 				if ! git diff --cached --quiet; then \
-					git commit -m "render kustomize into manifests"; git push -f -u origin "$$branch_name" || true; \
+					git commit -m "render kustomize into manifests"; git push -f -u origin "$$branch_name"; \
 					gh pr create -t "chore(deploy): $$branch_name" -b 'Trigger deployment if merged' --base main || echo "Conflict or failed"; \
 				fi; \
 			done; \
 		done; \
 	done;
+	git switch $(git_current_branch);

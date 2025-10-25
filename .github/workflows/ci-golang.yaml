@@ -96,7 +96,7 @@ jobs:
         run: make ci-bot docker-kustomize
 
   kustomize:
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ !cancelled() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     name: Kustomize
     runs-on: ubuntu-latest
     timeout-minutes: 10
