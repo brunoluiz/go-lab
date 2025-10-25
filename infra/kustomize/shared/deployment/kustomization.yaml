@@ -1,3 +1,4 @@
+buildMetadata: [managedByLabel, originAnnotations, transformerAnnotations]
 resources:
   - deployment.yaml
   - pdb.yaml

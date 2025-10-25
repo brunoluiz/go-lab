@@ -5,8 +5,10 @@ metadata:
   labels:
     app.kubernetes.io/name: app
   annotations:
-    owner: "team-a"
-    contact: "team-a@example.com"
+    # The annotations above will only be in effect if Prometheus is installed
+    prometheus.io/scrape: "true"
+    prometheus.io/path: "/metrics"
+    prometheus.io/port: "9090"
 spec:
   replicas: 1
   selector:
@@ -31,7 +33,8 @@ spec:
           image: image
           imagePullPolicy: IfNotPresent
           ports:
-            - containerPort: 8080
+            - containerPort: 3000
+            - containerPort: 4000
           securityContext:
             allowPrivilegeEscalation: false
             capabilities:
