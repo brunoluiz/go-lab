@@ -1,0 +1,16 @@
+resources:
+  - ../../../../../infra/kustomize/shared/deployment
+
+namePrefix: api-
+
+images:
+  - name: image
+    newName: ghcr.io/brunoluiz/go-lab/services/hello-world/api
+    newTag: latest
+
+labels:
+  - pairs:
+      app.kubernetes.io/name: api
+      app.kubernetes.io/part-of: hello-world
+    includeSelectors: true
+    includeTemplates: true

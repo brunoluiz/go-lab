@@ -74,8 +74,6 @@ jobs:
       packages: write # required for docker
       attestations: write # required for cosign
       id-token: write
-      pull-requests: write # required for gh pr create
-      issues: write # required for gh pr create
     needs: [prepare, test]
     strategy:
       matrix:
@@ -97,9 +95,9 @@ jobs:
       - if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: make ci-bot docker-kustomize
 
-  kustomize-push:
+  kustomize:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-    name: Kustomize Push
+    name: Kustomize
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: [build]
