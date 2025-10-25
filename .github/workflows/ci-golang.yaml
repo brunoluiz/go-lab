@@ -74,6 +74,8 @@ jobs:
       packages: write # required for docker
       attestations: write # required for cosign
       id-token: write
+      pull-requests: write # required for gh pr create
+      issues: write # required for gh pr create
     needs: [prepare, test]
     strategy:
       matrix:
@@ -85,10 +87,15 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - id: details
-        run: make ci-details entrypoint="${{ matrix.entrypoint.path }}" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY"
+        run: make ci-details entrypoint="${{ matrix.entrypoint.path }}" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY" "$GITHUB_ENV"
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-modules
       - uses: ./.github/actions/cache-go-build
         with:
           key: ${{ steps.details.outputs.service }}-${{ steps.details.outputs.cmd }}
-      - run: make docker-all service="${{ steps.details.outputs.service }}" cmd="${{ steps.details.outputs.cmd }}"
+      - run: make docker-all
+      - if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          make deploy-pr

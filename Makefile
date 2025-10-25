@@ -100,3 +100,21 @@ kustomize-build:
 		kustomize build ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay > ./services/$(service)/manifests/$(cmd)/$$overlay/manifest.yaml; \
 		echo "Generated manifests for ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay"; \
 	done
+
+.PHONY: kustomize-patch-overlays
+kustomize-patch-overlays:
+	@for overlay in $$(find ./services/$(service)/kustomize/$(cmd)/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
+		if [ -f ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/kustomization.yaml ]; then \
+			sed -E -i.bak 's/newTag: latest/newTag: $(docker_tag)/g' ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/kustomization.yaml && rm ./services/$(service)/kustomize/$(cmd)/overlays/$$overlay/kustomization.yaml.bak; \
+		fi \
+	done
+
+.PHONY: deploy-pr
+deploy-pr: kustomize-patch-overlays kustomize-build
+	@for overlay in $$(find ./services/$(service)/kustomize/$(cmd)/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
+		git checkout -b "deploy/$(service)/$(cmd)/$$overlay/$(docker_tag)" \
+		git add "./services/$(service)/kustomize/$(cmd)/overlays/$$overlay"; \
+		git commit -m "chore(deploy,$$overlay): $(service)/$(cmd)/$$overlay" || echo "No changes for $$overlay"; \
+		git push -f -u origin "deploy/$(service)/$(cmd)/$$overlay/$(docker_tag)" \
+		gh pr create --title "chore(deploy,$$overlay): $(service)/$(cmd)" --body "Automated deployment for commit $(docker_tag)" --base main \
+	done
