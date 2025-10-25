@@ -134,6 +134,7 @@ kustomize-push:
 	@git switch $(git_current_branch); \
 	for service in $$(ls services); do \
 		for cmd in $$(ls services/$$service/kustomize 2>/dev/null || echo ""); do \
+			echo "services/$$service/kustomize/$$cmd/overlays"; \
 			if [ -d "services/$$service/kustomize/$$cmd/overlays" ]; then \
 				for overlay in $$(find services/$$service/kustomize/$$cmd/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
 					branch_name="deploy/$$service/$$cmd/$$overlay"; \

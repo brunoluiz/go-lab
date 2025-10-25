@@ -1,0 +1,7 @@
+resources:
+  - ../../base
+
+images:
+  - name: image
+    newName: ghcr.io/brunoluiz/go-lab/services/hello-world/api
+    newTag: latest
