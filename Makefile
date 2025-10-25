@@ -121,7 +121,7 @@ kustomize-push:
 		for cmd in $$(ls services/$$service/kustomize 2>/dev/null || echo ""); do \
 			for overlay in $$(find services/$$service/kustomize/$$cmd/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
 				branch_name="deploy/$$service/$$cmd/$$overlay"; \
-				git checkout "$$branch_name" 2>/dev/null && git pull origin "$$branch_name" || git checkout -b "$$branch_name" $(git_current_branch); \
+				git checkout "$$branch_name" 2>/dev/null && git pull origin "$$branch_name" --rebase || git checkout -b "$$branch_name" $(git_current_branch); \
 				$(MAKE) kustomize-build service=$$service cmd=$$cmd overlay=$$overlay; \
 				git add "services/$$service/manifests/$$cmd/$$overlay"; \
 				if ! git diff --cached --quiet; then \
