@@ -128,12 +128,22 @@ kustomize-patch-overlays:
 		fi \
 	done
 
-.PHONY: deploy-pr
-deploy-pr: kustomize-build
-	@for overlay in $$(find ./services/$(service)/kustomize/$(cmd)/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
-		git checkout -B "deploy/$(service)/$(cmd)/$$overlay/$(docker_tag)" || true; \
-		git add "./services/$(service)/kustomize/$(cmd)/manifests/$$overlay"; \
-		git commit -m "chore(deploy,$$overlay): render kustomize $(service)/$(cmd)/$$overlay" || echo "No changes for $$overlay"; \
-		git push -f -u origin "deploy/$(service)/$(cmd)/$$overlay/$(docker_tag)" || true; \
-		gh pr create --title "chore(deploy,$$overlay): $(service)/$(cmd)" --body "Automated deployment for commit $(docker_tag)" --base main; \
+.PHONY: kustomize-push
+kustomize-push:
+	@for service in $$(ls services); do \
+		for cmd in $$(ls services/$$service/kustomize 2>/dev/null || echo ""); do \
+			if [ -d "services/$$service/kustomize/$$cmd/overlays" ]; then \
+				for overlay in $$(find services/$$service/kustomize/$$cmd/overlays -mindepth 1 -maxdepth 1 -type d -exec basename {} \;); do \
+					branch_name="deploy/$$service/$$cmd/$$overlay"; \
+					git switch main; \
+					mkdir -p services/$$service/manifests/$$cmd/$$overlay/; \
+					kustomize build services/$$service/kustomize/$$cmd/overlays/$$overlay > services/$$service/manifests/$$cmd/$$overlay/manifest.yaml; \
+					git checkout -B "$$branch_name"; \
+					git add "services/$$service/manifests/$$cmd/$$overlay"; \
+					git commit -m "chore(deploy,$$overlay): render kustomize $$branch_name" || echo "No changes for $$overlay"; \
+					git push -f -u origin "$$branch_name" || true; \
+					gh pr create --title "chore(deploy,$$overlay): render kustomize $$branch_name" --body "Automated deployment for commit $(docker_tag)" --base main || echo "PR already exists or failed"; \
+				done; \
+			fi; \
+		done; \
 	done

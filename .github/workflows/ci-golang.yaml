@@ -96,3 +96,18 @@ jobs:
       - run: make docker-all
       - if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: make ci-bot docker-kustomize
+
+  kustomize-push:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    name: Kustomize Push
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [build]
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: jdx/mise-action@v3
+      - run: make ci-bot kustomize-push
