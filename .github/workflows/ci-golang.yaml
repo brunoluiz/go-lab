@@ -19,7 +19,7 @@ jobs:
       impacted_folders: ${{ steps.monogo.outputs.impacted_go_folders }}
       changed: ${{ steps.monogo.outputs.changed }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -43,7 +43,7 @@ jobs:
     timeout-minutes: 5
     needs: [prepare]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
@@ -57,7 +57,7 @@ jobs:
     timeout-minutes: 10
     needs: [prepare]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: jdx/mise-action@v3
       - uses: ./.github/actions/cache-go-build
       - uses: ./.github/actions/cache-go-modules
@@ -83,7 +83,7 @@ jobs:
       docker_user: ${{ github.actor }}
       docker_password: ${{ secrets.GITHUB_TOKEN }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - id: details
         run: make ci-details entrypoint="${{ matrix.entrypoint.path }}" | tee -a "$GITHUB_OUTPUT" "$GITHUB_STEP_SUMMARY" "$GITHUB_ENV"
       - uses: jdx/mise-action@v3
@@ -106,7 +106,7 @@ jobs:
       pull-requests: write
       issues: write
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           fetch-tags: true
