@@ -24,27 +24,27 @@ const (
 	EnvLocal      Env = "local"
 )
 
-type global struct {
+type serverConfig struct {
 	O11yAddress string `kong:"default=0.0.0.0,env=O11Y_ADDRESS,name=o11y-address"`
 	O11yPort    int    `kong:"default=9090,env=O11Y_PORT,name=o11y-port"`
 }
 
-type Exec interface {
+type ServerExec interface {
 	Run(ctx context.Context, logger *slog.Logger, healthz *health.Health) error
 }
 
-func Run[T Exec](exec T) {
+func Server[T ServerExec](exec T) {
 	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
-	if err := run(ctx, logger, exec); err != nil {
+	if err := runServer(ctx, logger, exec); err != nil {
 		logger.ErrorContext(ctx, "application error", "error", err)
 		os.Exit(1)
 	}
 }
 
-func run[T Exec](ctx context.Context, logger *slog.Logger, exec T) error {
+func runServer[T ServerExec](ctx context.Context, logger *slog.Logger, exec T) error {
 	// Parses app flags, but also cfg (do not judge the trickery here)
-	cfg := &global{}
+	cfg := &serverConfig{}
 	kong.Parse(exec, kong.Embed(cfg))
 
 	// Initialize OpenTelemetry
@@ -59,12 +59,16 @@ func run[T Exec](ctx context.Context, logger *slog.Logger, exec T) error {
 		return fmt.Errorf("failed to setup health checker: %w", err)
 	}
 
-	eg, ctx := errgroup.WithContext(ctx)
+	appCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	eg, ctx := errgroup.WithContext(appCtx)
 	eg.Go(func() error {
 		return o11y.Run(ctx, logger, healthz, o11y.WithAddr(fmt.Sprintf("%s:%d", cfg.O11yAddress, cfg.O11yPort)))
 	})
 
 	eg.Go(func() error {
+		defer cancel()
 		return exec.Run(ctx, logger, healthz)
 	})
 

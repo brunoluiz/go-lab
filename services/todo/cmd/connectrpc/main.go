@@ -14,8 +14,8 @@ import (
 	"github.com/brunoluiz/go-lab/lib/database/postgres"
 	"github.com/brunoluiz/go-lab/lib/handler/connectrpc/interceptor"
 	"github.com/brunoluiz/go-lab/lib/httpx"
-	"github.com/brunoluiz/go-lab/services/todo/internal/repo"
 	"github.com/brunoluiz/go-lab/services/todo/internal/handler/connectrpc"
+	"github.com/brunoluiz/go-lab/services/todo/internal/repo"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
 	"github.com/go-playground/validator/v10"
@@ -68,5 +68,5 @@ func (cli *CLI) Run(ctx context.Context, logger *slog.Logger, healthz *health.He
 }
 
 func main() {
-	app.Run(&CLI{})
+	app.Server(&CLI{})
 }
