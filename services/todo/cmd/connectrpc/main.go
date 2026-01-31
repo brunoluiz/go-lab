@@ -14,7 +14,7 @@ import (
 	"github.com/brunoluiz/go-lab/lib/database/postgres"
 	"github.com/brunoluiz/go-lab/lib/handler/connectrpc/interceptor"
 	"github.com/brunoluiz/go-lab/lib/httpx"
-	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
+	"github.com/brunoluiz/go-lab/services/todo/internal/repo"
 	"github.com/brunoluiz/go-lab/services/todo/internal/handler/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
@@ -39,8 +39,8 @@ func (cli *CLI) Run(ctx context.Context, logger *slog.Logger, healthz *health.He
 
 	db := bob.NewDB(sqlDB.Conn)
 	validator := validator.New()
-	taskRepo := repository.NewTaskRepository(db, logger)
-	listRepo := repository.NewListRepository(db, logger)
+	taskRepo := repo.NewTaskRepository(db, logger)
+	listRepo := repo.NewListRepository(db, logger)
 	listService := list.NewService(listRepo, logger, validator)
 	todoService := todo.NewService(taskRepo, listService, logger, validator)
 

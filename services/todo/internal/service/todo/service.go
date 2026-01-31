@@ -2,22 +2,19 @@ package todo
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"time"
 
 	"github.com/brunoluiz/go-lab/lib/errx"
-	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
-	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
-	"github.com/brunoluiz/go-lab/services/todo/internal/dto"
+	"github.com/brunoluiz/go-lab/services/todo/internal/model"
+	"github.com/brunoluiz/go-lab/services/todo/internal/repo"
+	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
-var ErrTitleRequired = errors.New("title is required")
-
-func toDtoTask(t model.Task) dto.Task {
-	return dto.Task{
+func toDtoTask(t model.Task) Task {
+	return Task{
 		ID:          t.ID,
 		Title:       t.Title,
 		IsCompleted: t.IsCompleted,
@@ -26,7 +23,7 @@ func toDtoTask(t model.Task) dto.Task {
 	}
 }
 
-func fromDtoTask(t dto.Task) model.Task {
+func fromDtoTask(t Task) model.Task {
 	return model.Task{
 		ID:          t.ID,
 		Title:       t.Title,
@@ -37,17 +34,17 @@ func fromDtoTask(t dto.Task) model.Task {
 }
 
 type ListService interface {
-	GetList(ctx context.Context, req dto.GetListRequest) (dto.GetListResponse, error)
+	GetList(ctx context.Context, req list.GetListRequest) (list.GetListResponse, error)
 }
 
 type Service struct {
-	taskRepo    repository.TaskRepository
+	taskRepo    repo.TaskRepository
 	listService ListService
 	logger      *slog.Logger
 	validator   *validator.Validate
 }
 
-func NewService(taskRepo repository.TaskRepository, listService ListService, logger *slog.Logger, validator *validator.Validate) *Service {
+func NewService(taskRepo repo.TaskRepository, listService ListService, logger *slog.Logger, validator *validator.Validate) *Service {
 	return &Service{
 		taskRepo:    taskRepo,
 		listService: listService,
@@ -56,14 +53,14 @@ func NewService(taskRepo repository.TaskRepository, listService ListService, log
 	}
 }
 
-func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dto.CreateTaskResponse, error) {
+func (s *Service) CreateTask(ctx context.Context, req CreateTaskRequest) (CreateTaskResponse, error) {
 	if err := s.validator.StructCtx(ctx, req); err != nil {
-		return dto.CreateTaskResponse{}, errx.ErrValidation.Wrap(err)
+		return CreateTaskResponse{}, errx.ErrValidation.Wrap(err)
 	}
 
 	id, err := uuid.NewV7()
 	if err != nil {
-		return dto.CreateTaskResponse{}, errx.ErrUnknown.Wrap(err)
+		return CreateTaskResponse{}, errx.ErrUnknown.Wrap(err)
 	}
 	task := model.Task{
 		ID:          id.String(),
@@ -74,70 +71,70 @@ func (s *Service) CreateTask(ctx context.Context, req dto.CreateTaskRequest) (dt
 	}
 	created, err := s.taskRepo.CreateTask(ctx, task)
 	if err != nil {
-		return dto.CreateTaskResponse{}, err
+		return CreateTaskResponse{}, err
 	}
-	return dto.CreateTaskResponse{Task: toDtoTask(created)}, nil
+	return CreateTaskResponse{Task: toDtoTask(created)}, nil
 }
 
-func (s *Service) GetTask(ctx context.Context, req dto.GetTaskRequest) (dto.GetTaskResponse, error) {
+func (s *Service) GetTask(ctx context.Context, req GetTaskRequest) (GetTaskResponse, error) {
 	if err := s.validator.StructCtx(ctx, req); err != nil {
-		return dto.GetTaskResponse{}, errx.ErrValidation.Wrap(err)
+		return GetTaskResponse{}, errx.ErrValidation.Wrap(err)
 	}
 
 	task, err := s.taskRepo.GetTask(ctx, req.TaskID)
 	if err != nil {
-		return dto.GetTaskResponse{}, err
+		return GetTaskResponse{}, err
 	}
-	return dto.GetTaskResponse{Task: toDtoTask(task)}, nil
+	return GetTaskResponse{Task: toDtoTask(task)}, nil
 }
 
-func (s *Service) ListTasks(ctx context.Context, req dto.ListTasksRequest) (dto.ListTasksResponse, error) {
+func (s *Service) ListTasks(ctx context.Context, req ListTasksRequest) (ListTasksResponse, error) {
 	if err := s.validator.StructCtx(ctx, req); err != nil {
-		return dto.ListTasksResponse{}, errx.ErrValidation.Wrap(err)
+		return ListTasksResponse{}, errx.ErrValidation.Wrap(err)
 	}
 
-	getListReq := dto.GetListRequest{ListID: req.ListID} //nolint:staticcheck
+	getListReq := list.GetListRequest{ListID: req.ListID} //nolint:staticcheck
 	listResp, err := s.listService.GetList(ctx, getListReq)
 	if err != nil {
-		return dto.ListTasksResponse{}, err
+		return ListTasksResponse{}, err
 	}
 	tasks, err := s.taskRepo.ListTasks(ctx, req.ListID)
 	if err != nil {
-		return dto.ListTasksResponse{}, err
+		return ListTasksResponse{}, err
 	}
-	dtoTasks := make([]dto.Task, len(tasks))
+	dtoTasks := make([]Task, len(tasks))
 	for i, t := range tasks {
 		dtoTasks[i] = toDtoTask(t)
 	}
-	todoList := dto.TodoList{
+	todoList := TodoList{
 		Tasks: dtoTasks,
 		Name:  listResp.List.Name,
 		ID:    listResp.List.ID,
 	}
-	return dto.ListTasksResponse{TodoList: todoList}, nil
+	return ListTasksResponse{TodoList: todoList}, nil
 }
 
-func (s *Service) UpdateTask(ctx context.Context, req dto.UpdateTaskRequest) (dto.UpdateTaskResponse, error) {
+func (s *Service) UpdateTask(ctx context.Context, req UpdateTaskRequest) (UpdateTaskResponse, error) {
 	if err := s.validator.StructCtx(ctx, req); err != nil {
-		return dto.UpdateTaskResponse{}, errx.ErrValidation.Wrap(err)
+		return UpdateTaskResponse{}, errx.ErrValidation.Wrap(err)
 	}
 
 	task := fromDtoTask(req.Task)
 	updated, err := s.taskRepo.UpdateTask(ctx, task)
 	if err != nil {
-		return dto.UpdateTaskResponse{}, err
+		return UpdateTaskResponse{}, err
 	}
-	return dto.UpdateTaskResponse{Task: toDtoTask(updated)}, nil
+	return UpdateTaskResponse{Task: toDtoTask(updated)}, nil
 }
 
-func (s *Service) DeleteTask(ctx context.Context, req dto.DeleteTaskRequest) (dto.DeleteTaskResponse, error) {
+func (s *Service) DeleteTask(ctx context.Context, req DeleteTaskRequest) (DeleteTaskResponse, error) {
 	if err := s.validator.StructCtx(ctx, req); err != nil {
-		return dto.DeleteTaskResponse{}, errx.ErrValidation.Wrap(err)
+		return DeleteTaskResponse{}, errx.ErrValidation.Wrap(err)
 	}
 
 	err := s.taskRepo.DeleteTask(ctx, req.TaskID)
 	if err != nil {
-		return dto.DeleteTaskResponse{}, err
+		return DeleteTaskResponse{}, err
 	}
-	return dto.DeleteTaskResponse{}, nil
+	return DeleteTaskResponse{}, nil
 }

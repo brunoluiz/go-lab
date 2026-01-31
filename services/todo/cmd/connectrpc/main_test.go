@@ -11,8 +11,8 @@ import (
 
 	v1 "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1"
 	todov1connect "github.com/brunoluiz/go-lab/gen/go/proto/acme/api/todo/v1/todov1connect"
-	"github.com/brunoluiz/go-lab/services/todo/internal/database/migration"
-	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
+	"github.com/brunoluiz/go-lab/services/todo/internal/postgres"
+	"github.com/brunoluiz/go-lab/services/todo/internal/repo"
 	"github.com/brunoluiz/go-lab/services/todo/internal/handler/connectrpc"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/list"
 	"github.com/brunoluiz/go-lab/services/todo/internal/service/todo"
@@ -20,7 +20,7 @@ import (
 	"github.com/stephenafamo/bob"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github.com/testcontainers/testcontainers-go/modules/postgres"
+	postgrescontainer "github.com/testcontainers/testcontainers-go/modules/postgres"
 )
 
 func setupTestServer(t *testing.T) todov1connect.TodoServiceClient {
@@ -30,12 +30,12 @@ func setupTestServer(t *testing.T) todov1connect.TodoServiceClient {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 
 	// Start PostgreSQL container
-	pgContainer, err := postgres.Run(ctx,
+	pgContainer, err := postgrescontainer.Run(ctx,
 		"postgres:15-alpine",
-		postgres.WithDatabase("testdb"),
-		postgres.WithUsername("testuser"),
-		postgres.WithPassword("testpass"),
-		postgres.BasicWaitStrategies(),
+		postgrescontainer.WithDatabase("testdb"),
+		postgrescontainer.WithUsername("testuser"),
+		postgrescontainer.WithPassword("testpass"),
+		postgrescontainer.BasicWaitStrategies(),
 	)
 	require.NoError(t, err)
 
@@ -58,7 +58,7 @@ func setupTestServer(t *testing.T) todov1connect.TodoServiceClient {
 	})
 
 	// Run migrations
-	migrator, err := migration.NewMigrator(db, logger)
+	migrator, err := postgres.NewMigrator(db, logger)
 	require.NoError(t, err)
 
 	err = migrator.Up()
@@ -67,8 +67,8 @@ func setupTestServer(t *testing.T) todov1connect.TodoServiceClient {
 	// Set up service
 	sqlDB := db
 	bobDB := bob.NewDB(sqlDB)
-	taskRepo := repository.NewTaskRepository(bobDB, logger)
-	listRepo := repository.NewListRepository(bobDB, logger)
+	taskRepo := repo.NewTaskRepository(bobDB, logger)
+	listRepo := repo.NewListRepository(bobDB, logger)
 	validator := validator.New()
 	listService := list.NewService(listRepo, logger, validator)
 	service := todo.NewService(taskRepo, listService, logger, validator)

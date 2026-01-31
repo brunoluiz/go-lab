@@ -2,29 +2,25 @@ package list
 
 import (
 	"context"
-	"errors"
 	"log/slog"
 	"time"
 
 	"github.com/brunoluiz/go-lab/lib/errx"
-	"github.com/brunoluiz/go-lab/services/todo/internal/database/model"
-	"github.com/brunoluiz/go-lab/services/todo/internal/database/repository"
-	"github.com/brunoluiz/go-lab/services/todo/internal/dto"
+	"github.com/brunoluiz/go-lab/services/todo/internal/model"
+	"github.com/brunoluiz/go-lab/services/todo/internal/repo"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
-var ErrNameRequired = errors.New("name is required")
-
-func toDtoList(l model.List) dto.List {
-	return dto.List{
+func toDtoList(l model.List) List {
+	return List{
 		ID:        l.ID,
 		Name:      l.Name,
 		CreatedAt: l.CreatedAt,
 	}
 }
 
-func fromDtoList(l dto.List) model.List {
+func fromDtoList(l List) model.List {
 	return model.List{
 		ID:        l.ID,
 		Name:      l.Name,
@@ -33,12 +29,12 @@ func fromDtoList(l dto.List) model.List {
 }
 
 type Service struct {
-	listRepo  repository.ListRepository
+	listRepo  repo.ListRepository
 	logger    *slog.Logger
 	validator *validator.Validate
 }
 
-func NewService(listRepo repository.ListRepository, logger *slog.Logger, validator *validator.Validate) *Service {
+func NewService(listRepo repo.ListRepository, logger *slog.Logger, validator *validator.Validate) *Service {
 	return &Service{
 		listRepo:  listRepo,
 		logger:    logger,
@@ -46,14 +42,14 @@ func NewService(listRepo repository.ListRepository, logger *slog.Logger, validat
 	}
 }
 
-func (s *Service) CreateList(ctx context.Context, req dto.CreateListRequest) (dto.CreateListResponse, error) {
+func (s *Service) CreateList(ctx context.Context, req CreateListRequest) (CreateListResponse, error) {
 	if err := s.validator.StructCtx(ctx, req); err != nil {
-		return dto.CreateListResponse{}, errx.ErrValidation.Wrap(err)
+		return CreateListResponse{}, errx.ErrValidation.Wrap(err)
 	}
 
 	id, err := uuid.NewV7()
 	if err != nil {
-		return dto.CreateListResponse{}, errx.ErrUnknown.Wrap(err)
+		return CreateListResponse{}, errx.ErrUnknown.Wrap(err)
 	}
 	list := model.List{
 		ID:        id.String(),
@@ -62,56 +58,56 @@ func (s *Service) CreateList(ctx context.Context, req dto.CreateListRequest) (dt
 	}
 	created, err := s.listRepo.CreateList(ctx, list)
 	if err != nil {
-		return dto.CreateListResponse{}, err
+		return CreateListResponse{}, err
 	}
-	return dto.CreateListResponse{List: toDtoList(created)}, nil
+	return CreateListResponse{List: toDtoList(created)}, nil
 }
 
-func (s *Service) GetList(ctx context.Context, req dto.GetListRequest) (dto.GetListResponse, error) {
+func (s *Service) GetList(ctx context.Context, req GetListRequest) (GetListResponse, error) {
 	if err := s.validator.StructCtx(ctx, req); err != nil {
-		return dto.GetListResponse{}, errx.ErrValidation.Wrap(err)
+		return GetListResponse{}, errx.ErrValidation.Wrap(err)
 	}
 
 	list, err := s.listRepo.GetList(ctx, req.ListID)
 	if err != nil {
-		return dto.GetListResponse{}, err
+		return GetListResponse{}, err
 	}
-	return dto.GetListResponse{List: toDtoList(list)}, nil
+	return GetListResponse{List: toDtoList(list)}, nil
 }
 
-func (s *Service) ListLists(ctx context.Context, _ dto.ListListsRequest) (dto.ListListsResponse, error) {
+func (s *Service) ListLists(ctx context.Context, _ ListListsRequest) (ListListsResponse, error) {
 	lists, err := s.listRepo.ListLists(ctx)
 	if err != nil {
-		return dto.ListListsResponse{}, err
+		return ListListsResponse{}, err
 	}
-	dtoLists := make([]dto.List, len(lists))
+	dtoLists := make([]List, len(lists))
 	for i, l := range lists {
 		dtoLists[i] = toDtoList(l)
 	}
-	return dto.ListListsResponse{Lists: dtoLists}, nil
+	return ListListsResponse{Lists: dtoLists}, nil
 }
 
-func (s *Service) UpdateList(ctx context.Context, req dto.UpdateListRequest) (dto.UpdateListResponse, error) {
+func (s *Service) UpdateList(ctx context.Context, req UpdateListRequest) (UpdateListResponse, error) {
 	if err := s.validator.StructCtx(ctx, req); err != nil {
-		return dto.UpdateListResponse{}, errx.ErrValidation.Wrap(err)
+		return UpdateListResponse{}, errx.ErrValidation.Wrap(err)
 	}
 
 	list := fromDtoList(req.List)
 	updated, err := s.listRepo.UpdateList(ctx, list)
 	if err != nil {
-		return dto.UpdateListResponse{}, err
+		return UpdateListResponse{}, err
 	}
-	return dto.UpdateListResponse{List: toDtoList(updated)}, nil
+	return UpdateListResponse{List: toDtoList(updated)}, nil
 }
 
-func (s *Service) DeleteList(ctx context.Context, req dto.DeleteListRequest) (dto.DeleteListResponse, error) {
+func (s *Service) DeleteList(ctx context.Context, req DeleteListRequest) (DeleteListResponse, error) {
 	if err := s.validator.StructCtx(ctx, req); err != nil {
-		return dto.DeleteListResponse{}, errx.ErrValidation.Wrap(err)
+		return DeleteListResponse{}, errx.ErrValidation.Wrap(err)
 	}
 
 	err := s.listRepo.DeleteList(ctx, req.ListID)
 	if err != nil {
-		return dto.DeleteListResponse{}, err
+		return DeleteListResponse{}, err
 	}
-	return dto.DeleteListResponse{}, nil
+	return DeleteListResponse{}, nil
 }

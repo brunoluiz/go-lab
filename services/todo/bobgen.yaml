@@ -1,24 +1,24 @@
 plugins_preset: "all"
 sql:
   dialect: psql
-  pattern: "internal/database/migration/*.up.sql"
+  pattern: "internal/postgres/migration/*.up.sql"
 plugins:
   dbinfo:
     disabled: false
-    destination: "internal/database/bob/dbinfo"
+    destination: "internal/postgres/bob/dbinfo"
   enums:
     disabled: false
     pkgname: "enums"
-    destination: "internal/database/bob/enum"
+    destination: "internal/postgres/bob/enum"
   models:
     disabled: false
     pkgname: "models"
-    destination: "internal/database/bob/models"
+    destination: "internal/postgres/bob/models"
   factory:
     disabled: false
     pkgname: "factory"
-    destination: "internal/database/bob/factory"
+    destination: "internal/postgres/bob/factory"
   dberrors:
     disabled: false
     pkgname: "dberrors"
-    destination: "internal/database/bob/dberrors"
+    destination: "internal/postgres/bob/dberrors"
