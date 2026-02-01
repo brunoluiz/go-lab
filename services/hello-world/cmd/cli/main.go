@@ -2,25 +2,28 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
-	"os"
 
+	"github.com/brunoluiz/go-lab/lib/app"
 	"github.com/brunoluiz/go-lab/services/hello-world/internal/service/greet"
 )
 
-func main() {
+type CLI struct {
+	Language string `kong:"arg,required,name=language,help='Language code for the greeting (e.g., en, es, fr)'"`
+}
+
+func (cli *CLI) Run(ctx context.Context, logger *slog.Logger) error {
 	greeter := greet.New()
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
-	if len(os.Args) < 2 {
-		logger.ErrorContext(context.Background(), "language argument is required")
-		return
-	}
-
-	helloMsg, err := greeter.Hello(os.Args[1])
+	helloMsg, err := greeter.Hello(cli.Language)
 	if err != nil {
-		logger.ErrorContext(context.Background(), "unable to greet", slog.String("error", err.Error()))
-		return
+		return fmt.Errorf("unable to greet: %w", err)
 	}
-	logger.InfoContext(context.Background(), helloMsg)
+	logger.InfoContext(ctx, helloMsg)
+	return nil
+}
+
+func main() {
+	app.CLI(&CLI{})
 }

@@ -9,10 +9,13 @@ import (
 	"syscall"
 
 	"github.com/alecthomas/kong"
+	"github.com/brunoluiz/go-lab/lib/logger"
 	"golang.org/x/sync/errgroup"
 )
 
-type cliConfig struct{}
+type cliConfig struct {
+	LogLevel string `enum:"debug,info,warn,error" kong:"default=info,env=LOG_LEVEL,name=log-level"`
+}
 
 type CLIExec interface {
 	Run(ctx context.Context, logger *slog.Logger) error
@@ -20,7 +23,11 @@ type CLIExec interface {
 
 func CLI[T CLIExec](exec T) {
 	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+
+	cfg := &cliConfig{}
+	kong.Parse(exec, kong.Embed(cfg))
+
+	logger := logger.New(logger.WithLevel(cfg.LogLevel))
 	if err := runCLI(ctx, logger, exec); err != nil {
 		logger.ErrorContext(ctx, "application error", "error", err)
 		os.Exit(1)
@@ -28,16 +35,11 @@ func CLI[T CLIExec](exec T) {
 }
 
 func runCLI[T CLIExec](ctx context.Context, logger *slog.Logger, exec T) error {
-	// Parses app flags, but also cfg (do not judge the trickery here)
-	cfg := &cliConfig{}
-	kong.Parse(exec, kong.Embed(cfg))
-
 	appCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
 	eg, ctx := errgroup.WithContext(appCtx)
 	eg.Go(func() error {
-		defer cancel()
 		return exec.Run(ctx, logger)
 	})
 
