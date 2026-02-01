@@ -26,9 +26,9 @@ const (
 )
 
 type serverConfig struct {
-	LogLevel    string `enum:"debug,info,warn,error" kong:"default=info,env=LOG_LEVEL,name=log-level"`
-	O11yAddress string `kong:"default=0.0.0.0,env=O11Y_ADDRESS,name=o11y-address"`
-	O11yPort    int    `kong:"default=9090,env=O11Y_PORT,name=o11y-port"`
+	LogLevel string `enum:"debug,info,warn,error" kong:"default=info,env=LOG_LEVEL,name=log-level"`
+	O11yHost string `kong:"default=0.0.0.0,env=O11Y_HOST,name=o11y-host"`
+	O11yPort int    `kong:"default=9090,env=O11Y_PORT,name=o11y-port"`
 }
 
 type ServerExec interface {
@@ -66,7 +66,7 @@ func runServer[T ServerExec](ctx context.Context, cfg *serverConfig, logger *slo
 	eg, ctx := errgroup.WithContext(appCtx)
 	eg.Go(func() error {
 		return o11y.Run(ctx, logger, healthz,
-			o11y.WithAddr(fmt.Sprintf("%s:%d", cfg.O11yAddress, cfg.O11yPort)),
+			o11y.WithAddr(cfg.O11yHost, cfg.O11yPort),
 		)
 	})
 
